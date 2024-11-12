@@ -4,7 +4,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: black; /* Tamamen siyah arka plan */
+    background: black; /* Siyah arka plan */
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     margin: 0;
@@ -13,21 +13,23 @@ body {
 
 /* Makine Çerçevesi */
 .machine {
-    padding: 20px;
-    background: black;
-    border-radius: 30px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    padding: 2%; /* Dinamik iç boşluk */
+    background: black; /* Siyah arka plan */
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 90%;
-    max-width: 600px;
+    width: 90%; /* Ekranın %90'ı kadar genişlik */
+    max-width: 600px; /* Büyük ekranlarda maksimum genişlik */
+    height: auto; /* Dinamik yükseklik */
+    box-sizing: border-box; /* İç kenar boşluklarını hesaba kat */
 }
 
 /* Başlık */
 h2 {
     text-align: center;
-    font-size: 2em;
+    font-size: 2.5vw; /* Ekran genişliğine bağlı boyut */
     color: #00FF00;
     margin-bottom: 10px;
     word-wrap: break-word; /* Uzun yazıları böl */
@@ -38,16 +40,16 @@ h2 {
     list-style: none;
     margin-bottom: -10px;
     text-align: center;
-    font-size: 1em;
+    font-size: 1.8vw; /* Ekrana göre ölçeklenen yazı boyutu */
     padding-left: 0px;
 }
 
 .balance-list li {
-    margin-bottom: 0px;
+    margin-bottom: 5px;
 }
 
 #weekly-reward, #leaderboard {
-    font-size: 1em;
+    font-size: 1.8vw; /* Ekran genişliğine bağlı boyut */
     color: #00FF00;
 }
 
@@ -55,21 +57,19 @@ h2 {
 .container {
     display: flex;
     justify-content: space-around;
-    width: 100%;
+    width: 100%; /* Tam genişlik */
     margin-top: 10px;
-    margin-bottom: 0px;
-    box-sizing: border-box;
 }
 
 .slot {
     flex: 1;
-    margin: 0 8px;
-    height: 25vh;
+    margin: 0 1%; /* Dinamik boşluk */
+    height: 20vw; /* Ekrana göre ölçeklenen yükseklik */
     background-color: #d6d6d6;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    border: 8px solid #fff;
+    border: 0.5vw solid #fff; /* Ekrana göre ölçeklenen kenarlık */
     border-radius: 10px;
     box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
 }
@@ -77,7 +77,7 @@ h2 {
 /* Flash Efekti */
 .flash-effect {
     animation: flash 0.5s infinite;
-    border: 8px solid #00FF00;
+    border: 0.5vw solid #00FF00; /* Dinamik kenarlık */
 }
 
 /* Balance ve Spin Counter Bölümü */
@@ -89,9 +89,9 @@ h2 {
 }
 
 #player-balance, #earned-coins, #spin-counter {
-    font-size: 1.2em;
+    font-size: 1.8vw; /* Dinamik yazı boyutu */
     text-align: center;
-    margin-bottom: -2px;
+    margin-bottom: 10px;
     color: #00FF00;
 }
 
@@ -102,7 +102,7 @@ h2 {
     align-items: center;
     width: 100%;
     margin-top: 20px;
-    flex-wrap: wrap; /* Mobilde butonlar alt alta geçer */
+    flex-wrap: wrap; /* Butonları sığdır */
 }
 
 /* Sol taraftaki butonları ortalama */
@@ -115,10 +115,11 @@ h2 {
 }
 
 #transfer-button, #buy-coin-button, #withdraw-button {
-    width: 150px;
-    height: 30px;
-    font-size: 18px;
+    width: 20vw; /* Dinamik genişlik */
+    height: 5vw; /* Dinamik yükseklik */
+    font-size: 1.5vw; /* Dinamik yazı boyutu */
     cursor: pointer;
+    border-radius: 10px;
 }
 
 .green-button {
@@ -150,8 +151,8 @@ h2 {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    width: 200px;
-    height: 160px;
+    width: 25vw; /* Dinamik genişlik */
+    height: 20vw; /* Dinamik yükseklik */
     cursor: pointer;
     background-color: transparent;
     border: none;
@@ -160,61 +161,33 @@ h2 {
 /* Kazanma/Kaybetme Mesajı */
 #result-message {
     margin-top: 20px;
-    font-size: 1.2em;
+    font-size: 1.8vw; /* Dinamik yazı boyutu */
     color: #FFFF00;
     text-align: center;
 }
 
-/* Mobil ve Tablet Uyumluluğu */
-
-/* Tabletler ve küçük cihazlar için */
+/* Dinamik Ölçekleme İçin Medya Sorguları */
 @media (max-width: 768px) {
     .machine {
-        width: 95%;
-        padding: 15px; /* Daha dar kenar boşlukları */
+        width: 95%; /* Mobil cihazlarda genişlik biraz daha artar */
     }
 
     h2 {
-        font-size: 1.5em; /* Daha küçük başlık */
+        font-size: 2.5em;
     }
 
     .slot {
-        height: 20vh; /* Slotların boyutları küçüldü */
-        margin: 0 5px;
-    }
-
-    #player-balance, #spin-counter, #earned-coins {
-        font-size: 1em; /* Yazılar küçüldü */
+        height: 25vw;
     }
 
     #transfer-button, #buy-coin-button, #withdraw-button {
-        width: 130px; /* Daha küçük butonlar */
-        font-size: 14px;
+        width: 25vw; /* Mobil için daha büyük butonlar */
+        height: 6vw;
+        font-size: 1.2em;
     }
 
     #spin-button {
-        width: 150px;
-        height: 120px;
-    }
-}
-
-/* Telefonlar için */
-@media (max-width: 480px) {
-    h2 {
-        font-size: 1.2em; /* Başlık daha küçük */
-    }
-
-    .slot {
-        height: 15vh; /* Slot boyutu daha küçük */
-    }
-
-    #transfer-button, #buy-coin-button, #withdraw-button {
-        width: 110px; /* Daha küçük butonlar */
-        font-size: 12px;
-    }
-
-    #spin-button {
-        width: 120px;
-        height: 100px;
+        width: 30vw; /* Mobil için daha büyük spin butonu */
+        height: 25vw;
     }
 }
