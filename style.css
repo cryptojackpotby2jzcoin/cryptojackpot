@@ -1,171 +1,170 @@
-window.onload = function () {
-    const spinButton = document.getElementById("spin-button");
-    const withdrawButton = document.getElementById("withdraw-button");
-    const transferButton = document.getElementById("transfer-button");
-    const buyCoinButton = document.getElementById("buy-coin-button");
-    const resultMessage = document.getElementById("result-message");
-    const playerBalanceDisplay = document.getElementById("player-balance");
-    const earnedCoinsDisplay = document.getElementById("earned-coins");
-    const spinCounterDisplay = document.getElementById("spin-counter");
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: radial-gradient(circle, #000000, #0a0c0d);
+    font-family: 'Press Start 2P', monospace;
+    color: #FFFFFF;
+    margin: -10;
+}
 
-    let playerBalance = 20;
-    let temporaryBalance = 0; // Kazanılan coinler
-    let spins = 0;
-    const coinPrice = 0.000005775;
+.machine {
+    padding: 20px;
+    background: linear-gradient(to right, #191919 0%, #323232 100%);
+    border-radius: 30px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    max-width: 600px;
+}
 
-    const icons = [
-        'https://i.imgur.com/Xpf9bil.png',
-        'https://i.imgur.com/toIiHGF.png',
-        'https://i.imgur.com/tuXO9tn.png',
-        'https://i.imgur.com/7XZCiRx.png',
-        'https://i.imgur.com/7N2Lyw9.png',
-        'https://i.imgur.com/OazBXaj.png',
-        'https://i.imgur.com/bIBTHd0.png',
-        'https://i.imgur.com/PTrhXRa.png',
-        'https://i.imgur.com/cAkESML.png'
-    ];
+/* Başlık */
+h2 {
+    text-align: center;
+    font-size: 2em;
+    color: #00FF00;
+    margin-bottom: 10px;
+}
 
-    // Liderlik tablosu için veriler
-    const leaderboard = [
-        { name: "Player1", spins: 0 },
-        { name: "Player2", spins: 0 },
-        { name: "Player3", spins: 0 }
-    ];
+/* Balance listesi */
+.balance-list {
+    list-style: none;
+    margin-bottom: -10px;
+    text-align: center;
+    font-size: 1em;
+    padding-left: 0px;
+}
 
-    // Liderlik tablosunu güncelleyen fonksiyon
-    function updateLeaderboard() {
-        leaderboard.sort((a, b) => b.spins - a.spins); // Spin sayılarına göre sıralama
-        displayLeaderboard();
-    }
+.balance-list li {
+    margin-bottom: 0px;
+}
 
-    // Liderlik tablosunu HTML'de gösteren fonksiyon
-    function displayLeaderboard() {
-        document.getElementById("first-spin-count").textContent = leaderboard[0]?.spins || 0;
-        document.getElementById("second-spin-count").textContent = leaderboard[1]?.spins || 0;
-        document.getElementById("third-spin-count").textContent = leaderboard[2]?.spins || 0;
-    }
+#weekly-reward, #leaderboard {
+    font-size: 1em;
+    color: #00FF00;
+}
 
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spins: ${spins}`;
-    }
+/* Slot makinesi tasarımı */
+.container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
 
-    function spin() {
-        if (playerBalance <= 0) {
-            resultMessage.textContent = "Insufficient coins! Transfer or buy more coins.";
-            return;
-        }
+.slot {
+    flex: 1;
+    margin: 0 8px;
+    height: 25vh;
+    background-color: #d6d6d6;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 8px solid #fff;
+    border-radius: 10px;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
+}
 
-        spinButton.disabled = true; // Spin butonunu geçici olarak devre dışı bırak
-        resultMessage.textContent = ""; // Mesajı temizle
-        playerBalance--; // Bakiyeden 1 düş
-        spins++; // Spin sayısını artır
+/* Flash efekti */
+@keyframes flash {
+    0% { border-color: #00FF00; }
+    50% { border-color: #FFFFFF; }
+    100% { border-color: #00FF00; }
+}
 
-        // Liderlik tablosunda spin sayısını güncelle
-        leaderboard[0].spins += 1;
-        updateLeaderboard();
+.flash-effect {
+    animation: flash 0.5s infinite;
+    border: 8px solid #00FF00;
+}
 
-        const slots = document.querySelectorAll('.slot');
-        let spinResults = [];
-        let animationCompleteCount = 0;
+/* Balance ve Spin Counter bölümü */
+#balance-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -25px;
+}
 
-        // Slot animasyonlarını başlat
-        slots.forEach(slot => slot.classList.remove('flash-effect'));
-        slots.forEach((slot, index) => {
-            let totalSpins = icons.length * 8; // Her slot için toplam dönüş sayısı
-            let currentSpin = 0;
+#player-balance, #earned-coins, #spin-counter {
+    font-size: 1.3em;
+    text-align: center;
+    margin-bottom: -2px;
+    color: #00FF00;
+}
 
-            function animateSpin() {
-                if (currentSpin < totalSpins) {
-                    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-                    slot.style.backgroundImage = `url(${randomIcon})`;
-                    currentSpin++;
-                    setTimeout(animateSpin, 50);
-                } else {
-                    const finalIcon = icons[Math.floor(Math.random() * icons.length)];
-                    slot.style.backgroundImage = `url(${finalIcon})`;
-                    spinResults.push({ icon: finalIcon, element: slot });
-                    animationCompleteCount++;
+/* Butonlar */
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 20px;
+}
 
-                    // Tüm animasyonlar tamamlandığında sonuçları kontrol et
-                    if (animationCompleteCount === slots.length) {
-                        checkResults(spinResults);
-                        spinButton.disabled = false; // Spin butonunu tekrar aktif et
-                    }
-                }
-            }
-            animateSpin();
-        });
+/* Sol taraftaki butonları ortalama */
+.left-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
 
-        updateBalances();
-    }
+#transfer-button, #buy-coin-button, #withdraw-button {
+    width: 150px;
+    height: 30px;
+    font-size: 18px;
+    cursor: pointer;
+}
 
-    function checkResults(spinResults) {
-        const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
-        const winCount = spinResults.filter(result => result.icon === winIcon).length; // Kazanılan ikon sayısı
-        let winAmount = winCount === 1 ? 1 : winCount === 2 ? 5 : winCount === 3 ? 100 : 0; // Kazanılan miktar
+.green-button {
+    background-color: #32cd32;
+    color: white;
+    border: none;
+}
 
-        if (winAmount > 0) {
-            temporaryBalance += winAmount; // Kazanılan coinler geçici bakiyeye eklenir
-            resultMessage.textContent = `💰 Congratulations! You won ${winAmount} coins! 💰`;
-            spinResults
-                .filter(result => result.icon === winIcon)
-                .forEach(result => result.element.classList.add('flash-effect')); // Flash efekt eklenir
-        } else {
-            resultMessage.textContent = "Try again! No coins won this time.";
-        }
+#buy-coin-button {
+    background-color: #ffcc00;
+    color: #000;
+}
 
-        updateBalances();
-    }
+#withdraw-button {
+    background-color: red;
+    color: white;
+    border: none;
+}
 
-    // Phantom Wallet bağlantısı kontrolü ve bağlama
-    async function connectPhantomWallet() {
-        if (window.solana && window.solana.isPhantom) {
-            try {
-                const response = await window.solana.connect();
-                const walletAddress = response.publicKey.toString();
-                resultMessage.textContent = `Connected Wallet: ${walletAddress}`;
-                return walletAddress;
-            } catch (error) {
-                alert("Phantom Wallet connection failed. Please try again.");
-            }
-        } else {
-            alert("Phantom Wallet is not detected. Please install Phantom Wallet and try again.");
-        }
-    }
+/* Sağ tarafta Spin butonunu ortalama */
+.right-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    // Coin satın alma
-    buyCoinButton.addEventListener("click", () => {
-        window.open("https://photon-sol.tinyastro.io/en/lp/H6pB2VhBHxHZ3jpmkBb1WTTpnnktTgjDv2osLJEU1dX9", "_blank");
-    });
+#spin-button {
+    background-image: url('https://i.imgur.com/7N2Lyw9.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 200px;
+    height: 160px;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+}
 
-    // Coin çekme işlemi
-    async function withdrawCoins() {
-        const walletAddress = await connectPhantomWallet();
-        if (walletAddress && temporaryBalance > 0) {
-            resultMessage.textContent = `💰 ${temporaryBalance} coins successfully withdrawn to your wallet! 💰`;
-            temporaryBalance = 0; // Geçici bakiye sıfırlanır
-            updateBalances();
-        } else if (!walletAddress) {
-            resultMessage.textContent = "Wallet connection required to withdraw coins.";
-        } else {
-            resultMessage.textContent = "No coins available to withdraw.";
-        }
-    }
+#transfer-button:hover, #buy-coin-button:hover, #withdraw-button:hover, #spin-button:hover {
+    opacity: 0.8;
+}
 
-    withdrawButton.addEventListener("click", withdrawCoins);
-
-    transferButton.addEventListener("click", () => {
-        if (temporaryBalance > 0) {
-            playerBalance += temporaryBalance;
-            temporaryBalance = 0;
-            resultMessage.textContent = "Coins transferred to your main balance!";
-            updateBalances();
-        } else {
-            resultMessage.textContent = "No coins to transfer!";
-        }
-    });
-
-    spinButton.addEventListener("click", spin);
-};
+/* Kazanma/Kaybetme mesajı */
+#result-message {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #FFFF00;
+    text-align: center;
+}
