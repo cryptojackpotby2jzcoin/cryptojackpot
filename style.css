@@ -23,6 +23,7 @@ body {
     width: 90%; /* Ekranın %90'ı kadar genişlik */
     max-width: 600px; /* Büyük ekranlarda maksimum genişlik */
     height: auto; /* Dinamik yükseklik */
+    aspect-ratio: 3 / 4; /* Genişlik/yükseklik oranı korunur */
     box-sizing: border-box; /* İç kenar boşluklarını hesaba kat */
 }
 
@@ -166,10 +167,10 @@ h2 {
     text-align: center;
 }
 
-/* Dinamik Ölçekleme İçin Medya Sorguları */
+/* Medya Sorguları - Mobil ve Tablet */
 @media (max-width: 768px) {
     .machine {
-        width: 95%; /* Mobil cihazlarda genişlik biraz daha artar */
+        width: 95%; /* Tabletlerde genişlik artar */
     }
 
     h2 {
@@ -181,13 +182,13 @@ h2 {
     }
 
     #transfer-button, #buy-coin-button, #withdraw-button {
-        width: 25vw; /* Mobil için daha büyük butonlar */
+        width: 25vw;
         height: 6vw;
         font-size: 1.2em;
     }
 
     #spin-button {
-        width: 30vw; /* Mobil için daha büyük spin butonu */
+        width: 30vw;
         height: 25vw;
     }
 }
