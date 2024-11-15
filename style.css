@@ -13,45 +13,59 @@ body {
 
 /* Makine Çerçevesi */
 .machine {
-    padding: 2%; /* Dinamik iç boşluk */
+    padding: 20px; /* Sabit iç boşluk */
     background: black; /* Siyah arka plan */
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 90%; /* Ekranın %90'ı kadar genişlik */
-    max-width: 600px; /* Büyük ekranlarda maksimum genişlik */
-    height: auto; /* Dinamik yükseklik */
-    aspect-ratio: 3 / 4; /* Genişlik/yükseklik oranı korunur */
+    width: 600px; /* Sabit genişlik */
+    height: 800px; /* Sabit yükseklik */
     box-sizing: border-box; /* İç kenar boşluklarını hesaba kat */
 }
 
-/* Başlık */
+/* Başlık (Crypto Jackpot by 2JZ Coin) */
 h2 {
     text-align: center;
-    font-size: 2.5vw; /* Ekran genişliğine bağlı boyut */
+    font-size: 24px; /* Sabit yazı boyutu */
     color: #00FF00;
+    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
+    animation: neon-effect 1.5s infinite alternate; /* Neon ışık animasyonu */
     margin-bottom: 10px;
-    word-wrap: break-word; /* Uzun yazıları böl */
 }
 
-/* Balance Listesi */
-.balance-list {
-    list-style: none;
-    margin-bottom: -10px;
-    text-align: center;
-    font-size: 1.8vw; /* Ekrana göre ölçeklenen yazı boyutu */
-    padding-left: 0px;
-}
-
-.balance-list li {
-    margin-bottom: 5px;
-}
-
-#weekly-reward, #leaderboard {
-    font-size: 1.8vw; /* Ekran genişliğine bağlı boyut */
+/* Weekly Reward Pool Yazısı */
+#weekly-reward {
+    font-size: 18px; /* Yazı boyutu */
     color: #00FF00;
+    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
+    animation: neon-effect 1.5s infinite alternate; /* Neon ışık animasyonu */
+    margin-bottom: 10px;
+}
+
+/* Earned Coins Yazısı */
+#earned-coins {
+    font-size: 16px;
+    color: #00FF00;
+    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
+    animation: neon-effect 1.5s infinite alternate; /* Neon ışık animasyonu */
+    margin-top: 10px;
+}
+
+/* Top Player Prizes ve Alt Satırlar */
+#leaderboard {
+    font-size: 18px; /* Sabit yazı boyutu */
+    color: #00FF00; /* Yeşil renk */
+    text-align: center; /* Ortalanmış yazı */
+    margin-top: 15px; /* Yukarıdan boşluk */
+}
+
+#leaderboard ul li {
+    font-size: 16px; /* Alt satırlar için yazı boyutu */
+    color: #00FF00; /* Yeşil renk */
+    margin-bottom: 5px; /* Satırlar arasında boşluk */
+    text-align: center; /* Ortalanmış yazılar */
 }
 
 /* Slot Makinesi Tasarımı */
@@ -64,33 +78,56 @@ h2 {
 
 .slot {
     flex: 1;
-    margin: 0 1%; /* Dinamik boşluk */
-    height: 20vw; /* Ekrana göre ölçeklenen yükseklik */
+    margin: 0 5px; /* Sabit boşluk */
+    height: 150px; /* Sabit slot yüksekliği */
     background-color: #d6d6d6;
+    border: 4px solid #fff; /* Sabit kenarlık */
+    border-radius: 10px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    border: 0.5vw solid #fff; /* Ekrana göre ölçeklenen kenarlık */
-    border-radius: 10px;
-    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Flash Efekti */
-.flash-effect {
-    animation: flash 0.5s infinite;
-    border: 0.5vw solid #00FF00; /* Dinamik kenarlık */
+/* Kazanan Slot (Yeşil Neon Yanıp Sönme) */
+.winning-slot {
+    animation: slot-flash 1s infinite alternate; /* Yeşil yanıp sönme efekti */
+    border-color: #00FF00;
+    box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
+    background-color: rgba(0, 255, 0, 0.1); /* Hafif yeşil parlayan arka plan */
+}
+
+/* Neon Efekt Animasyonu */
+@keyframes neon-effect {
+    0% {
+        text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00;
+    }
+    100% {
+        text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00, 0 0 45px #00FF00;
+    }
+}
+
+/* Slot Animasyonu */
+@keyframes slot-flash {
+    0% {
+        border-color: #00FF00;
+        box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+    }
+    100% {
+        border-color: #FFFFFF;
+        box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
+    }
 }
 
 /* Balance ve Spin Counter Bölümü */
 #balance-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: -25px;
+    text-align: center;
+    margin: 15px 0;
 }
 
-#player-balance, #earned-coins, #spin-counter {
-    font-size: 1.8vw; /* Dinamik yazı boyutu */
+#player-balance,
+#spin-counter {
+    font-size: 16px; /* Sabit yazı boyutu */
     text-align: center;
     margin-bottom: 10px;
     color: #00FF00;
@@ -99,96 +136,62 @@ h2 {
 /* Butonlar */
 .button-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Ortalar */
     align-items: center;
-    width: 100%;
-    margin-top: 20px;
-    flex-wrap: wrap; /* Butonları sığdır */
+    flex-direction: column; /* Dikey hizalama */
+    gap: 15px; /* Butonlar arası boşluk */
+    margin-top: 20px; /* Slotların altındaki boşluk */
 }
 
-/* Sol taraftaki butonları ortalama */
-.left-buttons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-#transfer-button, #buy-coin-button, #withdraw-button {
-    width: 20vw; /* Dinamik genişlik */
-    height: 5vw; /* Dinamik yükseklik */
-    font-size: 1.5vw; /* Dinamik yazı boyutu */
+/* Tek tek butonlar */
+#transfer-button,
+#buy-coin-button,
+#withdraw-button {
+    width: 150px; /* Sabit genişlik */
+    height: 40px; /* Sabit yükseklik */
+    font-size: 14px; /* Sabit yazı boyutu */
+    border-radius: 8px;
     cursor: pointer;
-    border-radius: 10px;
+    border: none;
+    transition: all 0.3s ease;
 }
 
 .green-button {
     background-color: #32cd32;
     color: white;
-    border: none;
 }
 
 #buy-coin-button {
-    background-color: #ffcc00;
-    color: #000;
+    background-color: #FFD700;
+    color: black;
 }
 
 #withdraw-button {
-    background-color: red;
+    background-color: #FF416C;
     color: white;
-    border: none;
 }
 
-/* Sağ tarafta Spin butonunu ortalama */
-.right-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
+/* Spin Butonu */
 #spin-button {
+    width: 120px; /* Sabit genişlik */
+    height: 120px; /* Sabit yükseklik */
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    width: 25vw; /* Dinamik genişlik */
-    height: 20vw; /* Dinamik yükseklik */
     cursor: pointer;
     background-color: transparent;
     border: none;
+    margin-top: 20px; /* Buton grubunun altına boşluk */
 }
 
 /* Kazanma/Kaybetme Mesajı */
 #result-message {
     margin-top: 20px;
-    font-size: 1.8vw; /* Dinamik yazı boyutu */
+    font-size: 16px; /* Sabit yazı boyutu */
     color: #FFFF00;
     text-align: center;
 }
-
-/* Medya Sorguları - Mobil ve Tablet */
-@media (max-width: 768px) {
-    .machine {
-        width: 95%; /* Tabletlerde genişlik artar */
-    }
-
-    h2 {
-        font-size: 2.5em;
-    }
-
-    .slot {
-        height: 25vw;
-    }
-
-    #transfer-button, #buy-coin-button, #withdraw-button {
-        width: 25vw;
-        height: 6vw;
-        font-size: 1.2em;
-    }
-
-    #spin-button {
-        width: 30vw;
-        height: 25vw;
-    }
+#leaderboard {
+    list-style-type: none; /* Yeşil noktayı kaldırır */
 }
