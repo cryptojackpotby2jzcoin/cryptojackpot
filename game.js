@@ -71,7 +71,7 @@ window.onload = function () {
         let animationCompleteCount = 0;
 
         // Slot animasyonlarını başlat
-        slots.forEach(slot => slot.classList.remove('flash-effect'));
+        slots.forEach(slot => slot.classList.remove('winning-slot'));
         slots.forEach((slot, index) => {
             let totalSpins = icons.length * 8; // Her slot için toplam dönüş sayısı
             let currentSpin = 0;
@@ -111,7 +111,7 @@ window.onload = function () {
             resultMessage.textContent = `💰 Congratulations! You won ${winAmount} coins! 💰`;
             spinResults
                 .filter(result => result.icon === winIcon)
-                .forEach(result => result.element.classList.add('flash-effect')); // Flash efekt eklenir
+                .forEach(result => result.element.classList.add('winning-slot')); // Kazanan slotlara efekt eklenir
         } else {
             resultMessage.textContent = "Try again! No coins won this time.";
         }
