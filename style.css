@@ -195,3 +195,21 @@ h2 {
 #leaderboard {
     list-style-type: none; /* Yeşil noktayı kaldırır */
 }
+
+/* Mobil Optimizasyon */
+@media screen and (max-width: 768px) {
+    .machine {
+        width: 90%;
+        height: auto;
+    }
+
+    .slot {
+        height: 100px;
+    }
+
+    #transfer-button,
+    #buy-coin-button,
+    #withdraw-button {
+        width: 100%;
+    }
+}
