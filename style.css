@@ -192,6 +192,7 @@ h2 {
     color: #FFFF00;
     text-align: center;
 }
+
 #leaderboard {
     list-style-type: none; /* Yeşil noktayı kaldırır */
 }
@@ -199,17 +200,17 @@ h2 {
 /* Mobil Optimizasyon */
 @media screen and (max-width: 768px) {
     .machine {
-        width: 90%;
-        height: auto;
+        width: 90%; /* Daha esnek genişlik */
+        height: auto; /* İçerik boyuna göre ayarlanır */
     }
 
     .slot {
-        height: 100px;
+        height: 100px; /* Mobil için daha küçük slot yüksekliği */
     }
 
     #transfer-button,
     #buy-coin-button,
     #withdraw-button {
-        width: 100%;
+        width: 100%; /* Butonlar tam genişlikte */
     }
 }
