@@ -213,4 +213,9 @@ h2 {
     #withdraw-button {
         width: 100%; /* Butonlar tam genişlikte */
     }
+
+    #spin-button {
+        width: 80px; /* Küçük spin butonu */
+        height: 80px;
+    }
 }
