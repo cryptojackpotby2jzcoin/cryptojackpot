@@ -8,7 +8,7 @@ body {
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     margin: 0;
-    overflow: hidden; /* Kaydırmayı engeller */
+    overflow: hidden;
 }
 
 /* Makine Çerçevesi */
@@ -25,7 +25,7 @@ body {
     box-sizing: border-box;
 }
 
-/* Başlık (Crypto Jackpot by 2JZ Coin) */
+/* Başlık */
 h2 {
     font-size: 1.5em;
     color: #00FF00; /* Neon yeşil */
@@ -57,7 +57,7 @@ h2 {
     text-align: center;
 }
 
-/* Slot Makinesi Tasarımı */
+/* Slot Makinesi */
 .container {
     display: flex;
     justify-content: space-between;
@@ -68,8 +68,8 @@ h2 {
 .slot {
     flex: 1;
     margin: 0 5px;
-    height: 150px; /* Slot yüksekliği */
-    max-width: 150px; /* Slot genişliği */
+    height: 150px;
+    max-width: 150px;
     background-color: #d6d6d6;
     border: 4px solid #fff;
     border-radius: 10px;
@@ -175,14 +175,14 @@ h2 {
     text-align: center;
 }
 
-/* Mobil İçin Ayarlar */
+/* Mobil için Ayarlar */
 @media screen and (max-width: 768px) {
     .machine {
         width: 100%; /* Tam genişlik */
     }
 
     .slot {
-        height: 120px; /* Mobil için daha küçük boyut */
+        height: 120px; /* Mobilde slot boyutları */
         max-width: 120px;
     }
 
