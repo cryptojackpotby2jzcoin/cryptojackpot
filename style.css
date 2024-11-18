@@ -1,14 +1,17 @@
 /* Gövde (Body) */
-body {
+body, html {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
     background: black;
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
-    margin: 0;
     overflow: hidden;
+    text-align: center; /* Tüm yazıları ortalar */
 }
 
 /* Makine Çerçevesi */
@@ -48,6 +51,7 @@ h2 {
     color: #00FF00; /* Neon yeşil */
     text-align: center;
     margin-top: 15px;
+    list-style-type: none; /* Başındaki noktayı kaldırır */
 }
 
 #leaderboard ul li {
@@ -101,18 +105,23 @@ h2 {
     }
 }
 
-/* Balance ve Spin Counter Bölümü */
+/* Balance ve Spin Counter */
 #balance-section {
     text-align: center;
     margin: 15px 0;
 }
 
 #player-balance,
-#spin-counter,
+#spin-counter {
+    font-size: 0.9em;
+    color: #00FF00; /* Düz yeşil renk */
+    margin-bottom: 10px;
+}
+
 #earned-coins {
     font-size: 0.9em;
     color: #00FF00; /* Neon yeşil */
-    text-align: center;
+    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00; /* Neon efekti */
     margin-bottom: 10px;
 }
 
@@ -164,7 +173,6 @@ h2 {
     cursor: pointer;
     background-color: transparent;
     border: none;
-    margin-top: 10px;
 }
 
 /* Kazanma Mesajı */
@@ -177,13 +185,13 @@ h2 {
 
 /* Mobil için Ayarlar */
 @media screen and (max-width: 768px) {
-    .machine {
-        width: 100%; /* Tam genişlik */
+    .slot {
+        height: 120px; /* Mobil için daha küçük boyut */
+        max-width: 120px;
     }
 
-    .slot {
-        height: 120px; /* Mobilde slot boyutları */
-        max-width: 120px;
+    h2 {
+        font-size: 1.2em;
     }
 
     #transfer-button,
@@ -198,12 +206,8 @@ h2 {
         height: 100px;
     }
 
-    h2 {
-        font-size: 1.2em; /* Daha küçük başlık */
-    }
-
     #balance-section,
     #leaderboard {
-        font-size: 0.9em; /* Daha küçük yazı boyutu */
+        font-size: 0.9em;
     }
 }
