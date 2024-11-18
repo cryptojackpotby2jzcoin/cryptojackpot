@@ -8,7 +8,7 @@ body {
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     margin: 0;
-    overflow: hidden; /* Kaydırmayı engelle */
+    overflow: hidden; /* Kaydırmayı engeller */
 }
 
 /* Makine Çerçevesi */
@@ -20,15 +20,15 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 600px; /* Masaüstü için genişlik */
     width: 90%; /* Mobilde esnek genişlik */
+    max-width: 600px; /* Masaüstü için maksimum genişlik */
     box-sizing: border-box;
 }
 
 /* Başlık (Crypto Jackpot by 2JZ Coin) */
 h2 {
-    font-size: 1.5em; /* Standart büyüklük */
-    color: #00FF00;
+    font-size: 1.5em;
+    color: #00FF00; /* Neon yeşil */
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
     margin-bottom: 15px;
     text-align: center;
@@ -45,7 +45,7 @@ h2 {
 /* Top Player Prizes ve Alt Satırlar */
 #leaderboard {
     font-size: 1em;
-    color: #00FF00;
+    color: #00FF00; /* Neon yeşil */
     text-align: center;
     margin-top: 15px;
 }
@@ -60,9 +60,9 @@ h2 {
 /* Slot Makinesi Tasarımı */
 .container {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .slot {
@@ -79,12 +79,12 @@ h2 {
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Kazanan Slot (Neon Yanıp Sönme Efekti) */
+/* Kazanan Slot (Yanıp Sönme) */
 .winning-slot {
-    animation: slot-flash 0.5s infinite alternate; /* Yanıp sönme efekti */
+    animation: slot-flash 0.5s infinite alternate;
     border-color: #00FF00;
     box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
-    background-color: rgba(0, 255, 0, 0.2); /* Hafif yeşil parlayan arka plan */
+    background-color: rgba(0, 255, 0, 0.2);
 }
 
 /* Slot Flash Animasyonu */
@@ -111,7 +111,7 @@ h2 {
 #spin-counter,
 #earned-coins {
     font-size: 0.9em;
-    color: #00FF00;
+    color: #00FF00; /* Neon yeşil */
     text-align: center;
     margin-bottom: 10px;
 }
@@ -121,35 +121,36 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 15px;
+    gap: 10px;
     margin-top: 20px;
 }
 
 #transfer-button,
 #buy-coin-button,
 #withdraw-button {
-    width: 150px; /* Sabit genişlik */
-    height: 40px; /* Sabit yükseklik */
+    width: 150px;
+    height: 40px;
     font-size: 0.8em;
     border-radius: 8px;
     cursor: pointer;
     border: none;
-    transition: all 0.3s ease;
+    color: white; /* Buton yazı rengi */
+    text-transform: uppercase;
 }
 
+/* Buton Renkleri */
 .green-button {
-    background-color: #32cd32;
-    color: white;
+    background-color: #32cd32; /* Yeşil */
 }
 
 #buy-coin-button {
-    background-color: #FFD700;
-    color: black;
+    background-color: #FFD700; /* Altın */
+    color: black; /* Siyah yazı */
 }
 
 #withdraw-button {
-    background-color: #FF416C;
-    color: white;
+    background-color: #FF416C; /* Pembe */
+    color: white; /* Beyaz yazı */
 }
 
 /* Spin Butonu */
@@ -165,29 +166,29 @@ h2 {
     border: none;
 }
 
-/* Kazanma/Kaybetme Mesajı */
+/* Kazanma Mesajı */
 #result-message {
     margin-top: 20px;
     font-size: 1em;
-    color: #FFFF00;
+    color: #FFFF00; /* Sarı */
     text-align: center;
 }
 
-/* Mobil Uyumluluk */
+/* Mobil İçin Ayarlar */
 @media screen and (max-width: 768px) {
     .machine {
-        width: 100%; /* Mobilde tam genişlik */
+        width: 100%; /* Tam genişlik */
     }
 
     .slot {
-        height: 120px; /* Mobil için daha küçük slot yüksekliği */
+        height: 120px; /* Mobil için daha küçük boyut */
         max-width: 120px;
     }
 
     #transfer-button,
     #buy-coin-button,
     #withdraw-button {
-        width: 100%; /* Mobilde tam genişlik */
+        width: 100%; /* Tam genişlik */
         font-size: 0.8em;
     }
 
