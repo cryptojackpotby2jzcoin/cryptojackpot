@@ -164,6 +164,7 @@ h2 {
     cursor: pointer;
     background-color: transparent;
     border: none;
+    margin-top: 10px;
 }
 
 /* Kazanma Mesajı */
@@ -199,5 +200,10 @@ h2 {
 
     h2 {
         font-size: 1.2em; /* Daha küçük başlık */
+    }
+
+    #balance-section,
+    #leaderboard {
+        font-size: 0.9em; /* Daha küçük yazı boyutu */
     }
 }
