@@ -11,7 +11,7 @@ body, html {
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     overflow: hidden;
-    text-align: center; /* Tüm yazıları ortalar */
+    text-align: center;
 }
 
 /* Makine Çerçevesi */
@@ -111,13 +111,15 @@ h2 {
     margin: 15px 0;
 }
 
+/* Normal yeşil renk */
 #player-balance,
 #spin-counter {
     font-size: 0.9em;
-    color: #00FF00; /* Düz yeşil renk */
+    color: #00FF00; /* Normal yeşil */
     margin-bottom: 10px;
 }
 
+/* Efektli yeşil renk */
 #earned-coins {
     font-size: 0.9em;
     color: #00FF00; /* Neon yeşil */
@@ -136,7 +138,8 @@ h2 {
 
 #transfer-button,
 #buy-coin-button,
-#withdraw-button {
+#withdraw-button,
+#deposit-button {
     width: 150px;
     height: 40px;
     font-size: 0.8em;
@@ -145,6 +148,10 @@ h2 {
     border: none;
     color: white; /* Buton yazı rengi */
     text-transform: uppercase;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Buton Renkleri */
@@ -159,6 +166,11 @@ h2 {
 
 #withdraw-button {
     background-color: #FF416C; /* Pembe */
+    color: white; /* Beyaz yazı */
+}
+
+#deposit-button {
+    background-color: #007BFF; /* Mavi */
     color: white; /* Beyaz yazı */
 }
 
@@ -196,7 +208,8 @@ h2 {
 
     #transfer-button,
     #buy-coin-button,
-    #withdraw-button {
+    #withdraw-button,
+    #deposit-button {
         width: 100%; /* Tam genişlik */
         font-size: 0.8em;
     }
