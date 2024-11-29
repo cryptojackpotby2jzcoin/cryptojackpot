@@ -24,10 +24,10 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Elemanları yayar */
+    justify-content: space-between;
     padding: 15px;
     box-sizing: border-box;
-    position: relative; /* Butonları konumlandırmak için relative */
+    position: relative;
 }
 
 /* Başlık */
@@ -49,7 +49,7 @@ h2 {
 #leaderboard {
     font-size: 14px;
     color: #00FF00;
-    text-align: left; /* Sol hizalı */
+    text-align: left;
     margin-top: 10px;
     width: 100%;
 }
@@ -63,9 +63,9 @@ h2 {
 .container {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Slotlar arasındaki boşluk */
+    gap: 10px;
     width: 100%;
-    margin: 20px 0;
+    margin-top: 20px;
 }
 
 .slot {
@@ -83,9 +83,9 @@ h2 {
 /* Kazanan Slot (Efekt ve Animasyon) */
 .winning-slot {
     animation: slot-flash 0.5s infinite alternate;
-    border-color: #00FF00; /* Neon yeşil */
+    border-color: #00FF00;
     box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
-    background-color: rgba(0, 255, 0, 0.2); /* Yeşil parıltı */
+    background-color: rgba(0, 255, 0, 0.2);
 }
 
 /* Animasyon Tanımlaması */
@@ -93,19 +93,17 @@ h2 {
     0% {
         border-color: #00FF00;
         box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-        background-color: rgba(0, 255, 0, 0.2);
     }
     100% {
         border-color: #FFFFFF;
         box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.1);
     }
 }
 
 /* Slot Altındaki Yazılar */
 #result-message {
     font-size: 18px;
-    color: #FFFF00; /* Sarı */
+    color: #FFFF00;
     text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00;
     margin-top: 10px;
 }
@@ -119,21 +117,21 @@ h2 {
 
 #player-balance, #earned-coins, #spin-counter {
     margin: 5px 0;
-    color: #32CD32; /* Yeşil */
+    color: #32CD32;
 }
 
-/* Butonlar Konumlandırma */
+/* Butonlar */
 #deposit-button,
 #transfer-button,
 #withdraw-button,
 #spin-button {
-    position: absolute; /* Konumlandırma için gerekli */
+    position: absolute;
 }
 
 /* Sol Taraftaki Butonlar */
 #deposit-button {
-    top: 680px; /* Yukarıdan uzaklık */
-    left: 70px; /* Soldan uzaklık */
+    bottom: 140px;
+    left: 20px;
     width: 120px;
     height: 35px;
     font-size: 12px;
@@ -145,8 +143,8 @@ h2 {
 }
 
 #transfer-button {
-    top: 720px; /* Yukarıdan uzaklık */
-    left: 70px; /* Soldan uzaklık */
+    bottom: 90px;
+    left: 20px;
     width: 120px;
     height: 35px;
     font-size: 12px;
@@ -158,8 +156,8 @@ h2 {
 }
 
 #withdraw-button {
-    top: 760px; /* Yukarıdan uzaklık */
-    left: 70px; /* Soldan uzaklık */
+    bottom: 40px;
+    left: 20px;
     width: 120px;
     height: 35px;
     font-size: 12px;
@@ -170,18 +168,18 @@ h2 {
     border: none;
 }
 
-/* Spin Butonu (Sadece Logo) */
+/* Spin Butonu */
 #spin-button {
-    top: 670px; /* Yukarıdan uzaklık */
-    right: 70px; /* Sağdan uzaklık */
+    bottom: 40px;
+    right: 20px;
     width: 140px;
     height: 140px;
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    border: none; /* Çerçeve kaldırıldı */
-    background-color: transparent; /* Arka plan tamamen şeffaf */
-    box-shadow: none; /* Gölge kaldırıldı */
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
     cursor: pointer;
 }
