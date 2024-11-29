@@ -1,4 +1,4 @@
-/* Gövde (Body) */
+/* Genel Ayarlar */
 body, html {
     width: 100vw;
     height: 100vh;
@@ -10,7 +10,7 @@ body, html {
     background: black;
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
-    overflow-y: auto; /* Scroll ekler */
+    overflow-y: auto;
     text-align: center;
 }
 
@@ -113,7 +113,7 @@ h2 {
 #player-balance,
 #spin-counter {
     font-size: 0.9em;
-    color: #32CD32; /* Düz yeşil renk */
+    color: #32CD32;
     margin-bottom: 5px;
 }
 
@@ -163,7 +163,7 @@ h2 {
 }
 
 #deposit-button {
-    background-color: #007BFF; /* Mavi */
+    background-color: #007BFF;
     color: white;
 }
 
@@ -178,6 +178,15 @@ h2 {
     cursor: pointer;
     background-color: transparent;
     border: none;
+}
+
+/* Kazanma Mesajı */
+#result-message {
+    margin-top: 20px;
+    font-size: 1em;
+    color: #FFFF00;
+    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00, 0 0 30px #FFFF00;
+    text-align: center;
 }
 
 /* Mobil için Ayarlar */
@@ -195,7 +204,7 @@ h2 {
     #buy-coin-button,
     #withdraw-button,
     #deposit-button {
-        width: 90%; /* Mobilde tam genişlik */
+        width: 90%;
         font-size: 0.8em;
     }
 
@@ -208,12 +217,4 @@ h2 {
     #leaderboard {
         font-size: 0.9em;
     }
-}
-/* Kazanma Mesajı */
-#result-message {
-    margin-top: 20px;
-    font-size: 1em;
-    color: #FFFF00; /* Orijinal sarı renk */
-    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00, 0 0 30px #FFFF00; /* Neon efekti */
-    text-align: center;
 }
