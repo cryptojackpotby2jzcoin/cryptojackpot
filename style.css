@@ -11,27 +11,28 @@ body, html {
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     text-align: center;
-    overflow: hidden;
+    overflow: hidden; /* Taşmaları gizler */
 }
 
 /* Makine Çerçevesi */
 .machine {
-    width: 600px; /* Sabit genişlik */
-    height: 800px; /* Sabit yükseklik */
+    width: 480px; /* Küçültülmüş genişlik */
+    height: 640px; /* Küçültülmüş yükseklik */
     background: black;
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between; /* Elemanları yayar */
     padding: 15px;
     box-sizing: border-box;
-    position: relative; /* Konumlandırma */
+    position: relative; /* Butonları konumlandırmak için relative */
 }
 
 /* Başlık */
 h2 {
-    font-size: 24px;
+    font-size: 20px; /* Küçültülmüş font boyutu */
     color: #00FF00;
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
     margin: 0;
@@ -39,22 +40,22 @@ h2 {
 
 /* Weekly Reward Pool Yazısı */
 #weekly-reward {
-    font-size: 16px;
+    font-size: 14px; /* Küçültülmüş font boyutu */
     color: #00FF00;
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
 }
 
 /* Top Player Prizes */
 #leaderboard {
-    font-size: 14px;
+    font-size: 12px; /* Küçültülmüş font boyutu */
     color: #00FF00;
-    text-align: left;
+    text-align: left; /* Sol hizalı */
     margin-top: 10px;
     width: 100%;
 }
 
 #leaderboard ul li {
-    font-size: 14px;
+    font-size: 12px; /* Küçültülmüş font boyutu */
     color: #00FF00;
 }
 
@@ -62,16 +63,16 @@ h2 {
 .container {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Slotlar arasındaki boşluk */
+    gap: 8px; /* Slotlar arasındaki boşluk */
     width: 100%;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .slot {
-    width: 150px; /* Sabit genişlik */
-    height: 150px; /* Sabit yükseklik */
+    width: 120px; /* Küçültülmüş genişlik */
+    height: 120px; /* Küçültülmüş yükseklik */
     background-color: #d6d6d6;
-    border: 4px solid #fff;
+    border: 3px solid #fff; /* Daha ince kenarlık */
     border-radius: 10px;
     background-size: contain;
     background-repeat: no-repeat;
@@ -82,25 +83,27 @@ h2 {
 /* Kazanan Slot (Efekt ve Animasyon) */
 .winning-slot {
     animation: slot-flash 0.5s infinite alternate;
-    border-color: #00FF00;
+    border-color: #00FF00; /* Neon yeşil */
     box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
-    background-color: rgba(0, 255, 0, 0.2);
+    background-color: rgba(0, 255, 0, 0.2); /* Yeşil parıltı */
 }
 
 @keyframes slot-flash {
     0% {
         border-color: #00FF00;
         box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+        background-color: rgba(0, 255, 0, 0.2);
     }
     100% {
         border-color: #FFFFFF;
         box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
     }
 }
 
 /* Slot Altındaki Yazılar */
 #result-message {
-    font-size: 18px;
+    font-size: 14px; /* Küçültülmüş font boyutu */
     color: #FFFF00;
     text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00;
     margin-top: 10px;
@@ -109,7 +112,7 @@ h2 {
 /* Balance ve Spin Counter */
 #balance-section {
     text-align: center;
-    font-size: 14px;
+    font-size: 12px; /* Küçültülmüş font boyutu */
     margin: 10px 0;
 }
 
@@ -123,16 +126,16 @@ h2 {
 #transfer-button,
 #withdraw-button,
 #spin-button {
-    position: absolute; /* Konumlandırma */
+    position: absolute;
 }
 
 /* Sol Taraftaki Butonlar */
 #deposit-button {
-    top: 680px; /* Sabit yukarıdan konum */
-    left: 60px; /* Sabit soldan konum */
-    width: 120px;
-    height: 35px;
-    font-size: 12px;
+    top: 520px; /* Yukarıdan uzaklık */
+    left: 50px; /* Soldan uzaklık */
+    width: 100px;
+    height: 30px;
+    font-size: 10px;
     border-radius: 8px;
     text-transform: uppercase;
     background-color: #007BFF;
@@ -141,11 +144,11 @@ h2 {
 }
 
 #transfer-button {
-    top: 720px; /* Sabit yukarıdan konum */
-    left: 60px;
-    width: 120px;
-    height: 35px;
-    font-size: 12px;
+    top: 560px;
+    left: 50px;
+    width: 100px;
+    height: 30px;
+    font-size: 10px;
     border-radius: 8px;
     text-transform: uppercase;
     background-color: #32CD32;
@@ -154,11 +157,11 @@ h2 {
 }
 
 #withdraw-button {
-    top: 760px; /* Sabit yukarıdan konum */
-    left: 60px;
-    width: 120px;
-    height: 35px;
-    font-size: 12px;
+    top: 600px;
+    left: 50px;
+    width: 100px;
+    height: 30px;
+    font-size: 10px;
     border-radius: 8px;
     text-transform: uppercase;
     background-color: #FF416C;
@@ -168,10 +171,10 @@ h2 {
 
 /* Spin Butonu */
 #spin-button {
-    top: 670px; /* Sabit yukarıdan konum */
-    right: 60px; /* Sabit sağdan konum */
-    width: 140px;
-    height: 140px;
+    top: 510px;
+    right: 50px; /* Sağdan uzaklık */
+    width: 100px;
+    height: 100px;
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
     background-size: contain;
     background-repeat: no-repeat;
