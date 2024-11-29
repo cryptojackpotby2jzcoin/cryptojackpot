@@ -11,23 +11,22 @@ body, html {
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     text-align: center;
-    overflow: hidden; /* Taşmaları gizler */
+    overflow: hidden;
 }
 
 /* Makine Çerçevesi */
 .machine {
-    width: 600px;
-    height: 800px;
+    width: 600px; /* Sabit genişlik */
+    height: 800px; /* Sabit yükseklik */
     background: black;
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
     padding: 15px;
     box-sizing: border-box;
-    position: relative;
+    position: relative; /* Konumlandırma */
 }
 
 /* Başlık */
@@ -63,14 +62,14 @@ h2 {
 .container {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 10px; /* Slotlar arasındaki boşluk */
     width: 100%;
     margin-top: 20px;
 }
 
 .slot {
-    width: 150px;
-    height: 150px;
+    width: 150px; /* Sabit genişlik */
+    height: 150px; /* Sabit yükseklik */
     background-color: #d6d6d6;
     border: 4px solid #fff;
     border-radius: 10px;
@@ -88,7 +87,6 @@ h2 {
     background-color: rgba(0, 255, 0, 0.2);
 }
 
-/* Animasyon Tanımlaması */
 @keyframes slot-flash {
     0% {
         border-color: #00FF00;
@@ -125,13 +123,13 @@ h2 {
 #transfer-button,
 #withdraw-button,
 #spin-button {
-    position: absolute;
+    position: absolute; /* Konumlandırma */
 }
 
 /* Sol Taraftaki Butonlar */
 #deposit-button {
-    bottom: 140px;
-    left: 20px;
+    top: 680px; /* Sabit yukarıdan konum */
+    left: 60px; /* Sabit soldan konum */
     width: 120px;
     height: 35px;
     font-size: 12px;
@@ -143,8 +141,8 @@ h2 {
 }
 
 #transfer-button {
-    bottom: 90px;
-    left: 20px;
+    top: 720px; /* Sabit yukarıdan konum */
+    left: 60px;
     width: 120px;
     height: 35px;
     font-size: 12px;
@@ -156,8 +154,8 @@ h2 {
 }
 
 #withdraw-button {
-    bottom: 40px;
-    left: 20px;
+    top: 760px; /* Sabit yukarıdan konum */
+    left: 60px;
     width: 120px;
     height: 35px;
     font-size: 12px;
@@ -170,8 +168,8 @@ h2 {
 
 /* Spin Butonu */
 #spin-button {
-    bottom: 40px;
-    right: 20px;
+    top: 670px; /* Sabit yukarıdan konum */
+    right: 60px; /* Sabit sağdan konum */
     width: 140px;
     height: 140px;
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
