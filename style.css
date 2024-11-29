@@ -49,9 +49,20 @@ h2 {
 #leaderboard {
     font-size: 12px; /* Küçültülmüş font boyutu */
     color: #00FF00;
-    text-align: center; /* Sol hizalı */
+    text-align: center; /* Ortalı */
     margin-top: 10px;
     width: 100%;
+}
+
+/* Noktaları Kaldır */
+#leaderboard {
+    list-style-type: none; /* Noktaları tamamen kaldırır */
+}
+
+#leaderboard ul {
+    list-style: none; /* Alt listedeki noktaları da kaldırır */
+    padding: 0; /* Varsayılan padding'i kaldırır */
+    margin: 0; /* Varsayılan margin'i kaldırır */
 }
 
 #leaderboard ul li {
