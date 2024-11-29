@@ -10,64 +10,54 @@ body, html {
     background: black;
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
-    overflow-y: auto;
     text-align: center;
 }
 
-/* Makine Çerçevesi */
+/* Ana Çerçeve (Machine) */
 .machine {
     width: 600px;
     height: 800px;
-    margin: 0 auto;
-    padding: 15px;
     background: black;
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
+    justify-content: space-between; /* Elemanları dikeyde yayar */
     align-items: center;
+    padding: 20px;
     box-sizing: border-box;
 }
 
 /* Başlık */
 h2 {
-    font-size: 24px; /* Başlık font boyutu */
+    font-size: 24px;
     color: #00FF00;
-    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
-    margin-bottom: 15px;
+    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+    margin: 0;
 }
 
 /* Weekly Reward Pool Yazısı */
 #weekly-reward {
     font-size: 16px;
     color: #00FF00;
-    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
-    margin-bottom: 10px;
+    margin: 10px 0;
 }
 
 /* Top Player Prizes ve Alt Satırlar */
 #leaderboard {
-    font-size: 14px; /* Yöneticilerin metin boyutu */
-    color: #00FF00;
-    text-align: center;
-    margin-top: 15px;
-    list-style-type: none;
-}
-
-#leaderboard ul li {
     font-size: 14px;
     color: #00FF00;
-    margin-bottom: 5px;
-    text-align: center;
+    list-style-type: none;
+    margin: 10px 0;
+    padding: 0;
 }
 
 /* Slot Makinesi */
 .container {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Slotlar arasındaki boşluk */
+    gap: 10px; /* Slotlar arası boşluk */
     width: 100%;
-    margin-top: 15px;
 }
 
 .slot {
@@ -90,7 +80,6 @@ h2 {
     background-color: rgba(0, 255, 0, 0.2);
 }
 
-/* Slot Flash Animasyonu */
 @keyframes slot-flash {
     0% {
         border-color: #00FF00;
@@ -104,33 +93,26 @@ h2 {
     }
 }
 
-/* Balance ve Spin Counter */
+/* Sonuç ve Bilgi Alanları */
 #balance-section {
+    width: 100%;
     text-align: center;
-    margin: 15px 0;
+    margin: 10px 0;
 }
 
 #player-balance,
-#spin-counter {
-    font-size: 16px;
-    color: #32CD32;
-    margin-bottom: 5px;
-}
-
+#spin-counter,
 #earned-coins {
-    font-size: 16px;
-    color: #00FF00;
-    text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 30px #00FF00;
-    margin-bottom: 5px;
+    font-size: 14px;
+    margin: 5px 0;
 }
 
 /* Butonlar */
 .button-container {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between;
     gap: 10px;
-    margin-top: 20px;
+    width: 100%;
 }
 
 #transfer-button,
@@ -147,7 +129,6 @@ h2 {
     text-transform: uppercase;
 }
 
-/* Buton Renkleri */
 .green-button {
     background-color: #32cd32;
 }
@@ -159,12 +140,10 @@ h2 {
 
 #withdraw-button {
     background-color: #FF416C;
-    color: white;
 }
 
 #deposit-button {
     background-color: #007BFF;
-    color: white;
 }
 
 /* Spin Butonu */
@@ -176,45 +155,39 @@ h2 {
     background-repeat: no-repeat;
     background-position: center;
     cursor: pointer;
-    background-color: transparent;
     border: none;
+    background-color: transparent;
 }
 
 /* Kazanma Mesajı */
 #result-message {
-    margin-top: 20px;
-    font-size: 1em;
+    font-size: 16px;
     color: #FFFF00;
-    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00, 0 0 30px #FFFF00;
-    text-align: center;
+    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00;
+    margin-top: 10px;
 }
 
 /* Mobil için Ayarlar */
 @media screen and (max-width: 768px) {
-    .slot {
-        height: 120px;
-        width: 120px;
+    .machine {
+        width: 90%; /* Mobilde genişlik ekran boyutuna göre ayarlanır */
+        height: auto;
     }
 
-    h2 {
-        font-size: 1.2em;
+    .slot {
+        width: 100px;
+        height: 100px;
+    }
+
+    #spin-button {
+        width: 100px;
+        height: 100px;
     }
 
     #transfer-button,
     #buy-coin-button,
     #withdraw-button,
     #deposit-button {
-        width: 90%;
-        font-size: 0.8em;
-    }
-
-    #spin-button {
-        width: 90px;
-        height: 90px;
-    }
-
-    #balance-section,
-    #leaderboard {
-        font-size: 0.9em;
+        width: 45%; /* İki buton yan yana */
     }
 }
