@@ -81,7 +81,7 @@ h2 {
 
 .slot {
     width: 100px; /* Küçültülmüş genişlik */
-    height: 140px; /* Küçültülmüş yükseklik */
+    height: 150px; /* Küçültülmüş yükseklik */
     background-color: #d6d6d6;
     border: 3px solid #fff; /* Daha ince kenarlık */
     border-radius: 10px;
@@ -117,7 +117,7 @@ h2 {
     font-size: 14px; /* Küçültülmüş font boyutu */
     color: #FFFF00;
     text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00;
-    margin-top: 10px;
+    margin-top: -20px;
 }
 
 /* Balance ve Spin Counter */
@@ -143,7 +143,7 @@ h2 {
 /* Sol Taraftaki Butonlar */
 #deposit-button {
     top: 530px; /* Yukarıdan uzaklık */
-    left: 50px; /* Soldan uzaklık */
+    left: 60px; /* Soldan uzaklık */
     width: 110px;
     height: 30px;
     font-size: 10px;
@@ -156,7 +156,7 @@ h2 {
 
 #transfer-button {
     top: 565px;
-    left: 50px;
+    left: 60px;
     width: 110px;
     height: 30px;
     font-size: 10px;
@@ -169,7 +169,7 @@ h2 {
 
 #withdraw-button {
     top: 600px;
-    left: 50px;
+    left: 60px;
     width: 110px;
     height: 30px;
     font-size: 10px;
@@ -183,7 +183,7 @@ h2 {
 /* Spin Butonu */
 #spin-button {
     top: 530px;
-    right: 50px; /* Sağdan uzaklık */
+    right: 90px; /* Sağdan uzaklık */
     width: 140px;
     height: 110px;
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
