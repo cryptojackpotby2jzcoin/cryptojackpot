@@ -16,36 +16,33 @@ body, html {
 
 /* Makine Çerçevesi */
 .machine {
-    width: 450px; /* Küçültülmüş genişlik */
-    height: 580px; /* Yükseklik 20px azaltıldı */
+    width: 100%; /* Tam genişlik */
+    height: 100%; /* Tam yükseklik */
     background: black;
-    border-radius: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    border-radius: 0; /* Kenar yuvarlatmayı kaldır */
+    box-shadow: none; /* Gölgeyi kaldır */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Elemanları yayar */
-    padding: 10px;
+    justify-content: space-between;
+    padding: 15px;
     box-sizing: border-box;
     position: relative;
-    margin-top: -20px; /* Arka plandan yukarı taşır */
 }
 
 /* Başlık */
 h2 {
-    font-size: 22px;
+    font-size: 24px;
     color: #00FF00;
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-    margin: 0;
-    padding: 5px 0;
+    margin: 10px 0;
 }
 
 /* Weekly Reward Pool */
 #weekly-reward {
-    font-size: 14px;
+    font-size: 16px;
     color: #00FF00;
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-    margin: 5px 0;
 }
 
 /* Leaderboard */
@@ -53,7 +50,7 @@ h2 {
     font-size: 14px;
     color: #00FF00;
     text-align: center;
-    margin: 5px 0;
+    margin-bottom: 10px;
 }
 
 #leaderboard ul {
@@ -71,20 +68,21 @@ h2 {
 #wallet-info {
     font-size: 12px;
     color: #FFFF00;
-    margin: 5px 0;
+    margin-bottom: 10px;
 }
 
-/* Slot Machine */
+/* Slot Makinesi */
 .container {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     margin: 10px 0;
+    flex-grow: 1; /* Ekran içindeki yüksekliği optimize et */
 }
 
 .slot {
-    width: 100px;
-    height: 150px;
+    width: 100px; /* Sabit genişlik */
+    height: 150px; /* Sabit yükseklik */
     background-color: #d6d6d6;
     border: 3px solid #fff;
     border-radius: 10px;
@@ -159,18 +157,4 @@ h2 {
     animation: slot-flash 0.5s infinite alternate;
     border-color: #00FF00;
     box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
-    background-color: rgba(0, 255, 0, 0.2);
-}
-
-@keyframes slot-flash {
-    0% {
-        border-color: #00FF00;
-        box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-        background-color: rgba(0, 255, 0, 0.2);
-    }
-    100% {
-        border-color: #FFFFFF;
-        box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-}
+    background-color: rgba(0,
