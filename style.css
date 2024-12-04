@@ -156,9 +156,9 @@ h2 {
 
 #deposit-button {
     width: 120px;
-    height: 40px;
+    height: 20px;
     font-size: 12px;
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: #007BFF; /* Mavi */
     color: white;
     border: none;
@@ -166,9 +166,9 @@ h2 {
 
 #transfer-button {
     width: 120px;
-    height: 40px;
+    height: 20px;
     font-size: 12px;
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: #32CD32; /* Yeşil */
     color: white;
     border: none;
@@ -176,9 +176,9 @@ h2 {
 
 #withdraw-button {
     width: 120px;
-    height: 40px;
+    height: 20px;
     font-size: 12px;
-    border-radius: 8px;
+    border-radius: 5px;
     background-color: #FF416C; /* Pembe */
     color: white;
     border: none;
