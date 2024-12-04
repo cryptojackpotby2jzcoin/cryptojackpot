@@ -158,3 +158,32 @@ h2 {
     border-color: #00FF00;
     box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
     background-color: rgba(0,
+/* Genel Ayarlar */
+body, html {
+    width: 100vw;
+    height: 100vh;
+    margin: 0; /* Boşlukları sıfırla */
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Başlangıçtan hizala */
+    background: black;
+    font-family: 'Press Start 2P', monospace;
+    color: #FFFFFF;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Makine Çerçevesi */
+.machine {
+    width: 100%; /* Tam genişlik */
+    height: 100%; /* Tam yükseklik */
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Yukarı hizala */
+    padding: 10px; /* İçerik boşluğunu ayarla */
+    box-sizing: border-box;
+    position: relative;
+}
