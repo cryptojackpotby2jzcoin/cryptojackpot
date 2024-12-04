@@ -11,94 +11,155 @@ body, html {
     font-family: 'Press Start 2P', monospace;
     color: #FFFFFF;
     text-align: center;
-    overflow: hidden; /* Taşmaları gizler */
+    overflow: hidden;
 }
 
 /* Makine Çerçevesi */
 .machine {
-    width: 480px; /* Küçültülmüş genişlik */
-    height: 640px; /* Küçültülmüş yükseklik */
+    width: 480px;
+    height: 640px;
     background: black;
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Elemanları yayar */
+    justify-content: space-around;
     padding: 15px;
     box-sizing: border-box;
-    position: relative; /* Butonları konumlandırmak için relative */
+    position: relative;
 }
 
 /* Başlık */
 h2 {
-    font-size: 20px; /* Küçültülmüş font boyutu */
+    font-size: 22px;
     color: #00FF00;
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-    margin: 0;
+    margin-bottom: 10px;
 }
 
-/* Weekly Reward Pool Yazısı */
+/* Weekly Reward Pool */
 #weekly-reward {
-    font-size: 14px; /* Küçültülmüş font boyutu */
+    font-size: 14px;
     color: #00FF00;
     text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+    margin-bottom: 0px;
 }
 
-/* Top Player Prizes */
+/* Leaderboard */
 #leaderboard {
-    font-size: 12px; /* Küçültülmüş font boyutu */
+    font-size: 14px;
     color: #00FF00;
-    text-align: center; /* Ortalı */
-    margin-top: 10px;
-    width: 100%;
-}
-
-/* Noktaları Kaldır */
-#leaderboard {
-    list-style-type: none; /* Noktaları tamamen kaldırır */
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 #leaderboard ul {
-    list-style: none; /* Alt listedeki noktaları da kaldırır */
-    padding: 0; /* Varsayılan padding'i kaldırır */
-    margin: 0; /* Varsayılan margin'i kaldırır */
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 #leaderboard ul li {
-    font-size: 12px; /* Küçültülmüş font boyutu */
+    font-size: 14px;
     color: #00FF00;
 }
 
-/* Slot Makinesi */
+/* Wallet Info */
+#wallet-info {
+    font-size: 12px;
+    color: #FFFF00;
+    margin-bottom: 10px;
+}
+
+/* Slot Machine */
 .container {
     display: flex;
     justify-content: center;
-    gap: 8px; /* Slotlar arasındaki boşluk */
-    width: 100%;
-    margin-top: 15px;
+    gap: 8px;
+    margin: 10px 0;
 }
 
 .slot {
-    width: 100px; /* Küçültülmüş genişlik */
-    height: 150px; /* Küçültülmüş yükseklik */
+    width: 100px;
+    height: 150px;
     background-color: #d6d6d6;
-    border: 3px solid #fff; /* Daha ince kenarlık */
+    border: 3px solid #fff;
     border-radius: 10px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
+/* Buttons */
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.left-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+}
+
+.right-button {
+    display: flex;
+    justify-content: center;
+}
+
+#deposit-button, #transfer-button, #withdraw-button {
+    width: 110px;
+    height: 30px;
+    font-size: 10px;
+    border-radius: 8px;
+}
+
+#spin-button {
+    width: 140px;
+    height: 110px;
+    background-image: url('https://i.imgur.com/7N2Lyw9.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+/* Kazanılan Miktar Mesajı */
+#result-message {
+    font-size: 16px; /* Orta boyutlu font */
+    color: #FFFF00; /* Parlak sarı */
+    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00; /* Neon efekti */
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Bakiye, Spin ve Kazanılan Coinler */
+#player-balance, #spin-counter, #earned-coins {
+    font-size: 16px; /* Küçük ama okunabilir boyut */
+    color: #00FF00; /* Parlak yeşil */
+    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32; /* Neon efekti */
+    margin: 5px 0;
+    font-weight: normal;
+}
+
+/* Alt Bilgi Alanı */
+#balance-section {
+    text-align: center; /* Ortalı görünüm */
+    margin: 10px 0;
+}
 /* Kazanan Slot (Efekt ve Animasyon) */
 .winning-slot {
-    animation: slot-flash 0.5s infinite alternate;
+    animation: slot-flash 0.5s infinite alternate; /* Yanıp sönme efekti */
     border-color: #00FF00; /* Neon yeşil */
-    box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
-    background-color: rgba(0, 255, 0, 0.2); /* Yeşil parıltı */
+    box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00; /* Parlak neon efekti */
+    background-color: rgba(0, 255, 0, 0.2); /* Hafif yeşil parıltı */
 }
 
+/* Animasyon Tanımlaması */
 @keyframes slot-flash {
     0% {
         border-color: #00FF00;
@@ -110,88 +171,4 @@ h2 {
         box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
         background-color: rgba(255, 255, 255, 0.1);
     }
-}
-
-/* Slot Altındaki Yazılar */
-#result-message {
-    font-size: 14px; /* Küçültülmüş font boyutu */
-    color: #FFFF00;
-    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00;
-    margin-top: -20px;
-}
-
-/* Balance ve Spin Counter */
-#balance-section {
-    text-align: center;
-    font-size: 12px; /* Küçültülmüş font boyutu */
-    margin: 10px 0;
-}
-
-#player-balance, #earned-coins, #spin-counter {
-    margin: 5px 0;
-    color: #32CD32;
-}
-
-/* Butonlar */
-#deposit-button,
-#transfer-button,
-#withdraw-button,
-#spin-button {
-    position: absolute;
-}
-
-/* Sol Taraftaki Butonlar */
-#deposit-button {
-    top: 530px; /* Yukarıdan uzaklık */
-    left: 50px; /* Soldan uzaklık */
-    width: 110px;
-    height: 30px;
-    font-size: 10px;
-    border-radius: 8px;
-    text-transform: uppercase;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-}
-
-#transfer-button {
-    top: 565px;
-    left: 50px;
-    width: 110px;
-    height: 30px;
-    font-size: 10px;
-    border-radius: 8px;
-    text-transform: uppercase;
-    background-color: #32CD32;
-    color: white;
-    border: none;
-}
-
-#withdraw-button {
-    top: 600px;
-    left: 50px;
-    width: 110px;
-    height: 30px;
-    font-size: 10px;
-    border-radius: 8px;
-    text-transform: uppercase;
-    background-color: #FF416C;
-    color: white;
-    border: none;
-}
-
-/* Spin Butonu */
-#spin-button {
-    top: 530px;
-    right: 50px; /* Sağdan uzaklık */
-    width: 140px;
-    height: 110px;
-    background-image: url('https://i.imgur.com/7N2Lyw9.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    border: none;
-    background-color: transparent;
-    box-shadow: none;
-    cursor: pointer;
 }
