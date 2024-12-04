@@ -16,8 +16,8 @@ body, html {
 
 /* Makine Çerçevesi */
 .machine {
-    width: 480px;
-    height: 640px;
+    width: 480px; /* Sabit genişlik */
+    height: 640px; /* Sabit yükseklik */
     background: black;
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
@@ -72,7 +72,7 @@ h2 {
     margin-bottom: 10px;
 }
 
-/* Slot Machine */
+/* Slot Makinesi */
 .container {
     display: flex;
     justify-content: center;
@@ -89,6 +89,55 @@ h2 {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box; /* Toplam boyut sabit */
+}
+
+/* Kazanan Slot (Efekt ve Animasyon) */
+.winning-slot {
+    animation: slot-flash 0.5s infinite alternate; /* Yanıp sönme efekti */
+    border-color: #00FF00; /* Neon yeşil */
+    box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00; /* Parlak neon efekti */
+    background-color: rgba(0, 255, 0, 0.2); /* Hafif yeşil parıltı */
+    border-width: 3px; /* Kenarlık genişliğini sabit tut */
+}
+
+/* Animasyon Tanımlaması */
+@keyframes slot-flash {
+    0% {
+        border-color: #00FF00;
+        box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+        background-color: rgba(0, 255, 0, 0.2);
+    }
+    100% {
+        border-color: #FFFFFF;
+        box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Kazanılan Miktar Mesajı */
+#result-message {
+    font-size: 16px;
+    color: #FFFF00;
+    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Bakiye, Spin ve Kazanılan Coinler */
+#player-balance, #spin-counter, #earned-coins {
+    font-size: 16px;
+    color: #00FF00;
+    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32;
+    margin: 5px 0;
+    font-weight: normal;
+}
+
+/* Alt Bilgi Alanı */
+#balance-section {
+    text-align: center;
+    margin: 10px 0;
 }
 
 /* Buttons */
@@ -127,48 +176,4 @@ h2 {
     border: none;
     background-color: transparent;
     cursor: pointer;
-}
-/* Kazanılan Miktar Mesajı */
-#result-message {
-    font-size: 16px; /* Orta boyutlu font */
-    color: #FFFF00; /* Parlak sarı */
-    text-shadow: 0 0 10px #FFFF00, 0 0 20px #FFFF00; /* Neon efekti */
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-/* Bakiye, Spin ve Kazanılan Coinler */
-#player-balance, #spin-counter, #earned-coins {
-    font-size: 16px; /* Küçük ama okunabilir boyut */
-    color: #00FF00; /* Parlak yeşil */
-    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32; /* Neon efekti */
-    margin: 5px 0;
-    font-weight: normal;
-}
-
-/* Alt Bilgi Alanı */
-#balance-section {
-    text-align: center; /* Ortalı görünüm */
-    margin: 10px 0;
-}
-/* Kazanan Slot (Efekt ve Animasyon) */
-.winning-slot {
-    animation: slot-flash 0.5s infinite alternate; /* Yanıp sönme efekti */
-    border-color: #00FF00; /* Neon yeşil */
-    box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00; /* Parlak neon efekti */
-    background-color: rgba(0, 255, 0, 0.2); /* Hafif yeşil parıltı */
-}
-
-/* Animasyon Tanımlaması */
-@keyframes slot-flash {
-    0% {
-        border-color: #00FF00;
-        box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-        background-color: rgba(0, 255, 0, 0.2);
-    }
-    100% {
-        border-color: #FFFFFF;
-        box-shadow: 0 0 20px #FFFFFF, 0 0 40px #FFFFFF;
-        background-color: rgba(255, 255, 255, 0.1);
-    }
 }
