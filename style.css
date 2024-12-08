@@ -16,7 +16,7 @@ body, html {
 
 /* Slot Makinesi */
 .machine {
-    width: 95%; /* Mobil için genişlik */
+    width: 100%; /* Mobil için genişlik */
     max-width: 480px; /* Masaüstü için maksimum genişlik */
     background: black;
     border-radius: 20px;
