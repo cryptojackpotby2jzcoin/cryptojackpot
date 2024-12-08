@@ -10,8 +10,7 @@ window.onload = function () {
 
     let playerBalance = 20; // Oyuncunun başlangıç bakiyesi
     let temporaryBalance = 0; // Kazanılan coinler
-    let spins = 0; // Yapılan toplam spin sayısı
-    const coinPrice = 0.000005775; // Coin fiyatı
+    let spins = 0; // Toplam spin sayısı
 
     const icons = [
         'https://i.imgur.com/Xpf9bil.png',
@@ -25,20 +24,21 @@ window.onload = function () {
         'https://i.imgur.com/cAkESML.png'
     ];
 
+    const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
+
     function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins`;
         spinCounterDisplay.textContent = `Spins: ${spins}`;
     }
 
     function spin() {
         if (playerBalance <= 0) {
-            resultMessage.textContent = "Insufficient coins! Deposit or transfer more coins.";
+            resultMessage.textContent = "Insufficient coins! Please deposit more.";
             return;
         }
 
         spinButton.disabled = true; // Spin butonunu geçici olarak devre dışı bırak
-        resultMessage.textContent = ""; // Mesajı temizle
         playerBalance--; // Bakiyeden 1 coin düş
         spins++; // Spin sayısını artır
 
@@ -50,7 +50,7 @@ window.onload = function () {
         slots.forEach(slot => slot.classList.remove('winning-slot'));
 
         slots.forEach((slot) => {
-            let totalSpins = icons.length * 8;
+            let totalSpins = icons.length * 8; // Animasyon uzunluğu
             let currentSpin = 0;
 
             function animateSpin() {
@@ -78,9 +78,16 @@ window.onload = function () {
     }
 
     function checkResults(spinResults, slots) {
-        const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
         const winCount = spinResults.filter(icon => icon === winIcon).length;
-        let winAmount = winCount === 1 ? 1 : winCount === 2 ? 5 : winCount === 3 ? 100 : 0;
+        let winAmount = 0;
+
+        if (winCount === 1) {
+            winAmount = 1;
+        } else if (winCount === 2) {
+            winAmount = 5;
+        } else if (winCount === 3) {
+            winAmount = 100;
+        }
 
         if (winAmount > 0) {
             temporaryBalance += winAmount;
@@ -102,20 +109,23 @@ window.onload = function () {
     // Deposit Coins Butonu
     depositButton.addEventListener("click", () => {
         const depositAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn"; // Test cüzdan adresi
-        const maxDepositAmount = 100;
         const coinCA = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
-
-        const solanaPayUrl = `solana:${depositAddress}?amount=${maxDepositAmount}&token=${coinCA}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
+        const solanaPayUrl = `solana:${depositAddress}?amount=10&token=${coinCA}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
         window.open(solanaPayUrl, "_blank");
     });
 
-    // Withdraw İşlemi
+    // Withdraw Coins Butonu
     withdrawButton.addEventListener("click", () => {
-        alert("Withdraw işlemi devreye girdi.");
-        // Withdraw işlemi burada uygulanacak
+        if (temporaryBalance > 0) {
+            alert(`You have successfully withdrawn ${temporaryBalance} coins.`);
+            temporaryBalance = 0; // Kazanılan coinleri sıfırla
+            updateBalances();
+        } else {
+            alert("No coins available to withdraw.");
+        }
     });
 
-    // Coin Transfer İşlemi
+    // Transfer Coins Butonu
     transferButton.addEventListener("click", () => {
         if (temporaryBalance > 0) {
             playerBalance += temporaryBalance;
