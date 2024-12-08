@@ -163,7 +163,7 @@ h2 {
 
 /* Spin ve Total Spin */
 #spin-info {
-    font-size: 20px;
+    font-size: 16px;
     display: flex;
     justify-content: center; /* Ortala */
     gap: 10px;
