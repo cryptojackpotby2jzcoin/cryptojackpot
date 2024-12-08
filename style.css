@@ -163,7 +163,7 @@ h2 {
 
 /* Spin ve Total Spin */
 #spin-info {
-    font-size: 10px;
+    font-size: 16px;
     display: flex;
     justify-content: center; /* Ortala */
     gap: 10px;
@@ -180,7 +180,7 @@ h2 {
 
 /* Balance ve Earned Coins */
 #balance-section {
-    font-size: 12px;
+    font-size: 16px;
     text-align: center;
     margin-bottom: 5px;
     color: #00FF00; /* Yeşil */
@@ -193,7 +193,7 @@ h2 {
 
 /* Top Player Prizes */
 #leaderboard {
-    font-size: 10px;
+    font-size: 14px;
     color: #00FF00;
     margin-bottom: 5px;
     text-align: center;
