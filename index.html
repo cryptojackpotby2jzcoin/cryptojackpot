@@ -2,12 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/@solana/web3.js/1.31.0/solanaWeb3.min.js"></script>
-    <script src="game.js" defer></script>
 </head>
 <body>
     <div class="machine">
@@ -17,22 +14,6 @@
         <!-- Weekly Reward -->
         <p id="weekly-reward">Weekly Reward Pool: 13,200,000 Coins ($74.99)</p>
 
-        <!-- Top Player Prizes -->
-        <div id="leaderboard">
-            <p>Top Player Prizes:</p>
-            <ul>
-                <li>1st:6,600,000 Coins($37.50)Spins: <span id="first-spin-count">0</span></li>
-                <li>2nd:3,960,000 Coins($22.50)Spins: <span id="second-spin-count">0</span></li>
-                <li>3rd:2,640,000 Coins($15.00)Spins: <span id="third-spin-count">0</span></li>
-            </ul>
-        </div>
-
-        <!-- Wallet Info -->
-        <div id="wallet-info">
-            <p id="wallet-address">Wallet: N/A</p>
-            <p id="total-spins">Total Spins: 0</p>
-        </div>
-
         <!-- Slot Machine -->
         <div class="container">
             <div class="slot"></div>
@@ -40,26 +21,49 @@
             <div class="slot"></div>
         </div>
 
-        <!-- Result Message -->
-        <p id="result-message"></p>
+        <!-- Sonuç Mesajı -->
+        <p id="result-message" class="visible">Try your luck!</p>
 
-        <!-- Balance Section -->
-        <div id="balance-section">
-            <p id="player-balance">Your Balance: 20 Coins ($0.0001)</p>
-            <p id="spin-counter">Spins: 0</p>
-            <p id="earned-coins">Earned Coins: 0 Coins ($0.0000)</p>
-        </div>
-
-        <!-- Buttons -->
+        <!-- Butonlar -->
         <div class="button-container">
             <div class="left-buttons">
-                <button id="deposit-button" class="yellow-button">Deposit Coins</button>
-                <button id="transfer-button" class="green-button">Transfer Coins</button>
-                <button id="withdraw-button" class="pink-button">Withdraw Coins</button>
+                <button id="deposit-button">Deposit Coins</button>
+                <button id="transfer-button">Transfer Coins</button>
+                <button id="withdraw-button">Withdraw Coins</button>
             </div>
             <div class="right-button">
                 <button id="spin-button"></button>
             </div>
+        </div>
+
+        <!-- Wallet Info -->
+        <div id="wallet-info">
+            <p id="wallet-address">Wallet: N/A</p>
+        </div>
+
+        <!-- Spin Info -->
+        <div id="spin-info">
+            <p>
+                <span id="total-spins-label">Total Spins: <span id="total-spins">0</span></span>
+                |
+                <span id="spin-counter-label">Spins: <span id="spin-counter">7</span></span>
+            </p>
+        </div>
+
+        <!-- Balance ve Earned Coins -->
+        <div id="balance-section">
+            <p>Your Balance: <span id="player-balance">20 Coins ($0.0001)</span></p>
+            <p>Earned Coins: <span id="earned-coins">0 Coins ($0.0000)</span></p>
+        </div>
+
+        <!-- Top Player Prizes -->
+        <div id="leaderboard">
+            <p>Top Player Prizes:</p>
+            <ul>
+                <li>1st: 6,600,000 Coins ($37.50) Spins: <span id="first-spin-count">0</span></li>
+                <li>2nd: 3,960,000 Coins ($22.50) Spins: <span id="second-spin-count">0</span></li>
+                <li>3rd: 2,640,000 Coins ($15.00) Spins: <span id="third-spin-count">0</span></li>
+            </ul>
         </div>
     </div>
 </body>
