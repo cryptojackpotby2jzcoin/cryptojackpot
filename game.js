@@ -1,4 +1,4 @@
-window.onload = function () {
+document.addEventListener("DOMContentLoaded", function () {
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const transferButton = document.getElementById("transfer-button");
@@ -8,10 +8,10 @@ window.onload = function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
 
-    let playerBalance = 20; // Oyuncunun başlangıç bakiyesi
-    let temporaryBalance = 0; // Kazanılan coinler
-    let spins = 0; // Yapılan toplam spin sayısı
-    const coinPrice = 0.000005775; // Coin fiyatı
+    let playerBalance = 20;
+    let temporaryBalance = 0;
+    let spins = 0;
+    const coinPrice = 0.000005775;
 
     const icons = [
         'https://i.imgur.com/Xpf9bil.png',
@@ -28,7 +28,7 @@ window.onload = function () {
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spins: ${spins}`;
+        spinCounterDisplay.textContent = spins;
     }
 
     function spin() {
@@ -37,16 +37,15 @@ window.onload = function () {
             return;
         }
 
-        spinButton.disabled = true; // Spin butonunu geçici olarak devre dışı bırak
-        resultMessage.textContent = ""; // Mesajı temizle
-        playerBalance--; // Bakiyeden 1 coin düş
-        spins++; // Spin sayısını artır
+        spinButton.disabled = true;
+        resultMessage.textContent = "";
+        playerBalance--;
+        spins++;
 
         const slots = document.querySelectorAll('.slot');
         let spinResults = [];
         let animationCompleteCount = 0;
 
-        // Animasyonu sıfırla
         slots.forEach(slot => slot.classList.remove('winning-slot'));
 
         slots.forEach((slot) => {
@@ -67,7 +66,7 @@ window.onload = function () {
 
                     if (animationCompleteCount === slots.length) {
                         checkResults(spinResults, slots);
-                        spinButton.disabled = false; // Spin butonunu tekrar aktif et
+                        spinButton.disabled = false;
                     }
                 }
             }
@@ -78,7 +77,7 @@ window.onload = function () {
     }
 
     function checkResults(spinResults, slots) {
-        const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
+        const winIcon = 'https://i.imgur.com/7N2Lyw9.png';
         const winCount = spinResults.filter(icon => icon === winIcon).length;
         let winAmount = winCount === 1 ? 1 : winCount === 2 ? 5 : winCount === 3 ? 100 : 0;
 
@@ -86,7 +85,6 @@ window.onload = function () {
             temporaryBalance += winAmount;
             resultMessage.textContent = `💰 Congratulations! You won ${winAmount} coins! 💰`;
 
-            // Kazanan slotlara animasyon ekle
             spinResults.forEach((icon, index) => {
                 if (icon === winIcon) {
                     slots[index].classList.add('winning-slot');
@@ -99,37 +97,6 @@ window.onload = function () {
         updateBalances();
     }
 
-    // Deposit Coins Butonu
-    depositButton.addEventListener("click", () => {
-        const depositAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn"; // Test cüzdan adresi
-        const maxDepositAmount = 100;
-        const coinCA = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
-
-        const solanaPayUrl = `solana:${depositAddress}?amount=${maxDepositAmount}&token=${coinCA}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
-        window.open(solanaPayUrl, "_blank");
-    });
-
-    // Withdraw İşlemi
-    withdrawButton.addEventListener("click", () => {
-        alert("Withdraw işlemi devreye girdi.");
-        // Withdraw işlemi burada uygulanacak
-    });
-
-    // Coin Transfer İşlemi
-    transferButton.addEventListener("click", () => {
-        if (temporaryBalance > 0) {
-            playerBalance += temporaryBalance;
-            temporaryBalance = 0;
-            resultMessage.textContent = "Coins transferred to your main balance!";
-            updateBalances();
-        } else {
-            resultMessage.textContent = "No coins to transfer!";
-        }
-    });
-
-    // Spin Butonu
     spinButton.addEventListener("click", spin);
-
-    // İlk bakiye güncellemesi
     updateBalances();
-};
+});
