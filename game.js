@@ -1,4 +1,4 @@
-window.onload = function () {
+document.addEventListener("DOMContentLoaded", function () {
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const transferButton = document.getElementById("transfer-button");
@@ -132,4 +132,4 @@ window.onload = function () {
 
     // İlk bakiye güncellemesi
     updateBalances();
-};
+});
