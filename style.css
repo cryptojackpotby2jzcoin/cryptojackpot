@@ -54,8 +54,8 @@ h2 {
 
 /* Slotlar */
 .slot {
-    width: 80px;
-    height: 100px;
+    width: 100px;
+    height: 150px;
     background-color: #d6d6d6;
     border: 3px solid #fff;
     border-radius: 10px;
