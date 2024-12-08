@@ -16,7 +16,7 @@ body, html {
 
 /* Slot Makinesi */
 .machine {
-    width: 100%; /* Mobil için genişlik */
+    width: 95%; /* Mobil için genişlik */
     max-width: 480px; /* Masaüstü için maksimum genişlik */
     background: black;
     border-radius: 20px;
@@ -24,13 +24,13 @@ body, html {
     display: flex;
     flex-direction: column; /* Elemanları dikey hizala */
     align-items: center; /* Ortalanmış */
-    padding: 15px;
+    padding: 10px;
     box-sizing: border-box;
 }
 
 /* Başlık */
 h2 {
-    font-size: 22px;
+    font-size: 20px;
     color: #00FF00;
     text-shadow: 0 0 8px #00FF00;
     margin-bottom: 5px;
@@ -38,7 +38,7 @@ h2 {
 
 /* Weekly Reward Pool */
 #weekly-reward {
-    font-size: 15px;
+    font-size: 12px;
     color: #00FF00;
     text-shadow: 0 0 8px #00FF00;
     margin-bottom: 10px;
@@ -48,14 +48,14 @@ h2 {
 .container {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
     margin-bottom: 5px;
 }
 
 /* Slotlar */
 .slot {
-    width: 100px;
-    height: 150px;
+    width: 80px;
+    height: 100px;
     background-color: #d6d6d6;
     border: 3px solid #fff;
     border-radius: 10px;
@@ -84,7 +84,7 @@ h2 {
 
 /* Sonuç Mesajı */
 #result-message {
-    font-size: 14px;
+    font-size: 12px;
     color: #FFFF00; /* Sarı */
     text-shadow: 0 0 8px #FFFF00;
     margin-bottom: 10px;
@@ -120,9 +120,9 @@ h2 {
 
 /* Genel Buton Ayarları */
 #deposit-button, #transfer-button, #withdraw-button {
-    width: 140px;
-    height: 30px;
-    font-size: 15px;
+    width: 120px;
+    height: 20px;
+    font-size: 12px;
     border-radius: 5px;
     border: none;
     text-align: center;
@@ -143,8 +143,8 @@ h2 {
 }
 
 #spin-button {
-    width: 160px;
-    height: 130px;
+    width: 140px;
+    height: 110px;
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
     background-size: contain;
     background-repeat: no-repeat;
@@ -163,7 +163,7 @@ h2 {
 
 /* Spin ve Total Spin */
 #spin-info {
-    font-size: 16px;
+    font-size: 10px;
     display: flex;
     justify-content: center; /* Ortala */
     gap: 10px;
@@ -180,7 +180,7 @@ h2 {
 
 /* Balance ve Earned Coins */
 #balance-section {
-    font-size: 16px;
+    font-size: 12px;
     text-align: center;
     margin-bottom: 5px;
     color: #00FF00; /* Yeşil */
@@ -193,7 +193,7 @@ h2 {
 
 /* Top Player Prizes */
 #leaderboard {
-    font-size: 12px;
+    font-size: 10px;
     color: #00FF00;
     margin-bottom: 5px;
     text-align: center;
