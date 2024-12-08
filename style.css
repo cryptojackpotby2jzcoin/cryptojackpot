@@ -38,7 +38,7 @@ h2 {
 
 /* Weekly Reward Pool */
 #weekly-reward {
-    font-size: 14px;
+    font-size: 15px;
     color: #00FF00;
     text-shadow: 0 0 8px #00FF00;
     margin-bottom: 10px;
@@ -143,8 +143,8 @@ h2 {
 }
 
 #spin-button {
-    width: 140px;
-    height: 110px;
+    width: 160px;
+    height: 130px;
     background-image: url('https://i.imgur.com/7N2Lyw9.png');
     background-size: contain;
     background-repeat: no-repeat;
@@ -163,7 +163,7 @@ h2 {
 
 /* Spin ve Total Spin */
 #spin-info {
-    font-size: 16px;
+    font-size: 20px;
     display: flex;
     justify-content: center; /* Ortala */
     gap: 10px;
@@ -193,7 +193,7 @@ h2 {
 
 /* Top Player Prizes */
 #leaderboard {
-    font-size: 14px;
+    font-size: 12px;
     color: #00FF00;
     margin-bottom: 5px;
     text-align: center;
