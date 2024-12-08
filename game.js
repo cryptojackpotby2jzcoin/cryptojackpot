@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+window.onload = function () {
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const transferButton = document.getElementById("transfer-button");
@@ -99,4 +99,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
     spinButton.addEventListener("click", spin);
     updateBalances();
-});
+};
