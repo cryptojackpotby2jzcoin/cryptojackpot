@@ -24,13 +24,13 @@ body, html {
     display: flex;
     flex-direction: column; /* Elemanları dikey hizala */
     align-items: center; /* Ortalanmış */
-    padding: 10px;
+    padding: 15px;
     box-sizing: border-box;
 }
 
 /* Başlık */
 h2 {
-    font-size: 20px;
+    font-size: 22px;
     color: #00FF00;
     text-shadow: 0 0 8px #00FF00;
     margin-bottom: 5px;
@@ -38,7 +38,7 @@ h2 {
 
 /* Weekly Reward Pool */
 #weekly-reward {
-    font-size: 12px;
+    font-size: 14px;
     color: #00FF00;
     text-shadow: 0 0 8px #00FF00;
     margin-bottom: 10px;
@@ -48,14 +48,14 @@ h2 {
 .container {
     display: flex;
     justify-content: center;
-    gap: 5px;
+    gap: 8px;
     margin-bottom: 5px;
 }
 
 /* Slotlar */
 .slot {
-    width: 80px;
-    height: 100px;
+    width: 100px;
+    height: 150px;
     background-color: #d6d6d6;
     border: 3px solid #fff;
     border-radius: 10px;
@@ -84,7 +84,7 @@ h2 {
 
 /* Sonuç Mesajı */
 #result-message {
-    font-size: 12px;
+    font-size: 14px;
     color: #FFFF00; /* Sarı */
     text-shadow: 0 0 8px #FFFF00;
     margin-bottom: 10px;
