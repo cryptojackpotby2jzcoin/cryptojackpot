@@ -1,5 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Elementleri seçiyoruz
+window.onload = function () {
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const transferButton = document.getElementById("transfer-button");
@@ -9,13 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
 
-    // Başlangıç değerleri
     let playerBalance = 20; // Oyuncunun başlangıç bakiyesi
     let temporaryBalance = 0; // Kazanılan coinler
     let spins = 0; // Yapılan toplam spin sayısı
     const coinPrice = 0.000005775; // Coin fiyatı
 
-    // Slot ikonları
     const icons = [
         'https://i.imgur.com/Xpf9bil.png',
         'https://i.imgur.com/toIiHGF.png',
@@ -28,14 +25,12 @@ document.addEventListener("DOMContentLoaded", function () {
         'https://i.imgur.com/cAkESML.png'
     ];
 
-    // Bakiye ve spin bilgilerini güncelleme
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
         spinCounterDisplay.textContent = `Spins: ${spins}`;
     }
 
-    // Spin fonksiyonu
     function spin() {
         if (playerBalance <= 0) {
             resultMessage.textContent = "Insufficient coins! Deposit or transfer more coins.";
@@ -82,7 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateBalances();
     }
 
-    // Sonuçları kontrol etme
     function checkResults(spinResults, slots) {
         const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
         const winCount = spinResults.filter(icon => icon === winIcon).length;
@@ -138,4 +132,4 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // İlk bakiye güncellemesi
     updateBalances();
-});
+};
