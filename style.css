@@ -36,14 +36,6 @@ h2 {
     margin-bottom: 5px;
 }
 
-/* Weekly Reward Pool */
-#weekly-reward {
-    font-size: 13px;
-    color: #00FF00;
-    text-shadow: 0 0 8px #00FF00;
-    margin-bottom: 10px;
-}
-
 /* Slot Makinesi Konteyneri */
 .container {
     display: flex;
@@ -106,13 +98,11 @@ h2 {
     margin-bottom: 5px;
 }
 
-/* Wallet Button */
 #wallet-button {
     background-color: #FFD700;
     font-weight: bold;
 }
 
-/* Spin Button */
 #spin-button {
     width: 160px;
     height: 130px;
@@ -123,17 +113,4 @@ h2 {
     background-color: transparent;
     border: none;
     cursor: pointer;
-}
-
-/* Diğer Butonlar */
-#deposit-button {
-    background-color: #007BFF;
-}
-
-#transfer-button {
-    background-color: #32CD32;
-}
-
-#withdraw-button {
-    background-color: #FF416C;
 }
