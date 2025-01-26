@@ -1,5 +1,14 @@
+require("dotenv").config(); // .env dosyasını yükler
 const TelegramBot = require("node-telegram-bot-api");
-const token = "8090884490:AAFe6j6fjvLzi8XPIsP2TrP1JYwHG3MVpyA";
+
+// .env dosyasından token alınır
+const token = process.env.TELEGRAM_BOT_TOKEN;
+
+if (!token) {
+    console.error("⚠️ Bot token bulunamadı. Lütfen .env dosyasını kontrol edin.");
+    process.exit(1);
+}
+
 const bot = new TelegramBot(token, { polling: true });
 
 const connectedWallets = new Map(); // Kullanıcıların bağlı cüzdanlarını saklar
