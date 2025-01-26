@@ -9,39 +9,34 @@ const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARU
 // House wallet public key (ödül havuzunun cüzdan adresi)
 const houseWalletPublicKey = new PublicKey('YOUR_HOUSE_WALLET_PUBLIC_KEY');
 
-// İlk 10 bin oyuncu kontrolü için liste (Geçici çözüm)
-let playerList = []; // Cüzdan adreslerini saklamak için liste
-const maxPlayers = 10000; // 10 bin limit
+// İlk 10 bin oyuncu kontrolü için liste
+let playerList = [];
+const maxPlayers = 10000;
 
 // Phantom Wallet bağlantısı
 const wallet = window.solana;
 
-// Cüzdan bağlama ve başlangıç bakiyesi kontrolü
-async function connectWallet() {
+// Oyuna girişte otomatik cüzdan bağlantısı
+async function initGame() {
     if (!wallet || !wallet.isPhantom) {
         alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
         return;
     }
 
     try {
+        // Cüzdan bağlantısı
         const response = await wallet.connect();
         const playerAddress = response.publicKey.toString();
 
         console.log("Cüzdan Bağlandı:", playerAddress);
 
-        // Eğer oyuncu zaten kayıtlıysa
-        if (playerList.includes(playerAddress)) {
-            alert("Cüzdanınız zaten kayıtlı. Oyuna devam edebilirsiniz!");
-            return;
-        }
-
-        // Eğer limit dolmadıysa ve oyuncu ilk kez giriş yapıyorsa
-        if (playerList.length < maxPlayers) {
+        // Oyuncu ilk kez bağlanıyorsa 20 coin ekleme işlemi
+        if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress); // Oyuncuyu listeye ekle
-            await addInitialCoins(playerAddress); // Oyuncuya 20 coin ekle
+            await addInitialCoins(playerAddress); // 20 coin ekle
             alert("Tebrikler! Oyuna 20 coin ile başladınız.");
-        } else {
-            alert("10 bin kişilik limit doldu. Oyuna devam etmek için coin satın almanız gerekiyor.");
+        } else if (!playerList.includes(playerAddress)) {
+            alert("10 bin kişilik limit dolduğu için coin yüklenmedi. 0 coinle başlıyorsunuz.");
         }
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
@@ -56,7 +51,7 @@ async function addInitialCoins(playerAddress) {
             SystemProgram.transfer({
                 fromPubkey: houseWalletPublicKey, // Ödül havuzu cüzdanı
                 toPubkey: new PublicKey(playerAddress),
-                lamports: 20 * 1e9, // 20 coin (SOL'a çevrildi)
+                lamports: 20 * 1e9, // 20 coin (SOL biriminde)
             })
         );
 
@@ -75,4 +70,4 @@ async function addInitialCoins(playerAddress) {
     }
 }
 
-export { connectWallet };
+export { initGame };
