@@ -27,6 +27,9 @@ async function initGame() {
 
         console.log("Cüzdan Bağlandı:", playerAddress);
 
+        // Cüzdan adresini ekranda göster
+        document.getElementById('walletAddress').innerText = `Cüzdan Adresiniz: ${playerAddress}`;
+
         // Oyuncu ilk kez bağlanıyorsa 20 coin ekleme yerine listeye ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress); // Oyuncuyu listeye ekle
