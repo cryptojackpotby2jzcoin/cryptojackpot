@@ -7,7 +7,7 @@ const connection = new Connection('https://api.testnet.solana.com', 'confirmed')
 const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
 
 // House wallet public key (ödül havuzu cüzdan adresi)
-const houseWalletPublicKey = new PublicKey('YOUR_HOUSE_WALLET_PUBLIC_KEY');
+const houseWalletPublicKey = new PublicKey('5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn'); // Güncel house wallet adresinizi girin
 
 // İlk 10.000 oyuncu kontrolü için liste
 let playerList = [];
@@ -16,7 +16,7 @@ const maxPlayers = 10000;
 // Phantom Wallet bağlantısı
 const wallet = window.solana;
 
-// Oyuna girişte cüzdan bağlantısı
+// Cüzdan bağlantısı ve başlangıç ödülü dağıtımı
 async function connectWallet() {
     if (!wallet || !wallet.isPhantom) {
         alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
@@ -47,7 +47,7 @@ async function addInitialCoins(playerAddress) {
             SystemProgram.transfer({
                 fromPubkey: houseWalletPublicKey,
                 toPubkey: new PublicKey(playerAddress),
-                lamports: 20 * 1e9, // 20 coin
+                lamports: 20 * 1e9, // 20 coin (Solana birimi lamports üzerinden hesaplanır)
             })
         );
 
@@ -65,4 +65,29 @@ async function addInitialCoins(playerAddress) {
     }
 }
 
-export { connectWallet };
+// Spin işlemi için ödül transferi
+async function transferSpinReward(playerAddress, rewardAmount) {
+    try {
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: houseWalletPublicKey,
+                toPubkey: new PublicKey(playerAddress),
+                lamports: rewardAmount * 1e9, // Ödül miktarı
+            })
+        );
+
+        const { blockhash } = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = houseWalletPublicKey;
+
+        const signedTransaction = await wallet.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        console.log(`${rewardAmount} coin başarıyla transfer edildi:`, signature);
+    } catch (error) {
+        console.error("Ödül transferi sırasında hata oluştu:", error);
+    }
+}
+
+export { connectWallet, transferSpinReward };
