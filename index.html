@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="blockchain.js" defer></script>
     <script src="script.js" defer></script>
+    <script src="game.js" defer></script>
 </head>
 <body>
     <div class="machine">
@@ -26,6 +27,12 @@
         <!-- Sonuç Mesajı -->
         <p id="result-message">Try your luck!</p>
 
+        <!-- Cüzdan Bağlantısı -->
+        <div id="wallet-info">
+            <button id="connect-wallet-button">Connect Wallet</button>
+            <p id="wallet-address">Wallet: N/A</p>
+        </div>
+
         <!-- Butonlar -->
         <div class="button-container">
             <div class="left-buttons">
@@ -35,13 +42,8 @@
             </div>
             <div class="right-button">
                 <!-- Spin Butonu -->
-                <button id="spin-button" onclick="handleSpin()"></button>
+                <button id="spin-button">Spin</button>
             </div>
-        </div>
-
-        <!-- Cüzdan Bilgisi -->
-        <div id="wallet-info">
-            <p id="wallet-address">Wallet: N/A</p>
         </div>
 
         <!-- Spin Bilgisi -->
