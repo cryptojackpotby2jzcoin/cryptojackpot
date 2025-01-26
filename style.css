@@ -102,6 +102,21 @@ h2 {
     margin: 5px 0;
 }
 
+/* Cüzdan Butonu */
+#connect-wallet-button {
+    background-color: #FFD700; /* Sarı */
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    width: 140px;
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    color: black;
+}
+
 /* Sol Butonlar */
 .left-buttons {
     display: flex;
