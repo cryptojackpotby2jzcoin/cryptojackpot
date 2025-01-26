@@ -1,15 +1,19 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Telegram Bot Token
+const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Telegram Bot Tokenınızı buraya ekleyin
 const bot = new TelegramBot(token, { polling: true });
 
-// Phantom Wallet bağlantısı
+const { initGame } = require('./blockchain'); // Blockchain.js'den initGame fonksiyonunu çekiyoruz
+
+// Cüzdan Bağlantısı Komutu
 bot.onText(/\/connectwallet/, async (msg) => {
     const chatId = msg.chat.id;
 
     try {
+        // Phantom Wallet bağlantısını başlat
         const wallet = window.solana;
+
         if (!wallet || !wallet.isPhantom) {
-            bot.sendMessage(chatId, "⚠️ Phantom Wallet bulunamadı. Lütfen cüzdanınızı yükleyin ve tekrar deneyin.");
+            bot.sendMessage(chatId, "Phantom Wallet bulunamadı. Lütfen cüzdanınızı yükleyin ve tekrar deneyin.");
             return;
         }
 
@@ -18,23 +22,28 @@ bot.onText(/\/connectwallet/, async (msg) => {
         bot.sendMessage(chatId, `✅ Cüzdan başarıyla bağlandı: ${walletAddress}`);
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
-        bot.sendMessage(chatId, "❌ Cüzdan bağlanamadı. Lütfen tekrar deneyin.");
+        bot.sendMessage(chatId, "⚠️ Cüzdan bağlanamadı. Lütfen tekrar deneyin.");
     }
 });
 
-// Spin Fonksiyonu
+// Spin Komutu
 bot.onText(/\/spin/, async (msg) => {
     const chatId = msg.chat.id;
 
     try {
-        // Spin işlemi çağrılıyor
+        // Oyuncunun cüzdan bağlantısını kontrol et
+        const wallet = window.solana;
+
+        if (!wallet || !wallet.isPhantom) {
+            bot.sendMessage(chatId, "Lütfen önce cüzdanınızı bağlayın. /connectwallet komutunu kullanabilirsiniz.");
+            return;
+        }
+
+        // Spin işlemini başlat
         const spinResult = await spin(); // Blockchain.js'deki spin fonksiyonunu çağır
 
-        if (spinResult.winAmount > 0) {
-            bot.sendMessage(chatId, `🎉 Spin tamamlandı! Kazandığınız miktar: ${spinResult.winAmount} Coins!`);
-        } else {
-            bot.sendMessage(chatId, "😢 Spin tamamlandı, ancak coin kazanamadınız. Tekrar deneyin!");
-        }
+        // Spin sonucu başarılı ise
+        bot.sendMessage(chatId, `🎉 Spin tamamlandı! Kazandığınız miktar: ${spinResult} Coins!`);
     } catch (error) {
         console.error("Spin işlemi başarısız oldu:", error);
         bot.sendMessage(chatId, "❌ Spin işlemi başarısız oldu. Lütfen tekrar deneyin.");
