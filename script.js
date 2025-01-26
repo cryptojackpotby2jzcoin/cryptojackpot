@@ -1,23 +1,20 @@
 window.onload = function () {
     const spinButton = document.getElementById("spin-button");
     const walletButton = document.getElementById("wallet-button");
-    const depositButton = document.getElementById("deposit-button");
-    const transferButton = document.getElementById("transfer-button");
-    const withdrawButton = document.getElementById("withdraw-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
     const walletAddressDisplay = document.getElementById("wallet-address");
 
-    let playerBalance = 0; // Oyuncunun başlangıç bakiyesi
-    const coinPrice = 0.000005775; // Coin fiyatı
-    let walletAddress = "N/A"; // Başlangıçta cüzdan adresi
+    let playerBalance = 0;
+    const coinPrice = 0.000005775;
+    let walletAddress = "N/A";
 
     const icons = [
         'https://i.imgur.com/Xpf9bil.png',
         'https://i.imgur.com/toIiHGF.png',
         'https://i.imgur.com/tuXO9tn.png',
         'https://i.imgur.com/7XZCiRx.png',
-        'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
+        'https://i.imgur.com/7N2Lyw9.png',
         'https://i.imgur.com/OazBXaj.png',
         'https://i.imgur.com/bIBTHd0.png',
         'https://i.imgur.com/PTrhXRa.png',
@@ -34,7 +31,7 @@ window.onload = function () {
             const response = await window.solana.connect();
             walletAddress = response.publicKey.toString();
             walletAddressDisplay.innerText = `Wallet: ${walletAddress}`;
-            playerBalance = 20; // İlk kez bağlanan oyuncuya 20 coin
+            playerBalance = 20;
             updateBalances();
             alert("Cüzdan başarıyla bağlandı ve 20 coin eklendi!");
         } catch (error) {
@@ -45,7 +42,7 @@ window.onload = function () {
 
     function spin() {
         if (playerBalance <= 0) {
-            resultMessage.textContent = "Yetersiz coin! Lütfen daha fazla coin yatırın veya transfer edin.";
+            resultMessage.textContent = "Yetersiz coin!";
             return;
         }
 
@@ -54,35 +51,31 @@ window.onload = function () {
             return;
         }
 
-        spinButton.disabled = true; // Spin butonunu geçici olarak devre dışı bırak
-        resultMessage.textContent = ""; // Mesajı temizle
-        playerBalance--; // Bakiyeden 1 coin düş
+        spinButton.disabled = true;
+        resultMessage.textContent = "";
+        playerBalance--;
 
         const slots = document.querySelectorAll('.slot');
         let spinResults = [];
-        slots.forEach((slot) => {
+        slots.forEach(slot => {
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
             slot.style.backgroundImage = `url(${randomIcon})`;
             spinResults.push(randomIcon);
         });
 
-        // Kazanç hesaplama
-        const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
+        const winIcon = 'https://i.imgur.com/7N2Lyw9.png';
         const winCount = spinResults.filter(icon => icon === winIcon).length;
-        let winAmount = 0;
-        if (winCount === 1) winAmount = 1;
-        else if (winCount === 2) winAmount = 5;
-        else if (winCount === 3) winAmount = 100;
+        let winAmount = winCount === 1 ? 1 : winCount === 2 ? 5 : winCount === 3 ? 100 : 0;
 
         if (winAmount > 0) {
             playerBalance += winAmount;
             resultMessage.textContent = `Tebrikler! ${winAmount} coin kazandınız!`;
         } else {
-            resultMessage.textContent = "Tekrar deneyin! Bu sefer coin kazanamadınız.";
+            resultMessage.textContent = "Kazanamadınız, tekrar deneyin!";
         }
 
         updateBalances();
-        spinButton.disabled = false; // Spin butonunu tekrar aktif et
+        spinButton.disabled = false;
     }
 
     function updateBalances() {
