@@ -1,13 +1,10 @@
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 
 // Solana testnet bağlantısı
 const connection = new Connection('https://api.testnet.solana.com', 'confirmed');
 
 // 2JZ Coin mint adresi
 const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
-
-// House wallet public key (ödül havuzunun cüzdan adresi)
-const houseWalletPublicKey = new PublicKey('YOUR_HOUSE_WALLET_PUBLIC_KEY');
 
 // İlk 10 bin oyuncu kontrolü için liste
 let playerList = [];
@@ -30,43 +27,16 @@ async function initGame() {
 
         console.log("Cüzdan Bağlandı:", playerAddress);
 
-        // Oyuncu ilk kez bağlanıyorsa 20 coin ekleme işlemi
+        // Oyuncu ilk kez bağlanıyorsa 20 coin ekleme yerine listeye ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress); // Oyuncuyu listeye ekle
-            await addInitialCoins(playerAddress); // 20 coin ekle
-            alert("Tebrikler! Oyuna 20 coin ile başladınız.");
+            alert("Tebrikler! Oyuna 0 coin ile başlıyorsunuz. Coin almak için lütfen yükleme yapın.");
         } else if (!playerList.includes(playerAddress)) {
             alert("10 bin kişilik limit dolduğu için coin yüklenmedi. 0 coinle başlıyorsunuz.");
         }
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
         alert("Cüzdan bağlanırken bir hata oluştu.");
-    }
-}
-
-// Oyuncuya başlangıç coini ekleme
-async function addInitialCoins(playerAddress) {
-    try {
-        const transaction = new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: houseWalletPublicKey, // Ödül havuzu cüzdanı
-                toPubkey: new PublicKey(playerAddress),
-                lamports: 20 * 1e9, // 20 coin (SOL biriminde)
-            })
-        );
-
-        const { blockhash } = await connection.getRecentBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = houseWalletPublicKey;
-
-        // İşlemi imzala ve gönder
-        const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
-
-        console.log("20 coin başarıyla eklendi:", signature);
-    } catch (error) {
-        console.error("20 coin eklenirken hata oluştu:", error);
     }
 }
 
