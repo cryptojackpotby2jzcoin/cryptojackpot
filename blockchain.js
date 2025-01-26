@@ -31,7 +31,10 @@ async function initGame() {
         console.log("Cüzdan Bağlandı:", playerAddress);
 
         // Cüzdan adresini ekranda göster
-        document.getElementById('wallet-address').innerText = `Wallet: ${playerAddress}`;
+        const walletAddressElement = document.getElementById('wallet-address');
+        if (walletAddressElement) {
+            walletAddressElement.innerText = `Wallet: ${playerAddress}`;
+        }
 
         // Oyuncu ilk kez bağlanıyorsa ve limit dolmadıysa 20 coin ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
@@ -70,6 +73,7 @@ async function addInitialCoins(playerAddress) {
         console.log("20 coin başarıyla eklendi:", signature);
     } catch (error) {
         console.error("20 coin eklenirken hata oluştu:", error);
+        alert("Coin yükleme işlemi başarısız oldu. Lütfen tekrar deneyin.");
     }
 }
 
