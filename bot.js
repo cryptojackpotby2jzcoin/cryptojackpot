@@ -1,4 +1,4 @@
-require("dotenv").config(); // .env dosyasını yükler
+require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 
 // .env dosyasından token alınır
@@ -20,7 +20,7 @@ function generateSolanaPayUrl(walletAddress, amount, label, message) {
     return `solana:${walletAddress}?amount=${amount}&token=${coinAddress}&label=${encodeURIComponent(label)}&message=${encodeURIComponent(message)}`;
 }
 
-// /connectwallet komutu: Kullanıcı cüzdanını bağlar
+// /connectwallet komutu
 bot.onText(/\/connectwallet/, async (msg) => {
     const chatId = msg.chat.id;
 
@@ -32,23 +32,23 @@ bot.onText(/\/connectwallet/, async (msg) => {
             "Connect your Phantom Wallet"
         );
 
-        // Kullanıcıya Solana Pay bağlantısını gönder
         bot.sendMessage(
             chatId,
             `Cüzdanınızı bağlamak için aşağıdaki bağlantıyı tıklayın:\n\n[Bağlantıyı Tıklayın](${solanaPayUrl})`,
             { parse_mode: "Markdown" }
         );
 
-        connectedWallets.set(chatId, houseWalletAddress); // Bağlantıyı simüle ederiz
-        bot.sendMessage(chatId, `✅ Cüzdan başarıyla bağlandı.`);
+        // Kullanıcının wallet adresini sakla
+        connectedWallets.set(chatId, houseWalletAddress);
+        bot.sendMessage(chatId, "✅ Cüzdan başarıyla bağlandı.");
     } catch (error) {
         console.error("Cüzdan bağlanırken hata oluştu:", error);
         bot.sendMessage(chatId, "⚠️ Cüzdan bağlanırken bir hata oluştu. Lütfen tekrar deneyin.");
     }
 });
 
-// /spin komutu: Kullanıcı spin işlemini başlatır
-bot.onText(/\/spin/, async (msg) => {
+// /spin komutu
+bot.onText(/\/spin/, (msg) => {
     const chatId = msg.chat.id;
 
     if (!connectedWallets.has(chatId)) {
@@ -56,8 +56,7 @@ bot.onText(/\/spin/, async (msg) => {
         return;
     }
 
-    // Spin sonuçlarını hesaplar
-    const spinResult = Math.floor(Math.random() * 100) + 1; // 1-100 arasında rastgele sayı
+    const spinResult = Math.floor(Math.random() * 100) + 1;
     let reward = 0;
 
     if (spinResult > 90) reward = 100;
@@ -71,7 +70,7 @@ bot.onText(/\/spin/, async (msg) => {
     }
 });
 
-// /withdraw komutu: Kullanıcı coinlerini cüzdanına çeker
+// /withdraw komutu
 bot.onText(/\/withdraw/, (msg) => {
     const chatId = msg.chat.id;
 
@@ -80,10 +79,9 @@ bot.onText(/\/withdraw/, (msg) => {
         return;
     }
 
-    // Solana Pay bağlantısı oluştur
     const withdrawUrl = generateSolanaPayUrl(
         houseWalletAddress,
-        10, // Örneğin: 10 coin çekmek için
+        10,
         "Withdraw Coins",
         "Withdraw your 2JZ coins"
     );
@@ -95,13 +93,13 @@ bot.onText(/\/withdraw/, (msg) => {
     );
 });
 
-// /deposit komutu: Kullanıcı coin yatırmak isterse
+// /deposit komutu
 bot.onText(/\/deposit/, (msg) => {
     const chatId = msg.chat.id;
 
     const depositUrl = generateSolanaPayUrl(
         houseWalletAddress,
-        100, // Örneğin: 100 coin yatırmak için
+        100,
         "Deposit Coins",
         "Deposit your 2JZ coins for gameplay"
     );
@@ -113,7 +111,7 @@ bot.onText(/\/deposit/, (msg) => {
     );
 });
 
-// Bot Hata Yönetimi
+// Hata yönetimi
 bot.on("polling_error", (error) => {
     console.error("Telegram Bot Hatası:", error);
 });
