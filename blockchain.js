@@ -1,4 +1,4 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 
 // Solana testnet bağlantısı
 const connection = new Connection('https://api.testnet.solana.com', 'confirmed');
@@ -6,14 +6,17 @@ const connection = new Connection('https://api.testnet.solana.com', 'confirmed')
 // 2JZ Coin mint adresi
 const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
 
-// İlk 10 bin oyuncu kontrolü için liste
+// House wallet public key (ödül havuzu cüzdan adresi)
+const houseWalletPublicKey = new PublicKey('YOUR_HOUSE_WALLET_PUBLIC_KEY');
+
+// İlk 10.000 oyuncu kontrolü için liste
 let playerList = [];
 const maxPlayers = 10000;
 
 // Phantom Wallet bağlantısı
 const wallet = window.solana;
 
-// Oyuna girişte otomatik cüzdan bağlantısı
+// Oyuna girişte cüzdan bağlantısı
 async function initGame() {
     if (!wallet || !wallet.isPhantom) {
         alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
@@ -28,18 +31,45 @@ async function initGame() {
         console.log("Cüzdan Bağlandı:", playerAddress);
 
         // Cüzdan adresini ekranda göster
-        document.getElementById('walletAddress').innerText = `Cüzdan Adresiniz: ${playerAddress}`;
+        document.getElementById('wallet-address').innerText = `Wallet: ${playerAddress}`;
 
-        // Oyuncu ilk kez bağlanıyorsa 20 coin ekleme yerine listeye ekle
+        // Oyuncu ilk kez bağlanıyorsa ve limit dolmadıysa 20 coin ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress); // Oyuncuyu listeye ekle
-            alert("Tebrikler! Oyuna 0 coin ile başlıyorsunuz. Coin almak için lütfen yükleme yapın.");
+            await addInitialCoins(playerAddress); // 20 coin ekle
+            alert("Tebrikler! Oyuna 20 coin ile başladınız.");
         } else if (!playerList.includes(playerAddress)) {
-            alert("10 bin kişilik limit dolduğu için coin yüklenmedi. 0 coinle başlıyorsunuz.");
+            alert("10.000 kişilik limit dolduğu için coin yüklenmedi. 0 coinle başlıyorsunuz.");
         }
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
         alert("Cüzdan bağlanırken bir hata oluştu.");
+    }
+}
+
+// Oyuncuya başlangıç coini ekleme
+async function addInitialCoins(playerAddress) {
+    try {
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: houseWalletPublicKey, // Ödül havuzu cüzdanı
+                toPubkey: new PublicKey(playerAddress),
+                lamports: 20 * 1e9, // 20 coin (SOL biriminde)
+            })
+        );
+
+        const { blockhash } = await connection.getRecentBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = houseWalletPublicKey;
+
+        // İşlemi imzala ve gönder
+        const signedTransaction = await wallet.signTransaction(transaction);
+        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        console.log("20 coin başarıyla eklendi:", signature);
+    } catch (error) {
+        console.error("20 coin eklenirken hata oluştu:", error);
     }
 }
 
