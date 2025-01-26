@@ -2,40 +2,33 @@ window.onload = async function () {
     const spinButton = document.getElementById("spin-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
-    const earnedCoinsDisplay = document.getElementById("earned-coins");
-    const spinCounterDisplay = document.getElementById("spin-counter");
+    let playerBalance = 0;
+    const coinPrice = 0.000005775;
 
-    let playerBalance = 20; // Oyuncunun başlangıç bakiyesi
-    let earnedCoins = 0; // Kazanılan coinler
-    let spinCount = 0; // Yapılan toplam spin sayısı
-    const coinPrice = 0.000005775; // Coin fiyatı
-
-    const icons = [
-        'https://i.imgur.com/Xpf9bil.png',
-        'https://i.imgur.com/toIiHGF.png',
-        'https://i.imgur.com/tuXO9tn.png',
-        'https://i.imgur.com/7XZCiRx.png',
-        'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
-        'https://i.imgur.com/OazBXaj.png',
-        'https://i.imgur.com/bIBTHd0.png',
-        'https://i.imgur.com/PTrhXRa.png',
-        'https://i.imgur.com/cAkESML.png'
-    ];
-
+    // Oyuncunun cüzdan bağlantısını kontrol et
     async function connectWallet() {
-        if (!window.solana || !window.solana.isPhantom) {
-            alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
-            return;
-        }
-
         try {
-            const response = await window.solana.connect();
+            const wallet = window.solana;
+            if (!wallet || !wallet.isPhantom) {
+                alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
+                return;
+            }
+
+            const response = await wallet.connect();
             const walletAddress = response.publicKey.toString();
             document.getElementById("wallet-address").innerText = `Wallet: ${walletAddress}`;
+            if (playerBalance === 0) {
+                playerBalance = 20; // İlk kez bağlanan oyuncuya 20 coin eklenir
+                updateBalances();
+            }
         } catch (error) {
             console.error("Cüzdan bağlantısı başarısız oldu:", error);
             alert("Cüzdan bağlanamadı. Lütfen tekrar deneyin.");
         }
+    }
+
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
     }
 
     async function spin() {
@@ -44,12 +37,24 @@ window.onload = async function () {
             return;
         }
 
-        spinButton.disabled = true; // Spin butonunu geçici olarak devre dışı bırak
-        resultMessage.textContent = ""; // Mesajı temizle
-        playerBalance--; // Bakiyeden 1 coin düş
-        spinCount++; // Spin sayısını artır
+        spinButton.disabled = true;
+        resultMessage.textContent = "";
+        playerBalance--;
 
+        // Slot animasyonu ve kazanç hesaplama
         const slots = document.querySelectorAll('.slot');
+        const icons = [
+            'https://i.imgur.com/Xpf9bil.png',
+            'https://i.imgur.com/toIiHGF.png',
+            'https://i.imgur.com/tuXO9tn.png',
+            'https://i.imgur.com/7XZCiRx.png',
+            'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
+            'https://i.imgur.com/OazBXaj.png',
+            'https://i.imgur.com/bIBTHd0.png',
+            'https://i.imgur.com/PTrhXRa.png',
+            'https://i.imgur.com/cAkESML.png'
+        ];
+
         let spinResults = [];
         slots.forEach((slot) => {
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
@@ -57,30 +62,26 @@ window.onload = async function () {
             spinResults.push(randomIcon);
         });
 
-        const winIcon = 'https://i.imgur.com/7N2Lyw9.png'; // Kazanan ikon
+        const winIcon = 'https://i.imgur.com/7N2Lyw9.png';
         const winCount = spinResults.filter(icon => icon === winIcon).length;
         let winAmount = 0;
+
         if (winCount === 1) winAmount = 1;
         else if (winCount === 2) winAmount = 5;
         else if (winCount === 3) winAmount = 100;
 
         if (winAmount > 0) {
-            earnedCoins += winAmount;
+            playerBalance += winAmount;
             resultMessage.textContent = `Tebrikler! ${winAmount} coin kazandınız!`;
         } else {
-            resultMessage.textContent = "Tekrar deneyin! Bu sefer coin kazanamadınız.";
+            resultMessage.textContent = "Bu sefer coin kazanamadınız. Şansınızı tekrar deneyin!";
         }
 
         updateBalances();
-        spinButton.disabled = false; // Spin butonunu tekrar aktif et
-    }
-
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins ($${(earnedCoins * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spins: ${spinCount}`;
+        spinButton.disabled = false;
     }
 
     spinButton.addEventListener("click", spin);
+
     updateBalances();
 };
