@@ -1,4 +1,4 @@
-window.onload = function () {
+window.onload = async function () {
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const transferButton = document.getElementById("transfer-button");
@@ -8,7 +8,7 @@ window.onload = function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
 
-    let playerBalance = 20; // Oyuncunun başlangıç bakiyesi
+    let playerBalance = 0; // Oyuncunun başlangıç bakiyesi
     let temporaryBalance = 0; // Kazanılan coinler
     let spins = 0; // Yapılan toplam spin sayısı
     const coinPrice = 0.000005775; // Coin fiyatı
@@ -25,16 +25,33 @@ window.onload = function () {
         'https://i.imgur.com/cAkESML.png'
     ];
 
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spins: ${spins}`;
+    async function connectWallet() {
+        try {
+            const response = await window.solana.connect();
+            const walletAddress = response.publicKey.toString();
+            document.getElementById("wallet-address").innerText = `Wallet: ${walletAddress}`;
+
+            // Oyuncunun başlangıç coini
+            if (playerBalance === 0) {
+                playerBalance = 20; // İlk bağlantıda 20 coin eklenir
+                updateBalances();
+            }
+        } catch (error) {
+            console.error("Cüzdan bağlantısı başarısız oldu:", error);
+            alert("Cüzdan bağlanamadı. Lütfen tekrar deneyin.");
+        }
     }
 
-    function spin() {
+    async function spin() {
         if (playerBalance <= 0) {
             resultMessage.textContent = "Insufficient coins! Deposit or transfer more coins.";
             return;
+        }
+
+        // Eğer cüzdan bağlı değilse, önce cüzdan bağla
+        const walletAddress = document.getElementById("wallet-address").innerText;
+        if (walletAddress === "Wallet: N/A") {
+            await connectWallet();
         }
 
         spinButton.disabled = true; // Spin butonunu geçici olarak devre dışı bırak
@@ -99,37 +116,12 @@ window.onload = function () {
         updateBalances();
     }
 
-    // Deposit Coins Butonu
-    depositButton.addEventListener("click", () => {
-        const depositAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn"; // Test cüzdan adresi
-        const maxDepositAmount = 100;
-        const coinCA = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
+        spinCounterDisplay.textContent = `Spins: ${spins}`;
+    }
 
-        const solanaPayUrl = `solana:${depositAddress}?amount=${maxDepositAmount}&token=${coinCA}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
-        window.open(solanaPayUrl, "_blank");
-    });
-
-    // Withdraw İşlemi
-    withdrawButton.addEventListener("click", () => {
-        alert("Withdraw işlemi devreye girdi.");
-        // Withdraw işlemi burada uygulanacak
-    });
-
-    // Coin Transfer İşlemi
-    transferButton.addEventListener("click", () => {
-        if (temporaryBalance > 0) {
-            playerBalance += temporaryBalance;
-            temporaryBalance = 0;
-            resultMessage.textContent = "Coins transferred to your main balance!";
-            updateBalances();
-        } else {
-            resultMessage.textContent = "No coins to transfer!";
-        }
-    });
-
-    // Spin Butonu
     spinButton.addEventListener("click", spin);
-
-    // İlk bakiye güncellemesi
     updateBalances();
 };
