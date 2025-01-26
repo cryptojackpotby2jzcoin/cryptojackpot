@@ -20,7 +20,7 @@ const wallet = window.solana;
 async function initGame() {
     if (!wallet || !wallet.isPhantom) {
         alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
-        return;
+        return false; // Bağlantı başarısız
     }
 
     try {
@@ -49,9 +49,12 @@ async function initGame() {
         } else if (!playerList.includes(playerAddress)) {
             alert("10.000 kişilik limit dolduğu için coin yüklenmedi. 0 coinle başlıyorsunuz.");
         }
+
+        return true; // Bağlantı başarılı
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
         alert("Cüzdan bağlanırken bir hata oluştu.");
+        return false; // Bağlantı başarısız
     }
 }
 
