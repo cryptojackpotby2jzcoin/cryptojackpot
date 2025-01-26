@@ -39,8 +39,13 @@ async function initGame() {
         // Oyuncu ilk kez bağlanıyorsa ve limit dolmadıysa 20 coin ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress); // Oyuncuyu listeye ekle
-            await addInitialCoins(playerAddress); // 20 coin ekle
-            alert("Tebrikler! Oyuna 20 coin ile başladınız.");
+            const success = await addInitialCoins(playerAddress); // 20 coin ekle
+
+            if (success) {
+                alert("Tebrikler! Oyuna 20 coin ile başladınız.");
+            } else {
+                alert("Başlangıç coini eklenirken bir sorun oluştu.");
+            }
         } else if (!playerList.includes(playerAddress)) {
             alert("10.000 kişilik limit dolduğu için coin yüklenmedi. 0 coinle başlıyorsunuz.");
         }
@@ -71,9 +76,10 @@ async function addInitialCoins(playerAddress) {
         await connection.confirmTransaction(signature, 'confirmed');
 
         console.log("20 coin başarıyla eklendi:", signature);
+        return true; // Başarılı
     } catch (error) {
         console.error("20 coin eklenirken hata oluştu:", error);
-        alert("Coin yükleme işlemi başarısız oldu. Lütfen tekrar deneyin.");
+        return false; // Başarısız
     }
 }
 
