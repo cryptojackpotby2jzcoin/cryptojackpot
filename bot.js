@@ -1,5 +1,5 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Telegram Bot Tokenınızı buraya ekleyin
+const token = '8090884490:AAFe6j6fjvLzi8XPIsP2TrP1JYwHG3MVpyA'; // Telegram Bot Tokenınızı buraya ekleyin
 const bot = new TelegramBot(token, { polling: true });
 
 const { initGame } = require('./blockchain'); // Blockchain.js'den initGame fonksiyonunu çekiyoruz
