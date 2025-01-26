@@ -8,7 +8,7 @@ window.onload = function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
 
-    let playerBalance = 20; // Oyuncunun başlangıç bakiyesi
+    let playerBalance = 0; // Oyuncunun başlangıç bakiyesi (0 coin)
     let temporaryBalance = 0; // Kazanılan coinler
     let spins = 0; // Yapılan toplam spin sayısı
     const coinPrice = 0.000005775; // Coin fiyatı
@@ -24,6 +24,19 @@ window.onload = function () {
         'https://i.imgur.com/PTrhXRa.png',
         'https://i.imgur.com/cAkESML.png'
     ];
+
+    async function handleSpin() {
+        // Oyuncunun cüzdanı bağlı değilse bağlantı işlemini başlat
+        const walletAddressElement = document.getElementById("wallet-address");
+        if (walletAddressElement.innerText === "Wallet: N/A") {
+            await initGame(); // Blockchain.js içindeki cüzdan bağlantı fonksiyonunu çağır
+            playerBalance = 20; // İlk kez bağlanan oyuncuya 20 coin ekle
+            updateBalances();
+        }
+
+        // Spin işlemini başlat
+        spin();
+    }
 
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
@@ -128,7 +141,7 @@ window.onload = function () {
     });
 
     // Spin Butonu
-    spinButton.addEventListener("click", spin);
+    spinButton.addEventListener("click", handleSpin);
 
     // İlk bakiye güncellemesi
     updateBalances();
