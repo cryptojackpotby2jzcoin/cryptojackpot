@@ -13,10 +13,10 @@
         <!-- Başlık -->
         <h2>Crypto Jackpot by 2JZ Coin</h2>
 
-        <!-- Weekly Reward -->
+        <!-- Haftalık Ödül -->
         <p id="weekly-reward">Weekly Reward Pool: 13,200,000 Coins ($74.99)</p>
 
-        <!-- Slot Machine -->
+        <!-- Slot Makinesi -->
         <div class="container">
             <div class="slot"></div>
             <div class="slot"></div>
@@ -34,17 +34,17 @@
                 <button id="withdraw-button">Withdraw Coins</button>
             </div>
             <div class="right-button">
-                <!-- Spin Button -->
-                <button id="spin-button" onclick="handleSpin()">Spin</button>
+                <!-- Spin Butonu -->
+                <button id="spin-button" onclick="handleSpin()"></button>
             </div>
         </div>
 
-        <!-- Wallet Info -->
+        <!-- Cüzdan Bilgisi -->
         <div id="wallet-info">
             <p id="wallet-address">Wallet: N/A</p>
         </div>
 
-        <!-- Spin Info -->
+        <!-- Spin Bilgisi -->
         <div id="spin-info">
             <p>
                 <span id="total-spins-label">Total Spins: <span id="total-spins">0</span></span>
@@ -52,13 +52,13 @@
             </p>
         </div>
 
-        <!-- Balance ve Earned Coins -->
+        <!-- Bakiye ve Kazanılan Coinler -->
         <div id="balance-section">
             <p><span id="player-balance">0 Coins ($0.0000)</span></p>
             <p><span id="earned-coins">0 Coins ($0.0000)</span></p>
         </div>
 
-        <!-- Top Player Prizes -->
+        <!-- En İyi Oyuncu Ödülleri -->
         <div id="leaderboard">
             <p>Top Player Prizes:</p>
             <ul>
@@ -68,19 +68,5 @@
             </ul>
         </div>
     </div>
-
-    <!-- Script -->
-    <script>
-        async function handleSpin() {
-            // Eğer cüzdan bağlı değilse, cüzdan bağlantısını başlat
-            if (document.getElementById("wallet-address").innerText === "Wallet: N/A") {
-                await initGame(); // Blockchain.js içindeki cüzdan bağlama fonksiyonunu çağır
-            }
-
-            // Cüzdan bağlandıysa spin işlemini başlat
-            // Burada spin işlevini çağırabilirsiniz
-            alert("Spin işlemi başlatıldı!");
-        }
-    </script>
 </body>
 </html>
