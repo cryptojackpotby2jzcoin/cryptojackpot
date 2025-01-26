@@ -27,7 +27,13 @@ window.onload = async function () {
 
     async function connectWallet() {
         try {
-            const response = await window.solana.connect();
+            const wallet = window.solana;
+            if (!wallet || !wallet.isPhantom) {
+                alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
+                return;
+            }
+
+            const response = await wallet.connect();
             const walletAddress = response.publicKey.toString();
             document.getElementById("wallet-address").innerText = `Wallet: ${walletAddress}`;
 
