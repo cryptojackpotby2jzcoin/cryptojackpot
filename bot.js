@@ -1,16 +1,15 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = '8090884490:AAFe6j6fjvLzi8XPIsP2TrP1JYwHG3MVpyA'; // Telegram Bot Tokenınızı buraya ekleyin
+const token = 'YOUR_TELEGRAM_BOT_TOKEN'; // Telegram Bot Token
 const bot = new TelegramBot(token, { polling: true });
 
+// Phantom Wallet bağlantısı
 bot.onText(/\/connectwallet/, async (msg) => {
     const chatId = msg.chat.id;
 
     try {
-        // Phantom Wallet bağlantısını başlat
         const wallet = window.solana;
-
         if (!wallet || !wallet.isPhantom) {
-            bot.sendMessage(chatId, "Phantom Wallet bulunamadı. Lütfen cüzdanınızı yükleyin ve tekrar deneyin.");
+            bot.sendMessage(chatId, "⚠️ Phantom Wallet bulunamadı. Lütfen cüzdanınızı yükleyin ve tekrar deneyin.");
             return;
         }
 
@@ -19,10 +18,11 @@ bot.onText(/\/connectwallet/, async (msg) => {
         bot.sendMessage(chatId, `✅ Cüzdan başarıyla bağlandı: ${walletAddress}`);
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
-        bot.sendMessage(chatId, "⚠️ Cüzdan bağlanamadı. Lütfen tekrar deneyin.");
+        bot.sendMessage(chatId, "❌ Cüzdan bağlanamadı. Lütfen tekrar deneyin.");
     }
 });
 
+// Spin Fonksiyonu
 bot.onText(/\/spin/, async (msg) => {
     const chatId = msg.chat.id;
 
@@ -30,8 +30,11 @@ bot.onText(/\/spin/, async (msg) => {
         // Spin işlemi çağrılıyor
         const spinResult = await spin(); // Blockchain.js'deki spin fonksiyonunu çağır
 
-        // Spin sonucu başarılı ise
-        bot.sendMessage(chatId, `🎉 Spin tamamlandı! Kazandığınız miktar: ${spinResult} Coins!`);
+        if (spinResult.winAmount > 0) {
+            bot.sendMessage(chatId, `🎉 Spin tamamlandı! Kazandığınız miktar: ${spinResult.winAmount} Coins!`);
+        } else {
+            bot.sendMessage(chatId, "😢 Spin tamamlandı, ancak coin kazanamadınız. Tekrar deneyin!");
+        }
     } catch (error) {
         console.error("Spin işlemi başarısız oldu:", error);
         bot.sendMessage(chatId, "❌ Spin işlemi başarısız oldu. Lütfen tekrar deneyin.");
