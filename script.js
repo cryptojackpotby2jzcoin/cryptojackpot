@@ -93,16 +93,6 @@ window.onload = function () {
         spinCounterDisplay.textContent = `Spins: ${spins}`;
     }
 
-    // Deposit Coins Butonu
-    depositButton.addEventListener("click", () => {
-        const depositAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn"; // Test cüzdan adresi
-        const maxDepositAmount = 100;
-        const coinCA = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
-
-        const solanaPayUrl = `solana:${depositAddress}?amount=${maxDepositAmount}&token=${coinCA}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
-        window.open(solanaPayUrl, "_blank");
-    });
-
     // Withdraw Coins Butonu
     withdrawButton.addEventListener("click", async () => {
         const walletAddress = document.getElementById("wallet-address").innerText.split(" ")[1];
