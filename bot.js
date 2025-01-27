@@ -11,9 +11,9 @@ if (!token) {
 
 const bot = new TelegramBot(token, { polling: true });
 
-const connectedWallets = new Map(); // Kullanıcıların bağlı cüzdanlarını saklar
-const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"; // 2JZ Coin Contract Address
-const houseWalletAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn"; // Geçici House Wallet
+const connectedWallets = new Map();
+const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
+const houseWalletAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn";
 
 // Solana Pay URL oluşturucu
 function generateSolanaPayUrl(walletAddress, amount, label, message) {
@@ -38,7 +38,6 @@ bot.onText(/\/connectwallet/, async (msg) => {
             { parse_mode: "Markdown" }
         );
 
-        // Kullanıcının wallet adresini sakla
         connectedWallets.set(chatId, houseWalletAddress);
         bot.sendMessage(chatId, "✅ Cüzdan başarıyla bağlandı.");
     } catch (error) {
