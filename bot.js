@@ -4,7 +4,7 @@ const bot = new TelegramBot(token, { polling: true });
 
 const connectedWallets = new Map(); // Kullanıcıların bağlı cüzdanlarını saklar
 const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"; // 2JZ Coin Contract Address
-const houseWalletAddress = "8090884490:AAER6UtQpy3A5ayMZ5BFJROx1tQz82QhoGc"; // Geçici House Wallet
+const houseWalletAddress = "9XXDgqz36KgCGsF4CeXjbEGpvumH5c7xDK7jUk7VPF8f"; // Geçici House Wallet
 
 // Solana Pay URL oluşturucu
 function generateSolanaPayUrl(walletAddress, amount, label, message) {
