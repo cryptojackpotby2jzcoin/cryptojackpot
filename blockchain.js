@@ -1,117 +1,116 @@
-// blockchain.js
+require("dotenv").config();
+const TelegramBot = require("node-telegram-bot-api");
 
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { createTransferInstruction, getOrCreateAssociatedTokenAccount } from '@solana/spl-token';
+// .env dosyasından token alınır
+const token = process.env.TELEGRAM_BOT_TOKEN;
 
-const connection = new Connection('https://api.testnet.solana.com', 'confirmed');
-
-const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
-const houseWalletPublicKey = new PublicKey('5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn');
-
-let playerList = [];
-const maxPlayers = 10000;
-const wallet = window.solana;
-
-async function connectWallet() {
-    if (!wallet || !wallet.isPhantom) {
-        alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
-        return false;
-    }
-
-    try {
-        const response = await wallet.connect();
-        const playerAddress = response.publicKey.toString();
-        document.getElementById("wallet-address").innerText = `Wallet: ${playerAddress}`;
-
-        if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
-            playerList.push(playerAddress);
-            await addInitialCoins(playerAddress);
-            alert("Tebrikler! Oyuna 20 coin ile başladınız.");
-        }
-        return true;
-    } catch (error) {
-        console.error("Cüzdan bağlantısı başarısız oldu:", error);
-        alert("Cüzdan bağlanırken bir hata oluştu.");
-        return false;
-    }
+if (!token) {
+    console.error("⚠️ Bot token bulunamadı. Lütfen .env dosyasını kontrol edin.");
+    process.exit(1);
 }
 
-async function addInitialCoins(playerAddress) {
-    try {
-        const playerTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            wallet,
-            tokenMintAddress,
-            new PublicKey(playerAddress)
-        );
+const bot = new TelegramBot(token, { polling: true });
 
-        const houseTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            wallet,
-            tokenMintAddress,
-            houseWalletPublicKey
-        );
+const connectedWallets = new Map();
+const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
+const houseWalletAddress = "5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn";
 
-        const transaction = new Transaction().add(
-            createTransferInstruction(
-                houseTokenAccount.address,
-                playerTokenAccount.address,
-                houseWalletPublicKey,
-                20 * 1e9
-            )
-        );
-
-        transaction.feePayer = houseWalletPublicKey;
-        const { blockhash } = await connection.getRecentBlockhash();
-        transaction.recentBlockhash = blockhash;
-
-        const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
-
-        console.log("20 coin başarıyla eklendi:", signature);
-    } catch (error) {
-        console.error("20 coin eklenirken hata oluştu:", error);
-    }
+// Solana Pay URL oluşturucu
+function generateSolanaPayUrl(walletAddress, amount, label, message) {
+    return `solana:${walletAddress}?amount=${amount}&token=${coinAddress}&label=${encodeURIComponent(label)}&message=${encodeURIComponent(message)}`;
 }
 
-async function transferSpinReward(playerAddress, rewardAmount) {
+// /connectwallet komutu
+bot.onText(/\/connectwallet/, async (msg) => {
+    const chatId = msg.chat.id;
+
     try {
-        const playerTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            wallet,
-            tokenMintAddress,
-            new PublicKey(playerAddress)
+        const solanaPayUrl = generateSolanaPayUrl(
+            houseWalletAddress,
+            0,
+            "Connect Wallet",
+            "Connect your Phantom Wallet"
         );
 
-        const houseTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            wallet,
-            tokenMintAddress,
-            houseWalletPublicKey
+        bot.sendMessage(
+            chatId,
+            `Cüzdanınızı bağlamak için aşağıdaki bağlantıyı tıklayın:\n\n[Bağlantıyı Tıklayın](${solanaPayUrl})`,
+            { parse_mode: "Markdown" }
         );
 
-        const transaction = new Transaction().add(
-            createTransferInstruction(
-                houseTokenAccount.address,
-                playerTokenAccount.address,
-                houseWalletPublicKey,
-                rewardAmount * 1e9
-            )
-        );
-
-        transaction.feePayer = houseWalletPublicKey;
-        const { blockhash } = await connection.getRecentBlockhash();
-        transaction.recentBlockhash = blockhash;
-
-        const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
-
-        console.log(`${rewardAmount} coin başarıyla transfer edildi:", signature);
+        connectedWallets.set(chatId, houseWalletAddress);
+        bot.sendMessage(chatId, "✅ Cüzdan başarıyla bağlandı.");
     } catch (error) {
-        console.error("Ödül transferi sırasında hata oluştu:", error);
+        console.error("Cüzdan bağlanırken hata oluştu:", error);
+        bot.sendMessage(chatId, "⚠️ Cüzdan bağlanırken bir hata oluştu. Lütfen tekrar deneyin.");
     }
-}
+});
 
-export { connectWallet, addInitialCoins, transferSpinReward };
+// /spin komutu
+bot.onText(/\/spin/, (msg) => {
+    const chatId = msg.chat.id;
+
+    if (!connectedWallets.has(chatId)) {
+        bot.sendMessage(chatId, "⚠️ Önce cüzdan bağlamalısınız! Lütfen /connectwallet komutunu kullanın.");
+        return;
+    }
+
+    const spinResult = Math.floor(Math.random() * 100) + 1;
+    let reward = 0;
+
+    if (spinResult > 90) reward = 100;
+    else if (spinResult > 50) reward = 5;
+    else if (spinResult > 20) reward = 1;
+
+    if (reward > 0) {
+        bot.sendMessage(chatId, `🎉 Tebrikler! ${reward} 2JZ Coin kazandınız!`);
+    } else {
+        bot.sendMessage(chatId, "Spin sonucunda maalesef ödül kazanamadınız. Tekrar deneyin!");
+    }
+});
+
+// /withdraw komutu
+bot.onText(/\/withdraw/, (msg) => {
+    const chatId = msg.chat.id;
+
+    if (!connectedWallets.has(chatId)) {
+        bot.sendMessage(chatId, "⚠️ Cüzdanınız bağlı değil! Lütfen önce /connectwallet komutunu kullanın.");
+        return;
+    }
+
+    const withdrawUrl = generateSolanaPayUrl(
+        houseWalletAddress,
+        10,
+        "Withdraw Coins",
+        "Withdraw your 2JZ coins"
+    );
+
+    bot.sendMessage(
+        chatId,
+        `Coinlerinizi çekmek için aşağıdaki bağlantıyı kullanabilirsiniz:\n\n[Bağlantıyı Tıklayın](${withdrawUrl})`,
+        { parse_mode: "Markdown" }
+    );
+});
+
+// /deposit komutu
+bot.onText(/\/deposit/, (msg) => {
+    const chatId = msg.chat.id;
+
+    const depositUrl = generateSolanaPayUrl(
+        houseWalletAddress,
+        100,
+        "Deposit Coins",
+        "Deposit your 2JZ coins for gameplay"
+    );
+
+    bot.sendMessage(
+        chatId,
+        `Coin yatırmak için aşağıdaki bağlantıyı kullanabilirsiniz:\n\n[Bağlantıyı Tıklayın](${depositUrl})`,
+        { parse_mode: "Markdown" }
+    );
+});
+
+// Hata yönetimi
+bot.on("polling_error", (error) => {
+    console.error("Telegram Bot Hatası:", error);
+});
