@@ -2,7 +2,6 @@ import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.
 
 const connection = new Connection('https://api.testnet.solana.com', 'confirmed');
 
-// Phantom Wallet bağlantısı
 const wallet = window.solana;
 
 async function connectWallet() {
