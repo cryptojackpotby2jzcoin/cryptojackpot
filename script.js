@@ -8,21 +8,23 @@ window.onload = function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
+    const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
 
-    let playerBalance = 0; // Oyuncunun başlangıç bakiyesi
-    let spins = 0; // Yapılan toplam spin sayısı
-    const coinPrice = 0.000005775; // Coin fiyatı
+    let playerBalance = 0;
+    let temporaryBalance = 0;
+    let spins = 0;
+    const coinPrice = 0.000005775;
 
     // Wallet bağlantısı
     connectWalletButton.addEventListener("click", async () => {
         const walletConnected = await connectWallet();
         if (walletConnected) {
-            playerBalance = 20; // İlk kez bağlanan kullanıcı için 20 coin ekle
+            playerBalance = 20;
             updateBalances();
-            resultMessage.textContent = "✅ Wallet connected. You received 20 coins!";
+            resultMessage.textContent = "✅ Wallet connected. 20 coins added!";
         } else {
-            resultMessage.textContent = "⚠️ Failed to connect wallet. Try again.";
+            resultMessage.textContent = "⚠️ Wallet connection failed. Please try again.";
         }
     });
 
@@ -38,14 +40,13 @@ window.onload = function () {
         playerBalance--;
         spins++;
 
-        // Kazanan simgelerin animasyonu
         const slots = document.querySelectorAll('.slot');
         const icons = [
             'https://i.imgur.com/Xpf9bil.png',
             'https://i.imgur.com/toIiHGF.png',
             'https://i.imgur.com/tuXO9tn.png',
             'https://i.imgur.com/7XZCiRx.png',
-            'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
+            'https://i.imgur.com/7N2Lyw9.png', 
         ];
 
         let spinResults = [];
@@ -55,7 +56,6 @@ window.onload = function () {
             spinResults.push(randomIcon);
         });
 
-        // Kazanan simgeler
         const winIcon = 'https://i.imgur.com/7N2Lyw9.png';
         const winCount = spinResults.filter(icon => icon === winIcon).length;
         let winAmount = 0;
@@ -65,7 +65,7 @@ window.onload = function () {
         else if (winCount === 3) winAmount = 100;
 
         if (winAmount > 0) {
-            playerBalance += winAmount;
+            temporaryBalance += winAmount;
             resultMessage.textContent = `🎉 You won ${winAmount} coins! 🎉`;
         } else {
             resultMessage.textContent = "No luck this time. Try again!";
@@ -75,9 +75,10 @@ window.onload = function () {
         spinButton.disabled = false;
     }
 
-    // Bakiye güncellemesi
+    // Bakiye güncellemeleri
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
         spinCounterDisplay.textContent = `Total Spins: ${spins}`;
     }
 
