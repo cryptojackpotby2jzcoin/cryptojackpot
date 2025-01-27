@@ -1,90 +1,84 @@
-import { Connection, PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
-import { createTransferInstruction, getOrCreateAssociatedTokenAccount } from '@solana/spl-token';
+import { connectWallet, transferSpinReward } from './blockchain.js';
 
-// Solana testnet bağlantısı
-const connection = new Connection('https://api.testnet.solana.com', 'confirmed');
+window.onload = function () {
+    const spinButton = document.getElementById("spin-button");
+    const connectWalletButton = document.getElementById("connect-wallet-button");
+    const resultMessage = document.getElementById("result-message");
+    const playerBalanceDisplay = document.getElementById("player-balance");
+    const earnedCoinsDisplay = document.getElementById("earned-coins");
+    const spinCounterDisplay = document.getElementById("spin-counter");
 
-// 2JZ Coin mint adresi
-const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
+    let playerBalance = 0;
+    let temporaryBalance = 0;
+    let spins = 0;
 
-// House wallet public key (ödül havuzu cüzdan adresi)
-const houseWalletPublicKey = new PublicKey('YOUR_HOUSE_WALLET_PUBLIC_KEY');
+    const coinPrice = 0.000005775;
 
-// İlk 10.000 oyuncu kontrolü için liste
-let playerList = [];
-const maxPlayers = 10000;
-
-// Phantom Wallet bağlantısı
-const wallet = window.solana;
-
-// Oyuna girişte cüzdan bağlantısı
-async function connectWallet() {
-    if (!wallet || !wallet.isPhantom) {
-        alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
-        return false;
-    }
-
-    try {
-        const response = await wallet.connect();
-        const playerAddress = response.publicKey.toString();
-        document.getElementById("wallet-address").innerText = `Wallet: ${playerAddress}`;
-
-        // Oyuncuya ilk kez bağlanıyorsa 20 coin ekle
-        if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
-            playerList.push(playerAddress);
-            await addInitialCoins(playerAddress);
-            alert("Tebrikler! Oyuna 20 coin ile başladınız.");
+    // Wallet Bağlantısı
+    connectWalletButton.addEventListener("click", async () => {
+        const walletAddress = await connectWallet();
+        if (walletAddress && playerBalance === 0) {
+            playerBalance = 20; // İlk kez bağlanan kullanıcıya 20 coin
+            updateBalances();
+            resultMessage.textContent = "✅ Cüzdan bağlandı ve 20 coin yüklendi!";
         }
-        return true;
-    } catch (error) {
-        console.error("Cüzdan bağlantısı başarısız oldu:", error);
-        alert("Cüzdan bağlanırken bir hata oluştu.");
-        return false;
+    });
+
+    // Spin Mekanizması
+    async function spin() {
+        if (playerBalance <= 0) {
+            resultMessage.textContent = "Yetersiz coin! Lütfen daha fazla coin yatırın.";
+            return;
+        }
+
+        spinButton.disabled = true;
+        playerBalance--;
+        spins++;
+
+        const slots = document.querySelectorAll('.slot');
+        const icons = [
+            'https://i.imgur.com/Xpf9bil.png',
+            'https://i.imgur.com/toIiHGF.png',
+            'https://i.imgur.com/tuXO9tn.png',
+            'https://i.imgur.com/7XZCiRx.png',
+            'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
+            'https://i.imgur.com/OazBXaj.png',
+            'https://i.imgur.com/bIBTHd0.png',
+            'https://i.imgur.com/PTrhXRa.png',
+            'https://i.imgur.com/cAkESML.png'
+        ];
+
+        let spinResults = [];
+        slots.forEach((slot) => {
+            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+            slot.style.backgroundImage = `url(${randomIcon})`;
+            spinResults.push(randomIcon);
+        });
+
+        const winIcon = 'https://i.imgur.com/7N2Lyw9.png';
+        const winCount = spinResults.filter(icon => icon === winIcon).length;
+        let winAmount = 0;
+
+        if (winCount === 1) winAmount = 1;
+        else if (winCount === 2) winAmount = 5;
+        else if (winCount === 3) winAmount = 100;
+
+        if (winAmount > 0) {
+            temporaryBalance += winAmount;
+            resultMessage.textContent = `🎉 Tebrikler! ${winAmount} coin kazandınız! 🎉`;
+        } else {
+            resultMessage.textContent = "Bu sefer coin kazanamadınız. Şansınızı tekrar deneyin!";
+        }
+
+        updateBalances();
+        spinButton.disabled = false;
     }
-}
 
-// Oyuncuya başlangıç coini ekleme (SPL Token transferi)
-async function addInitialCoins(playerAddress) {
-    try {
-        // Kullanıcının token hesabını oluştur veya al
-        const playerTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            wallet, // Wallet objesi, signTransaction için kullanılacak
-            tokenMintAddress,
-            new PublicKey(playerAddress)
-        );
-
-        // House wallet token hesabını oluştur veya al
-        const houseTokenAccount = await getOrCreateAssociatedTokenAccount(
-            connection,
-            wallet,
-            tokenMintAddress,
-            houseWalletPublicKey
-        );
-
-        // Transfer işlemi için transaction oluştur
-        const transaction = new Transaction().add(
-            createTransferInstruction(
-                houseTokenAccount.address, // Kaynak (house wallet)
-                playerTokenAccount.address, // Hedef (player wallet)
-                houseWalletPublicKey, // Authority (house wallet public key)
-                20 * 1e9 // SPL token miktarı (1e9 = 1 token)
-            )
-        );
-
-        // Transaction'ı signTransaction ile imzala
-        transaction.feePayer = houseWalletPublicKey;
-        const { blockhash } = await connection.getRecentBlockhash();
-        transaction.recentBlockhash = blockhash;
-
-        const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
-
-        console.log("20 coin başarıyla eklendi:", signature);
-    } catch (error) {
-        console.error("20 coin eklenirken hata oluştu:", error);
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
+        spinCounterDisplay.textContent = `Spins: ${spins}`;
     }
-}
 
-export { connectWallet };
+    spinButton.addEventListener("click", spin);
+};
