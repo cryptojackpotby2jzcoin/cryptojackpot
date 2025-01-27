@@ -7,7 +7,7 @@ const connection = new Connection('https://api.testnet.solana.com', 'confirmed')
 const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
 
 // House wallet public key (ödül havuzu cüzdan adresi)
-const houseWalletPublicKey = new PublicKey('YOUR_HOUSE_WALLET_PUBLIC_KEY');
+const houseWalletPublicKey = new PublicKey('9XXDgqz36KgCGsF4CeXjbEGpvumH5c7xDK7jUk7VPF8f');
 
 // İlk 10.000 oyuncu kontrolü için liste
 let playerList = [];
