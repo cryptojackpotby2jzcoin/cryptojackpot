@@ -131,7 +131,8 @@ h2 {
 }
 
 #connect-wallet {
-    background-color: #turuncu;
+    background-color: #FF416C; /* Pembe */
+}
 
 #deposit-button {
     background-color: #007BFF; /* Mavi */
