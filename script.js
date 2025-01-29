@@ -1,8 +1,8 @@
 import { Connection, PublicKey } from '@solana/web3.js';
 
 const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"; 
-const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF"; 
+const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump";
+const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
 
 window.onload = function () {
     const spinButton = document.getElementById("spin-button");
@@ -25,7 +25,7 @@ window.onload = function () {
         'https://i.imgur.com/toIiHGF.png',
         'https://i.imgur.com/tuXO9tn.png',
         'https://i.imgur.com/7XZCiRx.png',
-        'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
+        'https://i.imgur.com/7N2Lyw9.png',
         'https://i.imgur.com/OazBXaj.png',
         'https://i.imgur.com/bIBTHd0.png',
         'https://i.imgur.com/PTrhXRa.png',
@@ -124,37 +124,17 @@ window.onload = function () {
         }
     }
 
-    // Solana Pay ile Bağlantı (Telegram için)
-    function generateSolanaPayUrl(walletAddress, amount, label, message) {
-        return `solana:${walletAddress}?amount=${amount}&token=${coinAddress}&label=${encodeURIComponent(label)}&message=${encodeURIComponent(message)}`;
-    }
-
-    async function connectWalletViaSolanaPay() {
-        try {
-            const solanaPayUrl = generateSolanaPayUrl(houseWalletAddress, 0, "Connect Wallet", "Connect your Phantom Wallet");
-
-            document.getElementById("wallet-address").innerHTML = `
-                Wallet: Connecting... <br>
-                <a href="${solanaPayUrl}" target="_blank">Phantom Wallet'ı Aç</a>
-            `;
-
-            console.log("🟡 Phantom Wallet açılıyor:", solanaPayUrl);
-        } catch (error) {
-            console.error("❌ Solana Pay bağlantısı başarısız oldu:", error);
-            alert("Solana Pay bağlantısı başarısız oldu.");
-        }
-    }
-
+    // Phantom Wallet varsa bağlan, yoksa Solana Pay kullan
     connectWalletButton.addEventListener("click", async () => {
         const wallet = await connectWallet();
         if (!wallet) {
-            console.log("Solana Pay ile bağlanmayı deniyoruz...");
-            await connectWalletViaSolanaPay();
+            const solanaPayUrl = `solana:${houseWalletAddress}?amount=0&token=${coinAddress}&label=Connect Wallet&message=Connect your Phantom Wallet`;
+            window.open(solanaPayUrl, "_blank");
         }
     });
 
     depositButton.addEventListener("click", () => {
-        const solanaPayUrl = generateSolanaPayUrl(houseWalletAddress, 100, "Deposit Coins", "Deposit your 2JZ coins for gameplay");
+        const solanaPayUrl = `solana:${houseWalletAddress}?amount=100&token=${coinAddress}&label=Deposit Coins&message=Deposit your 2JZ coins for gameplay`;
         window.open(solanaPayUrl, "_blank");
     });
 
@@ -177,43 +157,3 @@ window.onload = function () {
 
     updateBalances();
 };
-
-async function connectWallet() {
-    if (!window.solana) {
-        alert("Phantom Wallet bulunamadı! Lütfen yükleyin ve tekrar deneyin.");
-        return;
-    }
-
-    try {
-        const response = await window.solana.connect();
-        document.getElementById("wallet-address").innerText = `Wallet: ${response.publicKey.toString()}`;
-    } catch (error) {
-        console.error("Wallet bağlantı hatası:", error);
-    }
-}
-
-document.getElementById("connect-wallet-button").addEventListener("click", connectWallet);
-
-async function connectWallet() {
-    if (!window.solana) {
-        alert("Phantom Wallet bulunamadı! Lütfen yükleyin ve tekrar deneyin.");
-        return;
-    }
-
-    try {
-        const response = await window.solana.connect();
-        document.getElementById("wallet-address").innerText = `Wallet: ${response.publicKey.toString()}`;
-    } catch (error) {
-        console.error("Wallet bağlantı hatası:", error);
-    }
-}
-
-document.getElementById("connect-wallet-button").addEventListener("click", connectWallet);
-
-function updateBalances() {
-    document.getElementById("player-balance").textContent = `Your Balance: ${playerBalance} Coins`;
-    document.getElementById("earned-coins").textContent = `Earned Coins: ${temporaryBalance} Coins`;
-}
-
-updateBalances();
-
