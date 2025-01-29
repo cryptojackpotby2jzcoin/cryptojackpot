@@ -193,3 +193,19 @@ async function connectWallet() {
 }
 
 document.getElementById("connect-wallet-button").addEventListener("click", connectWallet);
+
+async function connectWallet() {
+    if (!window.solana) {
+        alert("Phantom Wallet bulunamadı! Lütfen yükleyin ve tekrar deneyin.");
+        return;
+    }
+
+    try {
+        const response = await window.solana.connect();
+        document.getElementById("wallet-address").innerText = `Wallet: ${response.publicKey.toString()}`;
+    } catch (error) {
+        console.error("Wallet bağlantı hatası:", error);
+    }
+}
+
+document.getElementById("connect-wallet-button").addEventListener("click", connectWallet);
