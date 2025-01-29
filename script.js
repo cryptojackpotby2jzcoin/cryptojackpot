@@ -209,3 +209,11 @@ async function connectWallet() {
 }
 
 document.getElementById("connect-wallet-button").addEventListener("click", connectWallet);
+
+function updateBalances() {
+    document.getElementById("player-balance").textContent = `Your Balance: ${playerBalance} Coins`;
+    document.getElementById("earned-coins").textContent = `Earned Coins: ${temporaryBalance} Coins`;
+}
+
+updateBalances();
+
