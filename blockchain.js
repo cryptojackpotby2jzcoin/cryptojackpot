@@ -7,7 +7,7 @@ const connection = new Connection('https://api.testnet.solana.com', 'confirmed')
 const tokenMintAddress = new PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
 
 // House wallet public key (ödül havuzu cüzdan adresi)
-const houseWalletPublicKey = new PublicKey('9XXDgqz36KgCGsF4CeXjbEGpvumH5c7xDK7jUk7VPF8f');
+const houseWalletPublicKey = new PublicKey('6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF');
 
 // İlk 10.000 oyuncu kontrolü için liste
 let playerList = [];
@@ -16,11 +16,11 @@ const maxPlayers = 10000;
 // Phantom Wallet bağlantısı
 const wallet = window.solana;
 
-// Oyuna girişte cüzdan bağlantısı
+// Cüzdan bağlantısı ve başlangıç ödülü
 async function connectWallet() {
     if (!wallet || !wallet.isPhantom) {
         alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
-        return;
+        return false;
     }
 
     try {
@@ -28,15 +28,17 @@ async function connectWallet() {
         const playerAddress = response.publicKey.toString();
         document.getElementById("wallet-address").innerText = `Wallet: ${playerAddress}`;
 
-        // Oyuncuya ilk kez bağlanıyorsa 20 coin ekle
+        // Eğer kullanıcı ilk 10,000 içindeyse 20 coin ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress);
             await addInitialCoins(playerAddress);
             alert("Tebrikler! Oyuna 20 coin ile başladınız.");
         }
+        return true;
     } catch (error) {
         console.error("Cüzdan bağlantısı başarısız oldu:", error);
         alert("Cüzdan bağlanırken bir hata oluştu.");
+        return false;
     }
 }
 
