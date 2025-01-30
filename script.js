@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
                 console.log("✅ Wallet bağlandı:", userWallet);
+                await getBalance();
             } catch (error) {
                 console.error("❌ Wallet bağlantısı başarısız oldu:", error);
                 alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
@@ -28,6 +29,13 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
         }
+    }
+
+    async function getBalance() {
+        // Kullanıcının oyun içi bakiyesini blockchain'den al
+        console.log("🔄 Bakiyeniz alınıyor...");
+        playerBalance = 100; // Örnek veri, Smart Contract'a bağlanınca değiştirilecek
+        updateBalances();
     }
 
     async function depositCoins() {
@@ -41,8 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (amount <= 0) return;
 
         console.log(`🔄 ${amount} coins depositing...`);
-        // Smart Contract'a gönder (Örnek işlem, backend'e bağlanınca aktif olacak)
+        playerBalance += amount; // Blockchain'e bağlı sistemde burada işlem yapılacak
         alert(`✅ ${amount} coin deposit edildi!`);
+        updateBalances();
     }
 
     async function spin() {
