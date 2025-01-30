@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spin: ${spins}`; // 🔥 DÜZELTİLDİ! Artık sadece "Spin" yazıyor.
+        spinCounterDisplay.textContent = `Spin: ${spins}`; // ✅ "Total Spin" değil, sadece "Spin" yazıyor.
     }
 
     function spin() {
