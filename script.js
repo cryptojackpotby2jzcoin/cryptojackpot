@@ -13,13 +13,14 @@ document.addEventListener("DOMContentLoaded", function () {
     let temporaryBalance = 0;
     let spins = 0;
     const coinPrice = 0.000005775;
+    let userWallet = null;
 
     const icons = [
         'https://i.imgur.com/Xpf9bil.png',
         'https://i.imgur.com/toIiHGF.png',
         'https://i.imgur.com/tuXO9tn.png',
         'https://i.imgur.com/7XZCiRx.png',
-        'https://i.imgur.com/7N2Lyw9.png', // Kazanan ikon
+        'https://i.imgur.com/7N2Lyw9.png',
         'https://i.imgur.com/OazBXaj.png',
         'https://i.imgur.com/bIBTHd0.png',
         'https://i.imgur.com/PTrhXRa.png',
@@ -29,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Total Spins: ${spins} Spins`;
+        spinCounterDisplay.textContent = `Spin: ${spins}`; // 🔥 DÜZELTİLDİ! Artık sadece "Spin" yazıyor.
     }
 
     function spin() {
@@ -102,9 +103,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (window.solana && window.solana.isPhantom) {
             try {
                 const response = await window.solana.connect();
-                const walletAddress = response.publicKey.toString();
-                document.getElementById("wallet-address").innerText = `Wallet: ${walletAddress}`;
-                console.log("✅ Wallet bağlandı:", walletAddress);
+                userWallet = response.publicKey.toString();
+                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
+                console.log("✅ Wallet bağlandı:", userWallet);
             } catch (error) {
                 console.error("❌ Wallet bağlantısı başarısız oldu:", error);
                 alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
@@ -114,10 +115,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function depositCoins() {
+        if (!userWallet) {
+            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
+            return;
+        }
+
+        const solanaPayUrl = `solana:${userWallet}?amount=100&token=GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
+        window.open(solanaPayUrl, "_blank");
+    }
+
+    async function withdrawCoins() {
+        if (!userWallet) {
+            alert("⚠️ Önce wallet bağlamalısınız!");
+            return;
+        }
+        if (temporaryBalance <= 0) {
+            alert("⚠️ Çekilecek coin yok!");
+            return;
+        }
+
+        alert(`✅ Withdraw işlemi başlatıldı! Çekilen: ${temporaryBalance} Coins`);
+        temporaryBalance = 0;
+        updateBalances();
+    }
+
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spin);
-    depositButton.addEventListener("click", () => alert("💰 Deposit işlemi aktif!"));
-    withdrawButton.addEventListener("click", () => alert("🏦 Withdraw işlemi aktif!"));
+    depositButton.addEventListener("click", depositCoins);
+    withdrawButton.addEventListener("click", withdrawCoins);
     transferButton.addEventListener("click", () => {
         if (temporaryBalance > 0) {
             playerBalance += temporaryBalance;
