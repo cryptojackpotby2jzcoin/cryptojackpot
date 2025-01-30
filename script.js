@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spin: ${spins}`; 
+        spinCounterDisplay.textContent = `Spin: ${spins}`;
     }
 
     function spin() {
@@ -117,8 +117,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function connectWalletViaSolanaPay() {
-        const solanaPayUrl = `solana:${userWallet}?amount=0&token=GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump&label=Crypto%20Jackpot&message=Connect%20Wallet`;
+        const solanaPayUrl = `solana:/${userWallet}?amount=0&token=GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump&label=Crypto%20Jackpot&message=Connect%20Wallet`;
         window.open(solanaPayUrl, "_blank");
+
+        // 🔥 **Bağlantı sonrası wallet adresini kontrol etmek için ekleme**
+        setTimeout(checkWalletConnected, 5000);
+    }
+
+    async function checkWalletConnected() {
+        if (window.solana && window.solana.isPhantom) {
+            const response = await window.solana.connect();
+            userWallet = response.publicKey.toString();
+            document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
+            console.log("✅ Solana Pay sonrası wallet bağlandı:", userWallet);
+        } else {
+            console.log("⚠️ Wallet hala bağlanmadı!");
+        }
     }
 
     function depositCoins() {
