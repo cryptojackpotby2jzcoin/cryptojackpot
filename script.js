@@ -12,17 +12,32 @@ document.addEventListener("DOMContentLoaded", function () {
     let playerBalance = 0;
     let temporaryBalance = 0;
     let spins = 0;
-    let isSpinning = false;
+    let isSpinning = false; // 🔥 Sürekli spin basmayı engeller
+
+    const icons = [
+        'https://i.imgur.com/Xpf9bil.png',
+        'https://i.imgur.com/toIiHGF.png',
+        'https://i.imgur.com/tuXO9tn.png',
+        'https://i.imgur.com/7XZCiRx.png',
+        'https://i.imgur.com/7N2Lyw9.png',
+        'https://i.imgur.com/OazBXaj.png',
+        'https://i.imgur.com/bIBTHd0.png',
+        'https://i.imgur.com/PTrhXRa.png',
+        'https://i.imgur.com/cAkESML.png'
+    ];
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
+                console.log("🔗 Phantom Wallet bağlanıyor...");
                 const response = await window.solana.connect();
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
+                console.log("✅ Wallet bağlandı:", userWallet);
                 await getBalance();
             } catch (error) {
-                alert("Wallet bağlantısı başarısız oldu, tekrar deneyin.");
+                console.error("❌ Wallet bağlantısı başarısız oldu:", error);
+                alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
             }
         } else {
             alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
@@ -30,13 +45,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function getBalance() {
-        playerBalance = 100; // Örnek veri
+        console.log("🔄 Bakiyeniz alınıyor...");
+        playerBalance = 100; // Örnek veri, Smart Contract'tan çekilecek
         updateBalances();
     }
 
     async function depositCoins() {
         if (!userWallet) {
-            alert("⚠️ Önce wallet bağlamalısınız!");
+            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
             return;
         }
 
@@ -44,8 +60,9 @@ document.addEventListener("DOMContentLoaded", function () {
         amount = parseInt(amount);
         if (amount <= 0) return;
 
-        alert(`✅ ${amount} coin deposit edildi!`);
+        console.log(`🔄 ${amount} coins depositing...`);
         playerBalance += amount;
+        alert(`✅ ${amount} coin deposit edildi!`);
         updateBalances();
     }
 
@@ -55,14 +72,57 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (isSpinning || playerBalance <= 0) {
+        if (isSpinning) {
+            alert("⚠️ Spin zaten devam ediyor!");
+            return;
+        }
+
+        if (playerBalance <= 0) {
+            resultMessage.textContent = "❌ Yetersiz bakiye!";
             return;
         }
 
         isSpinning = true;
+
+        console.log("🔄 Spin işlemi başlatılıyor...");
         playerBalance--;
         spins++;
         updateBalances();
+
+        const slots = document.querySelectorAll('.slot');
+        let spinResults = [];
+        let animationCompleteCount = 0;
+
+        slots.forEach(slot => {
+            slot.classList.remove('winning-slot');
+            slot.style.backgroundSize = "contain";
+            slot.style.backgroundRepeat = "no-repeat";
+        });
+
+        slots.forEach((slot) => {
+            let totalSpins = icons.length * 8;
+            let currentSpin = 0;
+
+            function animateSpin() {
+                if (currentSpin < totalSpins) {
+                    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                    slot.style.backgroundImage = `url(${randomIcon})`;
+                    currentSpin++;
+                    setTimeout(animateSpin, 50);
+                } else {
+                    const finalIcon = icons[Math.floor(Math.random() * icons.length)];
+                    slot.style.backgroundImage = `url(${finalIcon})`;
+                    spinResults.push(finalIcon);
+                    animationCompleteCount++;
+
+                    if (animationCompleteCount === slots.length) {
+                        checkResults(spinResults, slots);
+                        isSpinning = false;
+                    }
+                }
+            }
+            animateSpin();
+        });
 
         setTimeout(() => {
             let win = Math.random() < 0.2;
@@ -73,7 +133,6 @@ document.addEventListener("DOMContentLoaded", function () {
             } else {
                 resultMessage.textContent = "😢 Kaybettiniz, tekrar deneyin!";
             }
-            isSpinning = false;
             updateBalances();
         }, 2000);
     }
@@ -83,7 +142,12 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("⚠️ Önce wallet bağlamalısınız!");
             return;
         }
+        if (temporaryBalance <= 0) {
+            alert("⚠️ Çekilecek coin yok!");
+            return;
+        }
 
+        console.log(`🔄 Withdraw başlatıldı: ${temporaryBalance} coin`);
         alert(`✅ ${temporaryBalance} coin Phantom Wallet'a gönderildi!`);
         temporaryBalance = 0;
         updateBalances();
@@ -99,4 +163,6 @@ document.addEventListener("DOMContentLoaded", function () {
     spinButton.addEventListener("click", spin);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
+
+    updateBalances();
 });
