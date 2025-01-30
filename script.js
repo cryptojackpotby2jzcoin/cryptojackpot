@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let spins = 0;
     const coinPrice = 0.000005775;
     let userWallet = null;
-    const houseWallet = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF"; // House Wallet Adresi
+    const houseWallet = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF"; // House Wallet
     const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"; // 2JZ Coin CA
 
     function updateBalances() {
@@ -31,18 +31,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
                 console.log("✅ Wallet bağlandı:", userWallet);
             } catch (error) {
-                console.error("❌ Wallet bağlantısı başarısız oldu:", error);
+                console.error("❌ Phantom Wallet bağlantısı başarısız oldu:", error);
+                openSolanaPayForConnection();
             }
         } else {
-            console.log("🚀 Phantom Wallet bulunamadı, doğrudan Solana Pay ile bağlanılıyor...");
-            connectWalletViaSolanaPay();
+            console.log("🚀 Phantom Wallet bulunamadı, Solana Pay ile bağlanıyor...");
+            openSolanaPayForConnection();
         }
     }
 
-    function connectWalletViaSolanaPay() {
+    function openSolanaPayForConnection() {
         const solanaPayUrl = `solana:${houseWallet}?amount=0&token=${coinAddress}&label=Crypto%20Jackpot&message=Connect%20Wallet`;
         window.open(solanaPayUrl, "_blank");
-
         setTimeout(checkWalletConnected, 5000);
     }
 
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function depositCoins() {
         if (!userWallet) {
-            console.log("🚀 Phantom Wallet bulunamadı, doğrudan Solana Pay ile deposit yapılıyor...");
+            console.log("🚀 Phantom Wallet bulunamadı, Solana Pay ile deposit yapılıyor...");
         }
 
         const solanaPayUrl = `solana:${houseWallet}?amount=100&token=${coinAddress}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function withdrawCoins() {
         if (!userWallet) {
-            console.log("🚀 Phantom Wallet bulunamadı, doğrudan Solana Pay ile withdraw yapılıyor...");
+            console.log("🚀 Phantom Wallet bulunamadı, Solana Pay ile withdraw yapılıyor...");
         }
         if (temporaryBalance <= 0) {
             console.log("⚠️ Çekilecek coin yok!");
