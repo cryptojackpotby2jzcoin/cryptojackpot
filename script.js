@@ -12,6 +12,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let playerBalance = 0;
     let temporaryBalance = 0;
     let spins = 0;
+    let isSpinning = false; // 🔥 Yeni eklendi: Sürekli spin atılmasını engellemek için
+
     const programId = "7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"; // Smart Contract ID
 
     const icons = [
@@ -60,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (amount <= 0) return;
 
         console.log(`🔄 ${amount} coins depositing...`);
-        playerBalance += amount; // Blockchain'e bağlı sistemde burada işlem yapılacak
+        playerBalance += amount;
         alert(`✅ ${amount} coin deposit edildi!`);
         updateBalances();
     }
@@ -71,12 +73,19 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        console.log("🔄 Spin işlemi başlatılıyor...");
+        if (isSpinning) {
+            alert("⚠️ Spin zaten devam ediyor!");
+            return;
+        }
+
         if (playerBalance <= 0) {
             resultMessage.textContent = "❌ Yetersiz bakiye!";
             return;
         }
 
+        isSpinning = true; // 🔥 Sürekli spin atılmasını engellemek için
+
+        console.log("🔄 Spin işlemi başlatılıyor...");
         playerBalance--;
         spins++;
         updateBalances();
@@ -85,7 +94,11 @@ document.addEventListener("DOMContentLoaded", function () {
         let spinResults = [];
         let animationCompleteCount = 0;
 
-        slots.forEach(slot => slot.classList.remove('winning-slot'));
+        slots.forEach(slot => {
+            slot.classList.remove('winning-slot');
+            slot.style.backgroundSize = "contain"; // 🔥 İkonlar büyük olmasın diye düzeltme
+            slot.style.backgroundRepeat = "no-repeat";
+        });
 
         slots.forEach((slot) => {
             let totalSpins = icons.length * 8;
@@ -95,18 +108,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (currentSpin < totalSpins) {
                     const randomIcon = icons[Math.floor(Math.random() * icons.length)];
                     slot.style.backgroundImage = `url(${randomIcon})`;
-                    slot.style.backgroundSize = "cover";
                     currentSpin++;
                     setTimeout(animateSpin, 50);
                 } else {
                     const finalIcon = icons[Math.floor(Math.random() * icons.length)];
                     slot.style.backgroundImage = `url(${finalIcon})`;
-                    slot.style.backgroundSize = "cover";
                     spinResults.push(finalIcon);
                     animationCompleteCount++;
 
                     if (animationCompleteCount === slots.length) {
                         checkResults(spinResults, slots);
+                        isSpinning = false; // 🔥 Spin tamamlandı, tekrar spin atılabilir
                     }
                 }
             }
@@ -114,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         setTimeout(() => {
-            let win = Math.random() < 0.2; // %20 kazanma şansı
+            let win = Math.random() < 0.2;
             if (win) {
                 let winAmount = Math.floor(Math.random() * 10) + 1;
                 temporaryBalance += winAmount;
