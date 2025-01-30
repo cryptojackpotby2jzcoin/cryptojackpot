@@ -14,6 +14,18 @@ document.addEventListener("DOMContentLoaded", function () {
     let spins = 0;
     const programId = "7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"; // Smart Contract ID
 
+    const icons = [
+        'https://i.imgur.com/Xpf9bil.png',
+        'https://i.imgur.com/toIiHGF.png',
+        'https://i.imgur.com/tuXO9tn.png',
+        'https://i.imgur.com/7XZCiRx.png',
+        'https://i.imgur.com/7N2Lyw9.png',
+        'https://i.imgur.com/OazBXaj.png',
+        'https://i.imgur.com/bIBTHd0.png',
+        'https://i.imgur.com/PTrhXRa.png',
+        'https://i.imgur.com/cAkESML.png'
+    ];
+
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -32,7 +44,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function getBalance() {
-        // Kullanıcının oyun içi bakiyesini blockchain'den al
         console.log("🔄 Bakiyeniz alınıyor...");
         playerBalance = 100; // Örnek veri, Smart Contract'a bağlanınca değiştirilecek
         updateBalances();
@@ -69,6 +80,38 @@ document.addEventListener("DOMContentLoaded", function () {
         playerBalance--;
         spins++;
         updateBalances();
+
+        const slots = document.querySelectorAll('.slot');
+        let spinResults = [];
+        let animationCompleteCount = 0;
+
+        slots.forEach(slot => slot.classList.remove('winning-slot'));
+
+        slots.forEach((slot) => {
+            let totalSpins = icons.length * 8;
+            let currentSpin = 0;
+
+            function animateSpin() {
+                if (currentSpin < totalSpins) {
+                    const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+                    slot.style.backgroundImage = `url(${randomIcon})`;
+                    slot.style.backgroundSize = "cover";
+                    currentSpin++;
+                    setTimeout(animateSpin, 50);
+                } else {
+                    const finalIcon = icons[Math.floor(Math.random() * icons.length)];
+                    slot.style.backgroundImage = `url(${finalIcon})`;
+                    slot.style.backgroundSize = "cover";
+                    spinResults.push(finalIcon);
+                    animationCompleteCount++;
+
+                    if (animationCompleteCount === slots.length) {
+                        checkResults(spinResults, slots);
+                    }
+                }
+            }
+            animateSpin();
+        });
 
         setTimeout(() => {
             let win = Math.random() < 0.2; // %20 kazanma şansı
