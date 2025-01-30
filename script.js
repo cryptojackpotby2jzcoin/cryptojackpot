@@ -26,12 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
-                const response = await window.solana.connect();
+                console.log("🔗 Phantom Wallet bağlanıyor...");
+                const response = await window.solana.connect({ onlyIfTrusted: true });
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
                 console.log("✅ Wallet bağlandı:", userWallet);
             } catch (error) {
-                console.error("❌ Phantom Wallet bağlantısı başarısız oldu:", error);
+                console.warn("⚠️ Phantom Wallet bağlanamadı, Solana Pay'e yönlendiriliyor...");
                 openSolanaPayForConnection();
             }
         } else {
@@ -48,34 +49,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function checkWalletConnected() {
         if (window.solana && window.solana.isPhantom) {
-            const response = await window.solana.connect();
-            userWallet = response.publicKey.toString();
-            document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
-            console.log("✅ Wallet bağlandı:", userWallet);
-        } else {
-            console.log("⚠️ Wallet hala bağlanmadı!");
+            try {
+                const response = await window.solana.connect({ onlyIfTrusted: true });
+                userWallet = response.publicKey.toString();
+                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
+                console.log("✅ Wallet bağlandı (Solana Pay sonrası):", userWallet);
+            } catch (error) {
+                console.warn("⚠️ Wallet hala bağlanmadı!");
+            }
         }
     }
 
     function depositCoins() {
         if (!userWallet) {
-            console.log("🚀 Phantom Wallet bulunamadı, Solana Pay ile deposit yapılıyor...");
+            alert("⚠️ Önce wallet bağlamalısınız!");
+            return;
         }
-
         const solanaPayUrl = `solana:${houseWallet}?amount=100&token=${coinAddress}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
         window.open(solanaPayUrl, "_blank");
     }
 
     async function withdrawCoins() {
         if (!userWallet) {
-            console.log("🚀 Phantom Wallet bulunamadı, Solana Pay ile withdraw yapılıyor...");
+            alert("⚠️ Önce wallet bağlamalısınız!");
+            return;
         }
         if (temporaryBalance <= 0) {
-            console.log("⚠️ Çekilecek coin yok!");
+            alert("⚠️ Çekilecek coin yok!");
             return;
         }
 
-        console.log(`✅ Withdraw işlemi başlatıldı! Çekilen: ${temporaryBalance} Coins`);
+        alert(`✅ Withdraw işlemi başlatıldı! Çekilen: ${temporaryBalance} Coins`);
         temporaryBalance = 0;
         updateBalances();
     }
