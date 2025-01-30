@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spin: ${spins}`; // ✅ "Total Spin" değil, sadece "Spin" yazıyor.
+        spinCounterDisplay.textContent = `Spin: ${spins}`; 
     }
 
     function spin() {
@@ -111,8 +111,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
             }
         } else {
-            alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
+            alert("Phantom Wallet bulunamadı. Telegram veya farklı tarayıcıda bağlantı için Solana Pay kullanılıyor.");
+            connectWalletViaSolanaPay();
         }
+    }
+
+    function connectWalletViaSolanaPay() {
+        const solanaPayUrl = `solana:${userWallet}?amount=0&token=GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump&label=Crypto%20Jackpot&message=Connect%20Wallet`;
+        window.open(solanaPayUrl, "_blank");
     }
 
     function depositCoins() {
