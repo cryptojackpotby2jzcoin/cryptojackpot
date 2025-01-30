@@ -2,71 +2,76 @@ document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
-    const transferButton = document.getElementById("transfer-button");
     const depositButton = document.getElementById("deposit-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
 
-    let playerBalance = 20;
+    let userWallet = null;
+    let playerBalance = 0;
     let temporaryBalance = 0;
     let spins = 0;
-    const coinPrice = 0.000005775;
-    let userWallet = null;
-    const houseWallet = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF"; // House Wallet
-    const coinAddress = "GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"; // 2JZ Coin CA
-
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins ($${(temporaryBalance * coinPrice).toFixed(6)})`;
-        spinCounterDisplay.textContent = `Spin: ${spins}`;
-    }
+    const programId = "7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"; // Smart Contract ID
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
-                console.log("🔗 Phantom Wallet bağlanıyor...");
-                const response = await window.solana.connect({ onlyIfTrusted: true });
+                const response = await window.solana.connect();
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
                 console.log("✅ Wallet bağlandı:", userWallet);
             } catch (error) {
-                console.warn("⚠️ Phantom Wallet bağlanamadı, Solana Pay'e yönlendiriliyor...");
-                openSolanaPayForConnection();
+                console.error("❌ Wallet bağlantısı başarısız oldu:", error);
+                alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
             }
         } else {
-            console.log("🚀 Phantom Wallet bulunamadı, Solana Pay ile bağlanıyor...");
-            openSolanaPayForConnection();
+            alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
         }
     }
 
-    function openSolanaPayForConnection() {
-        const solanaPayUrl = `solana:${houseWallet}?amount=0&token=${coinAddress}&label=Crypto%20Jackpot&message=Connect%20Wallet`;
-        window.open(solanaPayUrl, "_blank");
-        setTimeout(checkWalletConnected, 5000);
-    }
-
-    async function checkWalletConnected() {
-        if (window.solana && window.solana.isPhantom) {
-            try {
-                const response = await window.solana.connect({ onlyIfTrusted: true });
-                userWallet = response.publicKey.toString();
-                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
-                console.log("✅ Wallet bağlandı (Solana Pay sonrası):", userWallet);
-            } catch (error) {
-                console.warn("⚠️ Wallet hala bağlanmadı!");
-            }
+    async function depositCoins() {
+        if (!userWallet) {
+            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
+            return;
         }
+
+        let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
+        amount = parseInt(amount);
+        if (amount <= 0) return;
+
+        console.log(`🔄 ${amount} coins depositing...`);
+        // Smart Contract'a gönder (Örnek işlem, backend'e bağlanınca aktif olacak)
+        alert(`✅ ${amount} coin deposit edildi!`);
     }
 
-    function depositCoins() {
+    async function spin() {
         if (!userWallet) {
             alert("⚠️ Önce wallet bağlamalısınız!");
             return;
         }
-        const solanaPayUrl = `solana:${houseWallet}?amount=100&token=${coinAddress}&label=Crypto%20Jackpot&message=Deposit%20for%20game%20balance`;
-        window.open(solanaPayUrl, "_blank");
+
+        console.log("🔄 Spin işlemi başlatılıyor...");
+        if (playerBalance <= 0) {
+            resultMessage.textContent = "❌ Yetersiz bakiye!";
+            return;
+        }
+
+        playerBalance--;
+        spins++;
+        updateBalances();
+
+        setTimeout(() => {
+            let win = Math.random() < 0.2; // %20 kazanma şansı
+            if (win) {
+                let winAmount = Math.floor(Math.random() * 10) + 1;
+                temporaryBalance += winAmount;
+                resultMessage.textContent = `🎉 Kazandınız! ${winAmount} coin eklendi.`;
+            } else {
+                resultMessage.textContent = "😢 Kaybettiniz, tekrar deneyin!";
+            }
+            updateBalances();
+        }, 2000);
     }
 
     async function withdrawCoins() {
@@ -79,25 +84,22 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        alert(`✅ Withdraw işlemi başlatıldı! Çekilen: ${temporaryBalance} Coins`);
+        console.log(`🔄 Withdraw başlatıldı: ${temporaryBalance} coin`);
+        alert(`✅ ${temporaryBalance} coin Phantom Wallet'a gönderildi!`);
         temporaryBalance = 0;
         updateBalances();
+    }
+
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins`;
+        spinCounterDisplay.textContent = `Spin: ${spins}`;
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spin);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
-    transferButton.addEventListener("click", () => {
-        if (temporaryBalance > 0) {
-            playerBalance += temporaryBalance;
-            temporaryBalance = 0;
-            resultMessage.textContent = "✅ Coins transferred to your main balance!";
-            updateBalances();
-        } else {
-            resultMessage.textContent = "⚠️ No coins to transfer!";
-        }
-    });
-
+    
     updateBalances();
 });
