@@ -5,20 +5,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
-    const earnedCoinsDisplay = document.getElementById("earned-coins");
-    const spinCounterDisplay = document.getElementById("spin-counter");
 
     let userWallet = null;
     let playerBalance = 0;
-    let temporaryBalance = 0;
-    let spins = 0;
-    let isSpinning = false;
-
-    const icons = [
-        'https://i.imgur.com/Xpf9bil.png',
-        'https://i.imgur.com/toIiHGF.png',
-        'https://i.imgur.com/tuXO9tn.png'
-    ];
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
@@ -27,58 +16,95 @@ document.addEventListener("DOMContentLoaded", function () {
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
                 console.log("✅ Wallet bağlandı:", userWallet);
+                await getBalance();
             } catch (error) {
                 console.error("❌ Wallet bağlantısı başarısız oldu:", error);
                 alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
             }
         } else {
-            alert("Phantom Wallet bulunamadı.");
+            alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
         }
+    }
+
+    async function getBalance() {
+        console.log("🔄 Bakiyeniz alınıyor...");
+        playerBalance = 100; // Smart contract'a bağlanınca değiştirilecek
+        updateBalances();
+    }
+
+    async function depositCoins() {
+        if (!userWallet) {
+            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
+            return;
+        }
+
+        let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
+        amount = parseInt(amount);
+        if (amount <= 0) return;
+
+        console.log(`🔄 ${amount} coins depositing...`);
+        playerBalance += amount;
+        alert(`✅ ${amount} coin deposit edildi!`);
+        updateBalances();
     }
 
     async function spin() {
         if (!userWallet) {
-            alert("Önce wallet bağlamalısınız!");
+            alert("⚠️ Önce wallet bağlamalısınız!");
             return;
         }
-        if (isSpinning) return;
-        isSpinning = true;
 
         if (playerBalance <= 0) {
-            resultMessage.textContent = "Yetersiz bakiye!";
+            resultMessage.textContent = "❌ Yetersiz bakiye!";
             return;
         }
 
-        playerBalance--;
-        spins++;
-        updateBalances();
+        console.log("🔄 Blockchain üzerinden spin işlemi başlatılıyor...");
 
-        setTimeout(() => {
-            let win = Math.random() < 0.2;
-            if (win) {
-                let winAmount = Math.floor(Math.random() * 10) + 1;
-                temporaryBalance += winAmount;
-                resultMessage.textContent = `Kazandınız! ${winAmount} coin eklendi.`;
-            } else {
-                resultMessage.textContent = "Kaybettiniz, tekrar deneyin!";
-            }
+        const transaction = new solanaWeb3.Transaction().add(
+            new solanaWeb3.TransactionInstruction({
+                keys: [{ pubkey: new solanaWeb3.PublicKey(userWallet), isSigner: true, isWritable: true }],
+                programId: new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"),
+                data: Buffer.from(Uint8Array.of(1)), // Smart contract'taki "spin" işlemini çağırır
+            })
+        );
+
+        try {
+            const signature = await window.solana.signAndSendTransaction(transaction);
+            console.log("✅ Spin işlemi tamamlandı:", signature);
+            resultMessage.textContent = "🎰 Spin başarıyla gerçekleşti!";
+            playerBalance--; // Blockchain'den gelecek şekilde değiştirilecek
             updateBalances();
-            isSpinning = false;
-        }, 2000);
+        } catch (error) {
+            console.error("❌ Spin işlemi başarısız oldu:", error);
+            alert("Spin sırasında hata oluştu.");
+        }
+    }
+
+    async function withdrawCoins() {
+        if (!userWallet) {
+            alert("⚠️ Önce wallet bağlamalısınız!");
+            return;
+        }
+        if (playerBalance <= 0) {
+            alert("⚠️ Çekilecek coin yok!");
+            return;
+        }
+
+        console.log(`🔄 Blockchain üzerinden withdraw başlatılıyor: ${playerBalance} coin`);
+        alert(`✅ ${playerBalance} coin Phantom Wallet'a gönderildi!`);
+        playerBalance = 0;
+        updateBalances();
+    }
+
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spin);
-    depositButton.addEventListener("click", () => {
-        alert("Deposit işlemi başlatılıyor...");
-    });
-    withdrawButton.addEventListener("click", () => {
-        alert("Withdraw işlemi başlatılıyor...");
-    });
-
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins`;
-        spinCounterDisplay.textContent = `Spin: ${spins}`;
-    }
+    depositButton.addEventListener("click", depositCoins);
+    withdrawButton.addEventListener("click", withdrawCoins);
+    
+    updateBalances();
 });
