@@ -1,20 +1,21 @@
-// Solana bağlantısı
-const connection = new solanaWeb3.Connection('https://api.testnet.solana.com', 'confirmed');
+// 📌 Buffer hatasını önlemek için
+window.Buffer = window.Buffer || require("buffer").Buffer;
 
-// 2JZ Coin mint adresi
-const tokenMintAddress = new solanaWeb3.PublicKey('GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump');
+// ✅ Solana bağlantısı
+const connection = new solanaWeb3.Connection("https://api.testnet.solana.com", "confirmed");
 
-// House wallet public key (ödül havuzu cüzdan adresi)
-const houseWalletPublicKey = new solanaWeb3.PublicKey('6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF');
+// ✅ 2JZ Coin mint adresi
+const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3M");
 
-// İlk 10.000 oyuncu kontrolü için liste
+const houseWalletPublicKey = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
+
+// ✅ İlk 10.000 oyuncu kontrolü için liste
 let playerList = [];
 const maxPlayers = 10000;
 
-// Phantom Wallet bağlantısı
+// ✅ Phantom Wallet bağlantısı
 const wallet = window.solana;
 
-// Cüzdan bağlantısı ve başlangıç ödülü
 async function connectWallet() {
     if (!wallet || !wallet.isPhantom) {
         alert("❌ Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
@@ -25,10 +26,9 @@ async function connectWallet() {
         const response = await wallet.connect();
         const playerAddress = response.publicKey.toString();
         document.getElementById("wallet-address").innerText = `Wallet: ${playerAddress}`;
-
         console.log("✅ Wallet bağlandı:", playerAddress);
 
-        // Eğer kullanıcı ilk 10,000 içindeyse 20 coin ekle
+        // İlk defa bağlanan oyuncuya 20 coin ekle
         if (!playerList.includes(playerAddress) && playerList.length < maxPlayers) {
             playerList.push(playerAddress);
             await addInitialCoins(playerAddress);
@@ -42,24 +42,24 @@ async function connectWallet() {
     }
 }
 
-// Oyuncuya başlangıç coini ekleme
+// ✅ Oyuncuya başlangıç coini ekleme
 async function addInitialCoins(playerAddress) {
     try {
         const transaction = new solanaWeb3.Transaction().add(
             solanaWeb3.SystemProgram.transfer({
                 fromPubkey: houseWalletPublicKey,
                 toPubkey: new solanaWeb3.PublicKey(playerAddress),
-                lamports: 20 * 1e9, // 20 coin
+                lamports: 20 * solanaWeb3.LAMPORTS_PER_SOL, // 20 coin
             })
         );
 
-        const { blockhash } = await connection.getRecentBlockhash();
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = houseWalletPublicKey;
 
         const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
+        const signature = await connection.sendTransaction(signedTransaction);
+        await connection.confirmTransaction(signature, lastValidBlockHeight);
 
         console.log("✅ 20 coin başarıyla eklendi:", signature);
     } catch (error) {
@@ -67,7 +67,34 @@ async function addInitialCoins(playerAddress) {
     }
 }
 
-// Deposit işlemi
+// ✅ Kullanıcının 2JZ Coin bakiyesini sorgula
+async function getUserBalance() {
+    if (!wallet || !wallet.isPhantom) {
+        alert("❌ Wallet bağlı değil!");
+        return;
+    }
+
+    try {
+        const accounts = await connection.getParsedTokenAccountsByOwner(
+            wallet.publicKey,
+            { mint: tokenMintAddress }
+        );
+
+        if (accounts.value.length > 0) {
+            let balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+            console.log(`🔄 Kullanıcının 2JZ Coin Bakiyesi: ${balance}`);
+            return balance;
+        } else {
+            console.log("⚠️ Kullanıcının bakiyesi yok!");
+            return 0;
+        }
+    } catch (error) {
+        console.error("❌ Bakiye alınırken hata oluştu:", error);
+        return 0;
+    }
+}
+
+// ✅ Deposit işlemi
 async function depositCoins() {
     if (!wallet || !wallet.isPhantom) {
         alert("❌ Önce Phantom Wallet bağlamalısınız!");
@@ -88,17 +115,16 @@ async function depositCoins() {
             solanaWeb3.SystemProgram.transfer({
                 fromPubkey: wallet.publicKey,
                 toPubkey: houseWalletPublicKey,
-                lamports: amount * 1e9,
+                lamports: amount * solanaWeb3.LAMPORTS_PER_SOL,
             })
         );
 
-        const { blockhash } = await connection.getRecentBlockhash();
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = wallet.publicKey;
 
-        const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
+        const signature = await wallet.signAndSendTransaction(transaction);
+        await connection.confirmTransaction(signature, lastValidBlockHeight);
 
         alert(`✅ ${amount} coin yatırıldı!`);
     } catch (error) {
@@ -106,7 +132,7 @@ async function depositCoins() {
     }
 }
 
-// Withdraw işlemi
+// ✅ Withdraw işlemi
 async function withdrawCoins() {
     if (!wallet || !wallet.isPhantom) {
         alert("❌ Önce Phantom Wallet bağlamalısınız!");
@@ -127,17 +153,16 @@ async function withdrawCoins() {
             solanaWeb3.SystemProgram.transfer({
                 fromPubkey: houseWalletPublicKey,
                 toPubkey: wallet.publicKey,
-                lamports: amount * 1e9,
+                lamports: amount * solanaWeb3.LAMPORTS_PER_SOL,
             })
         );
 
-        const { blockhash } = await connection.getRecentBlockhash();
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = houseWalletPublicKey;
 
-        const signedTransaction = await wallet.signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        await connection.confirmTransaction(signature, 'confirmed');
+        const signature = await wallet.signAndSendTransaction(transaction);
+        await connection.confirmTransaction(signature, lastValidBlockHeight);
 
         alert(`✅ ${amount} coin başarıyla çekildi!`);
     } catch (error) {
@@ -149,3 +174,4 @@ async function withdrawCoins() {
 window.connectWallet = connectWallet;
 window.depositCoins = depositCoins;
 window.withdrawCoins = withdrawCoins;
+window.getUserBalance = getUserBalance;
