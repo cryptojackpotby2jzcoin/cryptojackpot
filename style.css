@@ -133,74 +133,6 @@ button:active {
     transform: scale(0.95);
 }
 
-/* Cüzdan Bilgisi */
-#wallet-info {
-    font-size: 10px;
-    color: #FFFF00;
-    margin-bottom: 5px;
-}
-
-/* Spin ve Total Spin */
-#spin-info {
-    font-size: 16px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-#total-spins-label {
-    color: #FFFF00;
-}
-
-#spin-counter-label {
-    color: #00FF00;
-}
-
-/* Balance ve Earned Coins */
-#balance-section {
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 5px;
-    color: #00FF00;
-}
-
-#balance-section p {
-    margin: 3px 0;
-    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32;
-}
-
-/* Top Player Prizes */
-#leaderboard {
-    font-size: 12px;
-    color: #00FF00;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-#leaderboard ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#leaderboard ul li {
-    margin: 3px 0;
-}
-
-/* Cüzdan Bağlama Butonu */
-#connect-wallet-button {
-    width: 140px;
-    height: 30px;
-    font-size: 14px;
-    border-radius: 5px;
-    border: none;
-    text-align: center;
-    color: white;
-    cursor: pointer;
-    background-color: #FFA500;
-}
-
 /* 🎰 Spin Butonu Düzenlemesi (Üstündeki Yazıyı Kaldırma) */
 #spin-button {
     width: 160px;
@@ -218,12 +150,107 @@ button:active {
 /* Önemli Butonlar */
 #deposit-button {
     background-color: #007BFF;
+    color: white;
+    font-size: 14px;
+    width: 140px;
+    height: 30px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
 }
 
 #transfer-button {
     background-color: #32CD32;
+    color: white;
+    font-size: 14px;
+    width: 140px;
+    height: 30px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
 }
 
 #withdraw-button {
     background-color: #FF416C;
+    color: white;
+    font-size: 14px;
+    width: 140px;
+    height: 30px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Cüzdan Bağlama Butonu */
+#connect-wallet-button {
+    width: 140px;
+    height: 30px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: none;
+    text-align: center;
+    color: white;
+    cursor: pointer;
+    background-color: #FFA500;
+}
+
+/* 🎰 Your Balance ve Earned Coins Görünürlüğü Düzenlendi */
+#balance-section {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 5px;
+    color: #00FF00;
+}
+
+#balance-section p {
+    margin: 3px 0;
+    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32;
+}
+
+/* 🏆 Top Player Prizes */
+#leaderboard {
+    font-size: 12px;
+    color: #00FF00;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+#leaderboard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#leaderboard ul li {
+    margin: 3px 0;
+}
+
+/* 🎰 Your Balance ve Earned Coins Metinleri Düzenlendi */
+#player-balance,
+#earned-coins {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32;
+}
+
+/* 💰 Spin ve Total Spin Görünürlüğü */
+#spin-info {
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+#total-spins-label {
+    color: #FFFF00;
+}
+
+#spin-counter-label {
+    color: #00FF00;
 }
