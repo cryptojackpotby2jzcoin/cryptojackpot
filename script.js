@@ -1,3 +1,5 @@
+window.Buffer = window.Buffer || (await import("buffer")).Buffer;
+
 window.Buffer = window.Buffer || require("buffer").Buffer;
 
 document.addEventListener("DOMContentLoaded", function () {
