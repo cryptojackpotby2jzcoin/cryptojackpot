@@ -1,8 +1,3 @@
-// Buffer Hatasını Önlemek İçin  
-(async () => {
-    window.Buffer = window.Buffer || (await import("buffer")).Buffer;
-})();
-
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const spinButton = document.getElementById("spin-button");
@@ -13,18 +8,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let userWallet = null;
     let playerBalance = 0;
-    let temporaryBalance = 0;  // Kazanılan coinleri tutar
-    const programId = new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"); // Smart Contract ID
-    const connection = new solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
+    let temporaryBalance = 0;  
 
-    // ✅ CÜZDAN BAĞLAMA  
+    const programId = new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"); // Smart Contract ID
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed"); // Doğru RPC Endpoint
+
+    // ✅ CÜZDAN BAĞLAMA
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
                 const response = await window.solana.connect();
-                userWallet = response.publicKey.toString();
-                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
-                console.log("✅ Wallet bağlandı:", userWallet);
+                userWallet = response.publicKey;
+                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
+                console.log("✅ Wallet bağlandı:", userWallet.toString());
                 await getBalance();
             } catch (error) {
                 console.error("❌ Wallet bağlantısı başarısız oldu:", error);
@@ -35,14 +31,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ✅ BAKİYE GÖRÜNTÜLEME  
+    // ✅ BAKİYEYİ GÖRÜNTÜLEME
     async function getBalance() {
         console.log("🔄 Bakiyeniz alınıyor...");
-        playerBalance = 100; // Smart Contract'a bağlanınca değiştirilecek
+        playerBalance = 100; // Smart Contract'a bağlanınca güncellenecek
         updateBalances();
     }
 
-    // ✅ DEPOSIT (COİN YATIRMA)  
+    // ✅ DEPOSIT (COİN YATIRMA)
     async function depositCoins() {
         if (!userWallet) {
             alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
@@ -62,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updateBalances();
     }
 
-    // ✅ SPİN İŞLEMİ  
+    // ✅ SPİN İŞLEMİ
     async function spin() {
         if (!userWallet) {
             alert("⚠️ Önce wallet bağlamalısınız!");
@@ -79,15 +75,14 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const transaction = new solanaWeb3.Transaction().add(
                 new solanaWeb3.TransactionInstruction({
-                    keys: [{ pubkey: new solanaWeb3.PublicKey(userWallet), isSigner: true, isWritable: true }],
+                    keys: [{ pubkey: userWallet, isSigner: true, isWritable: true }],
                     programId: programId,
-                    data: new Uint8Array([1]), // Smart Contract'taki "spin" işlemini çağırır
+                    data: Buffer.from([1]), // Smart Contract'taki "spin" işlemini çağırır
                 })
             );
 
-            const { blockhash } = await connection.getRecentBlockhash();
-            transaction.recentBlockhash = blockhash;
-            transaction.feePayer = new solanaWeb3.PublicKey(userWallet);
+            transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+            transaction.feePayer = userWallet;
 
             const signedTransaction = await window.solana.signTransaction(transaction);
             const signature = await connection.sendRawTransaction(signedTransaction.serialize());
@@ -103,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ✅ COİN ÇEKME (WITHDRAW)  
+    // ✅ COİN ÇEKME (WITHDRAW)
     async function withdrawCoins() {
         if (!userWallet) {
             alert("⚠️ Önce wallet bağlamalısınız!");
@@ -122,12 +117,12 @@ document.addEventListener("DOMContentLoaded", function () {
         updateBalances();
     }
 
-    // ✅ BAKİYELERİ GÜNCELLEME  
+    // ✅ BAKİYELERİ GÜNCELLEME
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
     }
 
-    // 📌 EVENT LISTENERS (BUTON TIKLAMALARI)  
+    // 📌 EVENT LISTENERS (BUTON TIKLAMALARI)
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spin);
     depositButton.addEventListener("click", depositCoins);
