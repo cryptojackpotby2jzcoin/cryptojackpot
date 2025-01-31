@@ -1,5 +1,5 @@
-// Buffer hatasını önlemek için
-window.Buffer = window.Buffer || require("buffer").Buffer;
+import { Buffer } from "buffer";
+window.Buffer = Buffer;
 
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
@@ -32,31 +32,12 @@ document.addEventListener("DOMContentLoaded", function () {
     async function getBalance() {
         console.log("🔄 Bakiyeniz blockchain'den alınıyor...");
         try {
-            // Blockchain'den bakiye çekme
-            playerBalance = 100; // Gerçek blockchain bağlantısı burada olacak
+            const balance = await connection.getTokenAccountBalance(new PublicKey(userWallet));
+            playerBalance = balance.value.uiAmount || 0; 
             updateBalances();
         } catch (error) {
             console.error("❌ Bakiye alınırken hata oluştu:", error);
         }
-    }
-
-    async function depositCoins() {
-        if (!userWallet) {
-            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
-            return;
-        }
-
-        let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
-        amount = parseInt(amount);
-        if (isNaN(amount) || amount <= 0) {
-            alert("⚠️ Geçerli bir miktar giriniz!");
-            return;
-        }
-
-        console.log(`🔄 ${amount} coins depositing...`);
-        playerBalance += amount;
-        alert(`✅ ${amount} coin deposit edildi!`);
-        updateBalances();
     }
 
     async function spin() {
@@ -73,29 +54,23 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("🔄 Blockchain üzerinden spin işlemi başlatılıyor...");
 
         try {
-            playerBalance--;
-            updateBalances();
+            const transaction = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [{ pubkey: new solanaWeb3.PublicKey(userWallet), isSigner: true, isWritable: true }],
+                    programId: new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"),
+                    data: Buffer.from(Uint8Array.of(1)), // Smart contract'ta `spin()` fonksiyonunu çağırır
+                })
+            );
+
+            const signature = await window.solana.signAndSendTransaction(transaction);
+            console.log("✅ Spin işlemi tamamlandı:", signature);
             resultMessage.textContent = "🎰 Spin başarıyla gerçekleşti!";
+
+            await getBalance();
         } catch (error) {
             console.error("❌ Spin işlemi başarısız oldu:", error);
             alert("Spin sırasında hata oluştu.");
         }
-    }
-
-    async function withdrawCoins() {
-        if (!userWallet) {
-            alert("⚠️ Önce wallet bağlamalısınız!");
-            return;
-        }
-
-        console.log(`🔄 Blockchain üzerinden withdraw başlatılıyor: ${playerBalance} coin`);
-        alert(`✅ ${playerBalance} coin Phantom Wallet'a gönderildi!`);
-        playerBalance = 0;
-        updateBalances();
-    }
-
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
