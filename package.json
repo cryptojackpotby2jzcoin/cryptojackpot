@@ -2,12 +2,14 @@
   "name": "crypto-jackpot",
   "version": "1.0.0",
   "description": "A crypto jackpot game on Solana blockchain",
-  "main": "bot.js",
+  "main": "index.html",
   "scripts": {
-    "start": "node bot.js"
+    "start": "live-server --port=3000"
   },
   "dependencies": {
-    "@solana/web3.js": "^1.30.0",
-    "node-telegram-bot-api": "^0.57.0"
+    "@solana/web3.js": "^1.73.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
   }
 }
