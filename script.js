@@ -8,10 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let userWallet = null;
     let playerBalance = 0;
-    let temporaryBalance = 0;  
+    let temporaryBalance = 0;
 
     const programId = new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"); // Smart Contract ID
-    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed"); // Doğru RPC Endpoint
+    const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl("devnet"), "confirmed");
 
     // ✅ CÜZDAN BAĞLAMA
     async function connectWallet() {
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updateBalances();
     }
 
-    // ✅ SPİN İŞLEMİ
+    // ✅ SPİN İŞLEMİ (BLOCKCHAIN UYUMLU)
     async function spin() {
         if (!userWallet) {
             alert("⚠️ Önce wallet bağlamalısınız!");
@@ -73,14 +73,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("🔄 Blockchain üzerinden spin işlemi başlatılıyor...");
 
         try {
-            const transaction = new solanaWeb3.Transaction().add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [{ pubkey: userWallet, isSigner: true, isWritable: true }],
-                    programId: programId,
-                    data: Buffer.from([1]), // Smart Contract'taki "spin" işlemini çağırır
-                })
-            );
+            const instruction = new solanaWeb3.TransactionInstruction({
+                keys: [{ pubkey: userWallet, isSigner: true, isWritable: true }],
+                programId: programId,
+                data: new Uint8Array([1]), // Buffer yerine Uint8Array kullanıldı
+            });
 
+            const transaction = new solanaWeb3.Transaction().add(instruction);
             transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
             transaction.feePayer = userWallet;
 
