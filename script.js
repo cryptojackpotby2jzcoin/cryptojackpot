@@ -1,3 +1,5 @@
+window.Buffer = window.Buffer || require("buffer").Buffer;
+
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const spinButton = document.getElementById("spin-button");
