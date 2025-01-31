@@ -16,14 +16,14 @@ body, html {
 
 /* Slot Makinesi */
 .machine {
-    width: 100%; /* Mobil için genişlik */
-    max-width: 480px; /* Masaüstü için maksimum genişlik */
+    width: 100%;
+    max-width: 480px;
     background: black;
     border-radius: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: column; /* Elemanları dikey hizala */
-    align-items: center; /* Ortalanmış */
+    flex-direction: column;
+    align-items: center;
     padding: 10px;
     box-sizing: border-box;
 }
@@ -85,12 +85,12 @@ h2 {
 /* Sonuç Mesajı */
 #result-message {
     font-size: 12px;
-    color: #FFFF00; /* Sarı */
-    text-shadow: 0 0 8px #FFFF00;
+    color: #FFD700;
+    text-shadow: 0 0 8px #FFD700;
     margin-bottom: 10px;
-    min-height: 20px; /* Satırı sabit tut */
+    min-height: 20px;
     display: flex;
-    align-items: center; /* Ortala */
+    align-items: center;
     justify-content: center;
 }
 
@@ -119,29 +119,45 @@ h2 {
 }
 
 /* Genel Buton Ayarları */
-#deposit-button, #transfer-button, #withdraw-button {
-    width: 140px;
-    height: 30px;
-    font-size: 14px;
-    border-radius: 5px;
-    border: none;
-    text-align: center;
-    color: white;
-    cursor: pointer;
+button {
+    transition: all 0.3s ease-in-out;
 }
 
+button:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+
+button:active {
+    filter: brightness(0.8);
+    transform: scale(0.95);
+}
+
+/* Cüzdan Bilgisi */
+#wallet-info {
+    font-size: 10px;
+    color: #FFD700;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Buton Güncellemeleri */
 #deposit-button {
-    background-color: #007BFF; /* Mavi */
+    background-color: #007BFF;
+    box-shadow: 0px 4px 10px rgba(0, 123, 255, 0.5);
 }
 
 #transfer-button {
-    background-color: #32CD32; /* Yeşil */
+    background-color: #32CD32;
+    box-shadow: 0px 4px 10px rgba(50, 205, 50, 0.5);
 }
 
 #withdraw-button {
-    background-color: #FF416C; /* Pembe */
+    background-color: #FF416C;
+    box-shadow: 0px 4px 10px rgba(255, 65, 108, 0.5);
 }
 
+/* Spin Butonu */
 #spin-button {
     width: 160px;
     height: 130px;
@@ -149,74 +165,8 @@ h2 {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    background-color: transparent;
-    border: none;
+    background-color: black;
+    border: 2px solid #32CD32;
+    border-radius: 10px;
     cursor: pointer;
-}
-
-/* Cüzdan Bilgisi */
-#wallet-info {
-    font-size: 10px;
-    color: #FFFF00;
-    margin-bottom: 5px;
-}
-
-/* Spin ve Total Spin */
-#spin-info {
-    font-size: 16px;
-    display: flex;
-    justify-content: center; /* Ortala */
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-#total-spins-label {
-    color: #FFFF00; /* Sarı */
-}
-
-#spin-counter-label {
-    color: #00FF00; /* Yeşil */
-}
-
-/* Balance ve Earned Coins */
-#balance-section {
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 5px;
-    color: #00FF00; /* Yeşil */
-}
-
-#balance-section p {
-    margin: 3px 0;
-    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32;
-}
-
-/* Top Player Prizes */
-#leaderboard {
-    font-size: 12px;
-    color: #00FF00;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-#leaderboard ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#leaderboard ul li {
-    margin: 3px 0;
-}
-
-#connect-wallet-button {
-    width: 140px; /* Deposit butonu ile aynı genişlik */
-    height: 30px; /* Deposit butonu ile aynı yükseklik */
-    font-size: 14px;
-    border-radius: 5px;
-    border: none;
-    text-align: center;
-    color: white;
-    cursor: pointer;
-    background-color: #FFA500; /* Turuncu */
 }
