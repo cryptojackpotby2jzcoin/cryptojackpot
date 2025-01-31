@@ -9,9 +9,12 @@
     <!-- Solana Web3.js CDN -->
     <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
 
+    <!-- Önce blockchain dosyasını yükle (Bağlantılar için gerekli) -->
+    <script src="blockchain.js" defer></script>
+
     <!-- JavaScript Dosyaları -->
     <script src="script.js" defer></script>
-    <script src="blockchain.js" defer></script>
+    <script src="game.js" defer></script>
 </head>
 <body>
     <div class="machine">
@@ -34,12 +37,13 @@
                 <button id="withdraw-button">Withdraw Coins</button>
             </div>
             <div class="right-button">
-                <button id="spin-button"></button>
+                <!-- 🔥 Spin butonuna ikon ve text ekledik -->
+                <button id="spin-button">🎰 Spin</button>
             </div>
         </div>
 
         <div id="wallet-info">
-            <p id="wallet-address">Wallet: N/A</p>
+            <p id="wallet-address">Wallet: Not Connected</p>
         </div>
 
         <div id="spin-info">
