@@ -35,20 +35,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function depositCoins() {
-        if (!userWallet) {
-            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
-            return;
-        }
-
-        let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
-        amount = parseInt(amount);
-        if (amount <= 0) return;
-
-        console.log(`🔄 ${amount} coins depositing...`);
-        playerBalance += amount;
-        alert(`✅ ${amount} coin deposit edildi!`);
-        updateBalances();
+    if (!userWallet) {
+        alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
+        return;
     }
+
+    let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
+    amount = parseInt(amount); // Kullanıcı girdisini tam sayıya çevir
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("⚠️ Lütfen geçerli bir sayı girin!");
+        return;
+    }
+
+    console.log(`🔄 ${amount} coins depositing...`);
+    playerBalance += amount;
+    alert(`✅ ${amount} coin deposit edildi!`);
+    updateBalances();
+}
+
 
     async function spin() {
         if (!userWallet) {
@@ -84,24 +89,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function withdrawCoins() {
-        if (!userWallet) {
-            alert("⚠️ Önce wallet bağlamalısınız!");
-            return;
-        }
-        if (playerBalance <= 0) {
-            alert("⚠️ Çekilecek coin yok!");
-            return;
-        }
-
-        console.log(`🔄 Blockchain üzerinden withdraw başlatılıyor: ${playerBalance} coin`);
-        alert(`✅ ${playerBalance} coin Phantom Wallet'a gönderildi!`);
-        playerBalance = 0;
-        updateBalances();
+    if (!userWallet) {
+        alert("⚠️ Önce wallet bağlamalısınız!");
+        return;
     }
 
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
+    if (temporaryBalance <= 0) {
+        alert("⚠️ Çekilecek coin yok!");
+        return;
     }
+
+    let amount = temporaryBalance; // Çekilecek miktarı belirle
+    if (isNaN(amount) || amount <= 0) {
+        alert("⚠️ Hatalı coin miktarı!");
+        return;
+    }
+
+    console.log(`🔄 Blockchain üzerinden withdraw başlatılıyor: ${amount} coin`);
+    alert(`✅ ${amount} coin Phantom Wallet'a gönderildi!`);
+    temporaryBalance = 0;
+    updateBalances();
+}
+
 
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spin);
