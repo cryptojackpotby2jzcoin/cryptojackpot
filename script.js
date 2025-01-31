@@ -1,6 +1,7 @@
-window.Buffer = window.Buffer || (await import("buffer")).Buffer;
-
-window.Buffer = window.Buffer || require("buffer").Buffer;
+// Buffer Hatasını Önlemek İçin  
+(async () => {
+    window.Buffer = window.Buffer || (await import("buffer")).Buffer;
+})();
 
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
@@ -12,7 +13,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let userWallet = null;
     let playerBalance = 0;
+    let temporaryBalance = 0;  // Kazanılan coinleri tutar
+    const programId = new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"); // Smart Contract ID
+    const connection = new solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
 
+    // ✅ CÜZDAN BAĞLAMA  
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -30,33 +35,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // ✅ BAKİYE GÖRÜNTÜLEME  
     async function getBalance() {
         console.log("🔄 Bakiyeniz alınıyor...");
-        playerBalance = 100; // Smart contract'a bağlanınca değiştirilecek
+        playerBalance = 100; // Smart Contract'a bağlanınca değiştirilecek
         updateBalances();
     }
 
+    // ✅ DEPOSIT (COİN YATIRMA)  
     async function depositCoins() {
-    if (!userWallet) {
-        alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
-        return;
+        if (!userWallet) {
+            alert("⚠️ Wallet bağlamadan deposit yapamazsınız!");
+            return;
+        }
+
+        let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
+        amount = parseInt(amount);
+        if (isNaN(amount) || amount <= 0) {
+            alert("⚠️ Lütfen geçerli bir sayı girin!");
+            return;
+        }
+
+        console.log(`🔄 ${amount} coins depositing...`);
+        playerBalance += amount;
+        alert(`✅ ${amount} coin deposit edildi!`);
+        updateBalances();
     }
 
-    let amount = prompt("Kaç coin yatırmak istiyorsunuz?", "100");
-    amount = parseInt(amount); // Kullanıcı girdisini tam sayıya çevir
-
-    if (isNaN(amount) || amount <= 0) {
-        alert("⚠️ Lütfen geçerli bir sayı girin!");
-        return;
-    }
-
-    console.log(`🔄 ${amount} coins depositing...`);
-    playerBalance += amount;
-    alert(`✅ ${amount} coin deposit edildi!`);
-    updateBalances();
-}
-
-
+    // ✅ SPİN İŞLEMİ  
     async function spin() {
         if (!userWallet) {
             alert("⚠️ Önce wallet bağlamalısınız!");
@@ -70,16 +76,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
         console.log("🔄 Blockchain üzerinden spin işlemi başlatılıyor...");
 
-        const transaction = new solanaWeb3.Transaction().add(
-            new solanaWeb3.TransactionInstruction({
-                keys: [{ pubkey: new solanaWeb3.PublicKey(userWallet), isSigner: true, isWritable: true }],
-                programId: new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"),
-                data: Buffer.from(Uint8Array.of(1)), // Smart contract'taki "spin" işlemini çağırır
-            })
-        );
-
         try {
-            const signature = await window.solana.signAndSendTransaction(transaction);
+            const transaction = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [{ pubkey: new solanaWeb3.PublicKey(userWallet), isSigner: true, isWritable: true }],
+                    programId: programId,
+                    data: new Uint8Array([1]), // Smart Contract'taki "spin" işlemini çağırır
+                })
+            );
+
+            const { blockhash } = await connection.getRecentBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = new solanaWeb3.PublicKey(userWallet);
+
+            const signedTransaction = await window.solana.signTransaction(transaction);
+            const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+            await connection.confirmTransaction(signature, "confirmed");
+
             console.log("✅ Spin işlemi tamamlandı:", signature);
             resultMessage.textContent = "🎰 Spin başarıyla gerçekleşti!";
             playerBalance--; // Blockchain'den gelecek şekilde değiştirilecek
@@ -90,34 +103,35 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // ✅ COİN ÇEKME (WITHDRAW)  
     async function withdrawCoins() {
-    if (!userWallet) {
-        alert("⚠️ Önce wallet bağlamalısınız!");
-        return;
+        if (!userWallet) {
+            alert("⚠️ Önce wallet bağlamalısınız!");
+            return;
+        }
+
+        if (temporaryBalance <= 0) {
+            alert("⚠️ Çekilecek coin yok!");
+            return;
+        }
+
+        let amount = temporaryBalance;
+        console.log(`🔄 Blockchain üzerinden withdraw başlatılıyor: ${amount} coin`);
+        alert(`✅ ${amount} coin Phantom Wallet'a gönderildi!`);
+        temporaryBalance = 0;
+        updateBalances();
     }
 
-    if (temporaryBalance <= 0) {
-        alert("⚠️ Çekilecek coin yok!");
-        return;
+    // ✅ BAKİYELERİ GÜNCELLEME  
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
     }
 
-    let amount = temporaryBalance; // Çekilecek miktarı belirle
-    if (isNaN(amount) || amount <= 0) {
-        alert("⚠️ Hatalı coin miktarı!");
-        return;
-    }
-
-    console.log(`🔄 Blockchain üzerinden withdraw başlatılıyor: ${amount} coin`);
-    alert(`✅ ${amount} coin Phantom Wallet'a gönderildi!`);
-    temporaryBalance = 0;
-    updateBalances();
-}
-
-
+    // 📌 EVENT LISTENERS (BUTON TIKLAMALARI)  
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spin);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
-    
+
     updateBalances();
 });
