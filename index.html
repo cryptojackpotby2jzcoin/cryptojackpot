@@ -9,10 +9,8 @@
     <!-- Solana Web3.js CDN -->
     <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
 
-    <!-- Önce blockchain dosyasını yükle (Bağlantılar için gerekli) -->
-    <script src="blockchain.js" defer></script>
-
     <!-- JavaScript Dosyaları -->
+    <script src="blockchain.js" defer></script>
     <script src="script.js" defer></script>
     <script src="game.js" defer></script>
 </head>
@@ -37,25 +35,25 @@
                 <button id="withdraw-button">Withdraw Coins</button>
             </div>
             <div class="right-button">
-                <!-- 🔥 Spin butonuna ikon ve text ekledik -->
-                <button id="spin-button">🎰 Spin</button>
+                <!-- 🔥 Spin butonunu sadece ikon olarak gösteriyoruz -->
+                <button id="spin-button"></button>
             </div>
         </div>
 
         <div id="wallet-info">
-            <p id="wallet-address">Wallet: Not Connected</p>
+            <p id="wallet-address">Wallet: N/A</p>
         </div>
 
         <div id="spin-info">
             <p>
                 <span id="total-spins-label">Total Spins: <span id="total-spins">0</span></span>
-                <span id="spin-counter-label"> <span id="spin-counter">0</span></span>
+                <span id="spin-counter-label"> Spin: <span id="spin-counter">0</span></span>
             </p>
         </div>
 
         <div id="balance-section">
-            <p><span id="player-balance">0 Coins ($0.0000)</span></p>
-            <p><span id="earned-coins">0 Coins ($0.0000)</span></p>
+            <p><span id="player-balance">Your Balance: 0 Coins ($0.0000)</span></p>
+            <p><span id="earned-coins">Earned Coins: 0 Coins ($0.0000)</span></p>
         </div>
 
         <div id="leaderboard">
