@@ -119,7 +119,10 @@ h2 {
 }
 
 /* Genel Buton Ayarları */
-#deposit-button, #transfer-button, #withdraw-button {
+#connect-wallet-button,
+#deposit-button, 
+#transfer-button, 
+#withdraw-button {
     width: 140px;
     height: 30px;
     font-size: 14px;
@@ -128,6 +131,10 @@ h2 {
     text-align: center;
     color: white;
     cursor: pointer;
+}
+
+#connect-wallet-button {
+    background-color: #FFA500; /* Turuncu */
 }
 
 #deposit-button {
@@ -142,6 +149,7 @@ h2 {
     background-color: #FF416C; /* Pembe */
 }
 
+/* Spin Butonu */
 #spin-button {
     width: 160px;
     height: 130px;
