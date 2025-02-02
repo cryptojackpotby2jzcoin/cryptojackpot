@@ -41,5 +41,5 @@ async function getUserBalance() {
     }
 }
 
-// Export olmadan çalışacak şekilde ayarladık
 window.getUserBalance = getUserBalance;
+
