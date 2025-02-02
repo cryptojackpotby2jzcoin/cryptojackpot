@@ -11,9 +11,6 @@ const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3
 
 const houseWalletPublicKey = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
 
-// ✅ Phantom Wallet bağlantısı
-const wallet = window.solana;
-
 // ✅ Kullanıcının 2JZ Coin bakiyesini sorgula
 async function getUserBalance() {
     if (!wallet || !wallet.isPhantom) {
