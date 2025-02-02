@@ -1,19 +1,18 @@
-// Buffer hatasını önlemek için gereksiz require kaldırıldı
-window.Buffer = window.Buffer || window.solanaWeb3.Buffer;
+// 📌 Buffer hatasını önlemek için
+window.Buffer = window.Buffer || require("buffer").Buffer;
 
-// ✅ Solana bağlantısı
-const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+// ✅ Solana bağlantısı (Yeni RPC sağlayıcısı ile güncellendi)
+const connection = new solanaWeb3.Connection("https://rpc.helius.xyz", "confirmed");
 
-// ✅ 2JZ Coin mint adresi (GÜNCELLENDİ)
+// ✅ 2JZ Coin mint adresi
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
 
-// ✅ House Wallet Public Key
 const houseWalletPublicKey = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
 
-// Phantom Wallet bağlantısı
+// ✅ Phantom Wallet bağlantısı
 const wallet = window.solana;
 
-// Kullanıcının 2JZ Coin bakiyesini sorgula
+// ✅ Kullanıcının 2JZ Coin bakiyesini sorgula
 async function getUserBalance() {
     if (!wallet || !wallet.isPhantom) {
         alert("❌ Wallet bağlı değil!");
@@ -21,7 +20,10 @@ async function getUserBalance() {
     }
 
     try {
-        const accounts = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, { mint: tokenMintAddress });
+        const accounts = await connection.getParsedTokenAccountsByOwner(
+            wallet.publicKey,
+            { mint: tokenMintAddress }
+        );
 
         if (accounts.value.length > 0) {
             let balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
