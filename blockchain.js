@@ -4,7 +4,6 @@ window.Buffer = Buffer;
 const wallet = window.solana;
 
 import { Buffer } from "buffer";
-window.Buffer = Buffer;
 
 // ✅ Solana bağlantısı (Yeni RPC sağlayıcısı ile güncellendi)
 const connection = new solanaWeb3.Connection("https://rpc.helius.xyz", "confirmed");
