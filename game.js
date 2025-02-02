@@ -28,9 +28,10 @@ window.onload = async function () {
         if (!userWallet) return;
         try {
             const connection = new solanaWeb3.Connection("https://api.testnet.solana.com", "confirmed");
-            const accountInfo = await connection.getParsedTokenAccountsByOwner(new solanaWeb3.PublicKey(userWallet), {
-                mint: new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump")
-            });
+            const accountInfo = await connection.getParsedTokenAccountsByOwner(
+                new solanaWeb3.PublicKey(userWallet), 
+                { mint: tokenMintAddress }  // Hatalı mint adresini düzelttim
+            );
 
             if (accountInfo.value.length > 0) {
                 playerBalance = accountInfo.value[0].account.data.parsed.info.tokenAmount.uiAmount;
