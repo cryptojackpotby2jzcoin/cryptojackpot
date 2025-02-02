@@ -1,3 +1,5 @@
+const wallet = window.solana;
+
 import { Buffer } from "buffer";
 window.Buffer = Buffer;
 
