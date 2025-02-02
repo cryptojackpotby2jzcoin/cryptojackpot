@@ -25,13 +25,14 @@ window.onload = async function () {
     }
 
     async function getBalance() {
-        try {
-            playerBalance = await window.getUserBalance(); // Blockchain.js'den bakiyeyi al
-            updateBalances();
-        } catch (error) {
-            console.error("❌ Bakiye alınırken hata oluştu:", error);
-        }
+    if (typeof window.getUserBalance === "function") {
+        const balance = await window.getUserBalance();
+        playerBalance = balance || 0;
+        updateBalances();
+    } else {
+        console.error("getUserBalance fonksiyonu tanımlı değil!");
     }
+}
 
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
