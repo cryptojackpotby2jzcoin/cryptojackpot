@@ -1,3 +1,6 @@
+import { Buffer } from "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
+window.Buffer = Buffer;
+
 const wallet = window.solana;
 
 import { Buffer } from "buffer";
