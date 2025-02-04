@@ -1,10 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
-    const depositButton = document.getElementById("deposit-button");
     const spinButton = document.getElementById("spin-button");
+    const withdrawButton = document.getElementById("withdraw-button");
+    const depositButton = document.getElementById("deposit-button");
     const resultMessage = document.getElementById("result-message");
-    const withdrawButton = document.getElementById("withdraw-button");    
     const playerBalanceDisplay = document.getElementById("player-balance");
+    const earnedCoinsDisplay = document.getElementById("earned-coins");
     const slots = document.querySelectorAll(".slot");
 
     const slotImages = [
@@ -22,7 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
 
     let userWallet = null;
-    let playerBalance = 0;
+    let playerBalance = 20; // Starting balance
+    let temporaryBalance = 0;
     let spins = 0;
 
     async function connectWallet() {
@@ -84,6 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins`;
     }
 
     async function spinGame() {
@@ -125,19 +128,30 @@ document.addEventListener("DOMContentLoaded", function () {
         const winCount = spinResults.filter(icon => icon === winIcon).length;
 
         if (winCount === 3) {
-            playerBalance += 100;
+            temporaryBalance += 100;
+            highlightWinningSlots(winIcon);
             resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
         } else if (winCount === 2) {
-            playerBalance += 5;
+            temporaryBalance += 5;
+            highlightWinningSlots(winIcon);
             resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
         } else if (winCount === 1) {
-            playerBalance += 1;
+            temporaryBalance += 1;
+            highlightWinningSlots(winIcon);
             resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
         } else {
             resultMessage.textContent = "❌ No match, better luck next time!";
         }
 
         updateBalances();
+    }
+
+    function highlightWinningSlots(winIcon) {
+        slots.forEach(slot => {
+            if (slot.style.backgroundImage.includes(winIcon)) {
+                slot.classList.add('winning-slot');
+            }
+        });
     }
 
     async function withdrawCoins() {
@@ -153,13 +167,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 solanaWeb3.SystemProgram.transfer({
                     fromPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
                     toPubkey: new solanaWeb3.PublicKey(userWallet),
-                    lamports: playerBalance * solanaWeb3.LAMPORTS_PER_SOL / 1000 
+                    lamports: temporaryBalance * solanaWeb3.LAMPORTS_PER_SOL / 1000 
                 })
             );
             const { signature } = await window.solana.signAndSendTransaction(transaction);
             await connection.confirmTransaction(signature);
             alert("💰 Coins withdrawn successfully!");
-            playerBalance = 0;
+            temporaryBalance = 0;
             updateBalances();
         } catch (error) {
             console.error("❌ Withdraw failed:", error);
