@@ -1,7 +1,7 @@
 // blockchain.js
 
-// Solana bağlantısı ve Token Program ID'si
-const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+// Solana bağlantısı (Helius API ile)
+const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
 const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
 // ✅ Kullanıcının bakiyesini blockchain üzerinden al
@@ -35,7 +35,6 @@ async function getUserBalance() {
 // ✅ Oyunu döndürme (spin) işlemi
 async function spinGame() {
     console.log("🎰 Spin initiated!");
-    // Buraya smart contract ile spin işlemi entegre edilecek.
 }
 
 // Fonksiyonları global hale getir
