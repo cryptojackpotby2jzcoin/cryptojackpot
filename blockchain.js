@@ -1,28 +1,23 @@
+// 📌 Buffer hatasını çözmek için sadece bir kez tanımladık
 import { Buffer } from "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
 window.Buffer = Buffer;
 
-const wallet = window.solana;
-
-import { Buffer } from "buffer";
-
-// ✅ Solana bağlantısı (Yeni RPC sağlayıcısı ile güncellendi)
+// ✅ Solana bağlantısı
 const connection = new solanaWeb3.Connection("https://rpc.helius.xyz", "confirmed");
 
 // ✅ 2JZ Coin mint adresi
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
 
-const houseWalletPublicKey = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
-
 // ✅ Kullanıcının 2JZ Coin bakiyesini sorgula
 async function getUserBalance() {
-    if (!wallet || !wallet.isPhantom) {
+    if (!window.solana || !window.solana.isPhantom) {
         alert("❌ Wallet bağlı değil!");
         return;
     }
 
     try {
         const accounts = await connection.getParsedTokenAccountsByOwner(
-            wallet.publicKey,
+            window.solana.publicKey,
             { mint: tokenMintAddress }
         );
 
@@ -41,4 +36,3 @@ async function getUserBalance() {
 }
 
 window.getUserBalance = getUserBalance;
-
