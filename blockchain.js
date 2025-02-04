@@ -1,3 +1,5 @@
+// blockchain.js
+
 // Buffer'ı doğrudan bir script etiketiyle import ediyoruz
 const script = document.createElement('script');
 script.src = "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
@@ -20,37 +22,20 @@ async function getUserBalance() {
     }
 
     try {
-        const accounts = await connection.getParsedTokenAccountsByOwner(
+        const accounts = await connection.getTokenAccountsByOwner(
             window.solana.publicKey,
-            {
-                filters: [
-                    {
-                        memcmp: {
-                            offset: 0,
-                            bytes: tokenMintAddress.toBase58()
-                        }
-                    }
-                ],
-                programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") // SPL Token Program ID
-            }
+            { mint: tokenMintAddress }
         );
 
         let balance = 0;
 
-        accounts.value.forEach(accountInfo => {
-            const tokenInfo = accountInfo.account.data.parsed.info;
-            if (tokenInfo.mint === tokenMintAddress.toString()) {
-                balance = tokenInfo.tokenAmount.uiAmount;
-            }
-        });
-
-        if (balance > 0) {
-            console.log(`🔄 Kullanıcının 2JZ Coin Bakiyesi: ${balance}`);
-            return balance;
-        } else {
-            console.log("⚠️ Kullanıcının bakiyesi yok!");
-            return 0;
+        if (accounts.value.length > 0) {
+            const accountInfo = await connection.getParsedAccountInfo(accounts.value[0].pubkey);
+            balance = accountInfo.value.data.parsed.info.tokenAmount.uiAmount;
         }
+
+        console.log(`🔄 Kullanıcının 2JZ Coin Bakiyesi: ${balance}`);
+        return balance;
 
     } catch (error) {
         console.error("❌ Bakiye alınırken hata oluştu:", error);
