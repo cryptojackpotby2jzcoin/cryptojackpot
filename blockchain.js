@@ -13,6 +13,7 @@ const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1
 
 // ✅ 2JZ Coin smart contract program ID
 const programId = new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv");
+const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
 // ✅ Initialize user account in smart contract
 async function initializeAccount() {
@@ -125,7 +126,7 @@ async function getUserBalance() {
     try {
         const accounts = await connection.getParsedTokenAccountsByOwner(
             provider.publicKey,
-            { programId: programId }
+            { programId: TOKEN_PROGRAM_ID }
         );
 
         if (accounts.value.length > 0) {
