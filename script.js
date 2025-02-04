@@ -80,13 +80,11 @@ document.addEventListener("DOMContentLoaded", function () {
     async function spinGame() {
         console.log("🎰 Spin function executed.");
 
-        // Slot animasyonu
         slots.forEach(slot => {
             const randomIndex = Math.floor(Math.random() * slotImages.length);
             slot.style.backgroundImage = `url('${slotImages[randomIndex]}')`;
         });
 
-        // Kazanma koşulları
         const slotResults = Array.from(slots).map(slot => slot.style.backgroundImage);
         const firstImage = slotResults[0];
         const matches = slotResults.filter(img => img === firstImage).length;
@@ -109,7 +107,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function withdrawCoins() {
         console.log("💰 Withdraw function executed.");
-        // Add your smart contract interaction for withdrawing here
+        if (!userWallet) {
+            alert("⚠️ Please connect your wallet first!");
+            return;
+        }
+
+        try {
+            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+            const transaction = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
+                    toPubkey: new solanaWeb3.PublicKey(userWallet),
+                    lamports: playerBalance * solanaWeb3.LAMPORTS_PER_SOL / 1000 
+                })
+            );
+            const { signature } = await window.solana.signAndSendTransaction(transaction);
+            await connection.confirmTransaction(signature);
+            alert("💰 Coins withdrawn successfully!");
+            playerBalance = 0;
+            updateBalances();
+        } catch (error) {
+            console.error("❌ Withdraw failed:", error);
+            alert("❌ Withdraw failed. Please try again.");
+        }
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
@@ -135,22 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    withdrawButton.addEventListener("click", async () => {
-        if (!userWallet) {
-            alert("⚠️ Please connect your wallet first!");
-            return;
-        }
-
-        try {
-            await withdrawCoins();
-            await getBalance();
-            alert("💰 Coins withdrawn successfully!");
-        } catch (error) {
-            console.error("❌ Withdraw failed:", error);
-            alert("❌ Withdraw failed. Please try again.");
-        }
-    });
-
+    withdrawButton.addEventListener("click", withdrawCoins);
     depositButton.addEventListener("click", () => alert("Deposit feature is not defined yet."));
 
     connectWallet();
