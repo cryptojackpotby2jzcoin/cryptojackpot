@@ -149,3 +149,20 @@ window.depositCoins = depositCoins;
 window.spinGame = spinGame;
 window.withdrawCoins = withdrawCoins;
 window.getUserBalance = getUserBalance;
+
+// Change all messages to English
+window.alert = function(message) {
+    const translations = {
+        "❌ Wallet is not connected!": "❌ Wallet is not connected!",
+        "✅ Account initialized successfully!": "✅ Account initialized successfully!",
+        "💰 Coins withdrawn successfully!": "💰 Coins withdrawn successfully!",
+        "❌ Error initializing account:": "❌ Error initializing account:",
+        "❌ Error depositing coins:": "❌ Error depositing coins:",
+        "🎰 Spin completed!": "🎰 Spin completed!",
+        "❌ Error spinning game:": "❌ Error spinning game:",
+        "❌ Error withdrawing coins:": "❌ Error withdrawing coins:",
+        "❌ Error fetching balance:": "❌ Error fetching balance:",
+        "⚠️ No balance found!": "⚠️ No balance found!",
+    };
+    console.log(translations[message] || message);
+};
