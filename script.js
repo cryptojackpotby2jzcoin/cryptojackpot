@@ -1,6 +1,3 @@
-import { Buffer } from "buffer";
-window.Buffer = Buffer;
-
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const spinButton = document.getElementById("spin-button");
@@ -30,53 +27,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function getBalance() {
-        console.log("🔄 Bakiyeniz blockchain'den alınıyor...");
         try {
-            const balance = await connection.getTokenAccountBalance(new PublicKey(userWallet));
-            playerBalance = balance.value.uiAmount || 0; 
+            const balance = await window.getUserBalance();
+            playerBalance = balance || 0;
             updateBalances();
         } catch (error) {
             console.error("❌ Bakiye alınırken hata oluştu:", error);
         }
     }
 
-    async function spin() {
-        if (!userWallet) {
-            alert("⚠️ Önce wallet bağlamalısınız!");
-            return;
-        }
-
-        if (playerBalance <= 0) {
-            resultMessage.textContent = "❌ Yetersiz bakiye!";
-            return;
-        }
-
-        console.log("🔄 Blockchain üzerinden spin işlemi başlatılıyor...");
-
-        try {
-            const transaction = new solanaWeb3.Transaction().add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [{ pubkey: new solanaWeb3.PublicKey(userWallet), isSigner: true, isWritable: true }],
-                    programId: new solanaWeb3.PublicKey("7eJ8iFsuwmVYr1eh6yg7VdMXD9CkKvFC52mM1z1JJeQv"),
-                    data: Buffer.from(Uint8Array.of(1)), // Smart contract'ta `spin()` fonksiyonunu çağırır
-                })
-            );
-
-            const signature = await window.solana.signAndSendTransaction(transaction);
-            console.log("✅ Spin işlemi tamamlandı:", signature);
-            resultMessage.textContent = "🎰 Spin başarıyla gerçekleşti!";
-
-            await getBalance();
-        } catch (error) {
-            console.error("❌ Spin işlemi başarısız oldu:", error);
-            alert("Spin sırasında hata oluştu.");
-        }
+    function updateBalances() {
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
-    spinButton.addEventListener("click", spin);
-    depositButton.addEventListener("click", depositCoins);
-    withdrawButton.addEventListener("click", withdrawCoins);
+    spinButton.addEventListener("click", () => alert("Spin işlemi için diğer dosyayı kullanın"));
+    depositButton.addEventListener("click", () => alert("Deposit işlemi henüz tanımlanmadı."));
+    withdrawButton.addEventListener("click", () => alert("Withdraw işlemi henüz tanımlanmadı."));
 
     updateBalances();
 });
