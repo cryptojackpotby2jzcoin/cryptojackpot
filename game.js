@@ -13,14 +13,14 @@ window.onload = async function () {
                 const response = await window.solana.connect();
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
-                console.log("✅ Wallet bağlandı:", userWallet);
+                console.log("✅ Wallet connected:", userWallet);
                 await getBalance();
             } catch (error) {
-                console.error("❌ Wallet bağlantısı başarısız oldu:", error);
-                alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
+                console.error("❌ Wallet connection failed:", error);
+                alert("Wallet connection failed, please try again.");
             }
         } else {
-            alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
+            alert("Phantom Wallet not found. Please install it and try again.");
         }
     }
 
@@ -30,7 +30,7 @@ window.onload = async function () {
             playerBalance = balance || 0;
             updateBalances();
         } else {
-            console.error("getUserBalance fonksiyonu tanımlı değil!");
+            console.error("getUserBalance function is not defined!");
         }
     }
 
@@ -40,12 +40,12 @@ window.onload = async function () {
 
     spinButton.addEventListener("click", async () => {
         if (!userWallet) {
-            alert("⚠️ Önce wallet bağlamalısınız!");
+            alert("⚠️ Please connect your wallet first!");
             return;
         }
 
         if (playerBalance <= 0) {
-            resultMessage.textContent = "❌ Yetersiz bakiye!";
+            resultMessage.textContent = "❌ Insufficient balance!";
             return;
         }
 
@@ -53,7 +53,7 @@ window.onload = async function () {
         playerBalance--;
         updateBalances();
         setTimeout(() => {
-            resultMessage.textContent = "🎉 Tebrikler! Kazandınız!";
+            resultMessage.textContent = "🎉 Congratulations! You won!";
         }, 2000);
     });
 
