@@ -26,9 +26,13 @@ window.onload = async function () {
 
     async function getBalance() {
         if (typeof window.getUserBalance === "function") {
-            const balance = await window.getUserBalance();
-            playerBalance = balance || 0;
-            updateBalances();
+            try {
+                const balance = await window.getUserBalance();
+                playerBalance = balance || 0;
+                updateBalances();
+            } catch (error) {
+                console.error("❌ Error fetching balance:", error);
+            }
         } else {
             console.error("getUserBalance function is not defined!");
         }
