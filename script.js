@@ -1,20 +1,29 @@
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
-    const spinButton = document.getElementById("spin-button");
-    const withdrawButton = document.getElementById("withdraw-button");
     const depositButton = document.getElementById("deposit-button");
+    const spinButton = document.getElementById("spin-button");
     const resultMessage = document.getElementById("result-message");
+    const withdrawButton = document.getElementById("withdraw-button");    
     const playerBalanceDisplay = document.getElementById("player-balance");
     const slots = document.querySelectorAll(".slot");
 
     const slotImages = [
-        "https://i.imgur.com/7N2Lyw9.png", // Logo
-        "https://i.imgur.com/5FZCz2P.png", // İkinci görsel
-        "https://i.imgur.com/xX9BzYH.png"  // Üçüncü görsel
+        "https://i.imgur.com/Xpf9bil.png",
+        "https://i.imgur.com/toIiHGF.png",
+        "https://i.imgur.com/tuXO9tn.png",
+        "https://i.imgur.com/7XZCiRx.png",
+        "https://i.imgur.com/7N2Lyw9.png",
+        "https://i.imgur.com/OazBXaj.png",
+        "https://i.imgur.com/bIBTHd0.png",
+        "https://i.imgur.com/PTrhXRa.png",
+        "https://i.imgur.com/cAkESML.png"
     ];
+
+    const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
 
     let userWallet = null;
     let playerBalance = 0;
+    let spins = 0;
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
@@ -80,22 +89,48 @@ document.addEventListener("DOMContentLoaded", function () {
     async function spinGame() {
         console.log("🎰 Spin function executed.");
 
-        slots.forEach(slot => {
-            const randomIndex = Math.floor(Math.random() * slotImages.length);
-            slot.style.backgroundImage = `url('${slotImages[randomIndex]}')`;
+        slots.forEach(slot => slot.classList.remove('winning-slot'));
+
+        let spinResults = [];
+        let animationCompleteCount = 0;
+
+        slots.forEach((slot) => {
+            let totalSpins = slotImages.length * 8;
+            let currentSpin = 0;
+
+            function animateSpin() {
+                if (currentSpin < totalSpins) {
+                    const randomIcon = slotImages[Math.floor(Math.random() * slotImages.length)];
+                    slot.style.backgroundImage = `url(${randomIcon})`;
+                    currentSpin++;
+                    setTimeout(animateSpin, 50);
+                } else {
+                    const finalIcon = slotImages[Math.floor(Math.random() * slotImages.length)];
+                    slot.style.backgroundImage = `url(${finalIcon})`;
+                    spinResults.push(finalIcon);
+                    animationCompleteCount++;
+
+                    if (animationCompleteCount === slots.length) {
+                        evaluateSpin(spinResults);
+                        spinButton.disabled = false;
+                    }
+                }
+            }
+            animateSpin();
         });
+    }
 
-        const slotResults = Array.from(slots).map(slot => slot.style.backgroundImage);
-        const firstImage = slotResults[0];
-        const matches = slotResults.filter(img => img === firstImage).length;
+    function evaluateSpin(spinResults) {
+        const winIcon = "https://i.imgur.com/7N2Lyw9.png";
+        const winCount = spinResults.filter(icon => icon === winIcon).length;
 
-        if (matches === 3) {
+        if (winCount === 3) {
             playerBalance += 100;
             resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
-        } else if (matches === 2) {
+        } else if (winCount === 2) {
             playerBalance += 5;
             resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
-        } else if (matches === 1) {
+        } else if (winCount === 1) {
             playerBalance += 1;
             resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
         } else {
