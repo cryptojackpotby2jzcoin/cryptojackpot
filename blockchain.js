@@ -6,8 +6,8 @@ script.onload = () => {
 };
 document.head.appendChild(script);
 
-// ✅ Solana bağlantısı (API Anahtarı ile)
-const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+// ✅ Solana bağlantısı (Mainnet RPC)
+const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
 // ✅ 2JZ Coin mint adresi
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
@@ -20,7 +20,6 @@ async function getUserBalance() {
     }
 
     try {
-        // Doğrudan mint filtresi ile token hesaplarını çekiyoruz
         const accounts = await connection.getParsedTokenAccountsByOwner(
             window.solana.publicKey,
             { mint: tokenMintAddress }
@@ -43,3 +42,46 @@ async function getUserBalance() {
 
 // Fonksiyonu global hale getiriyoruz
 window.getUserBalance = getUserBalance;
+
+// ✅ Deposit Fonksiyonu - Oyun bakiyesine coin ekleme
+async function depositCoins(amount) {
+    const currentBalance = await getUserBalance();
+    if (currentBalance < amount) {
+        alert("❌ Yetersiz bakiye! Daha fazla coin yatırmak için cüzdanınıza coin ekleyin.");
+        return 0;
+    }
+
+    // Oyun içi bakiye artırma
+    window.gameBalance = (window.gameBalance || 0) + amount;
+    console.log(`💰 ${amount} 2JZ Coin oyun bakiyesine eklendi. Toplam: ${window.gameBalance}`);
+    return window.gameBalance;
+}
+
+// Fonksiyonu global hale getiriyoruz
+window.depositCoins = depositCoins;
+
+// ✅ Spin Fonksiyonu - Oyun bakiyesinden coin eksiltme
+async function spinGame() {
+    if (!window.gameBalance || window.gameBalance <= 0) {
+        alert("❌ Oyun bakiyeniz yetersiz. Lütfen coin yatırın!");
+        return;
+    }
+
+    window.gameBalance--;
+    console.log(`🎰 Spin atıldı! Kalan oyun bakiyesi: ${window.gameBalance}`);
+
+    // Kazanma ihtimali ve ödül hesaplaması
+    const winChance = Math.random();
+    if (winChance > 0.7) {
+        const reward = 5;  // Kazanma ödülü
+        window.gameBalance += reward;
+        console.log(`🎉 Tebrikler! ${reward} 2JZ Coin kazandınız! Yeni bakiye: ${window.gameBalance}`);
+        alert(`🎉 Tebrikler! ${reward} 2JZ Coin kazandınız!`);
+    } else {
+        console.log("😢 Maalesef bu sefer kazanamadınız.");
+        alert("😢 Maalesef bu sefer kazanamadınız.");
+    }
+}
+
+// Fonksiyonu global hale getiriyoruz
+window.spinGame = spinGame;
