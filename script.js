@@ -15,24 +15,54 @@ document.addEventListener("DOMContentLoaded", function () {
                 const response = await window.solana.connect();
                 userWallet = response.publicKey.toString();
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
-                console.log("✅ Wallet bağlandı:", userWallet);
+                console.log("✅ Wallet connected:", userWallet);
                 await getBalance();
             } catch (error) {
-                console.error("❌ Wallet bağlantısı başarısız oldu:", error);
-                alert("Wallet bağlantısı başarısız oldu, lütfen tekrar deneyin.");
+                console.error("❌ Wallet connection failed:", error);
+                alert("Wallet connection failed, please try again.");
             }
         } else {
-            alert("Phantom Wallet bulunamadı. Lütfen yükleyin ve tekrar deneyin.");
+            alert("Phantom Wallet not found. Please install it and try again.");
+        }
+    }
+
+    async function getUserBalance() {
+        const provider = window.solana;
+        if (!provider || !provider.isPhantom) {
+            alert("❌ Wallet is not connected!");
+            return 0;
+        }
+
+        try {
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+            const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
+            const accounts = await connection.getParsedTokenAccountsByOwner(
+                provider.publicKey,
+                { programId: TOKEN_PROGRAM_ID }
+            );
+
+            if (accounts.value.length > 0) {
+                const balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+                console.log(`🔄 Current balance: ${balance}`);
+                return balance;
+            } else {
+                console.log("⚠️ No balance found!");
+                return 0;
+            }
+        } catch (error) {
+            console.error("❌ Error fetching balance:", error);
+            return 0;
         }
     }
 
     async function getBalance() {
         try {
-            const balance = await window.getUserBalance();
+            const balance = await getUserBalance();
             playerBalance = balance || 0;
             updateBalances();
         } catch (error) {
-            console.error("❌ Bakiye alınırken hata oluştu:", error);
+            console.error("❌ Error fetching balance:", error);
         }
     }
 
@@ -41,9 +71,46 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
-    spinButton.addEventListener("click", () => alert("Spin işlemi için diğer dosyayı kullanın"));
-    depositButton.addEventListener("click", () => alert("Deposit işlemi henüz tanımlanmadı."));
-    withdrawButton.addEventListener("click", () => alert("Withdraw işlemi henüz tanımlanmadı."));
+    spinButton.addEventListener("click", async () => {
+        if (!userWallet) {
+            alert("⚠️ Please connect your wallet first!");
+            return;
+        }
 
-    updateBalances();
+        if (playerBalance <= 0) {
+            resultMessage.textContent = "❌ Insufficient balance!";
+            return;
+        }
+
+        resultMessage.textContent = "🎰 Spinning...";
+
+        try {
+            await window.spinGame();
+            await getBalance();
+            resultMessage.textContent = "🎉 Spin completed! Check your updated balance.";
+        } catch (error) {
+            console.error("❌ Spin failed:", error);
+            resultMessage.textContent = "❌ Spin failed. Please try again.";
+        }
+    });
+
+    withdrawButton.addEventListener("click", async () => {
+        if (!userWallet) {
+            alert("⚠️ Please connect your wallet first!");
+            return;
+        }
+
+        try {
+            await window.withdrawCoins();
+            await getBalance();
+            alert("💰 Coins withdrawn successfully!");
+        } catch (error) {
+            console.error("❌ Withdraw failed:", error);
+            alert("❌ Withdraw failed. Please try again.");
+        }
+    });
+
+    depositButton.addEventListener("click", () => alert("Deposit feature is not defined yet."));
+
+    await connectWallet();
 });
