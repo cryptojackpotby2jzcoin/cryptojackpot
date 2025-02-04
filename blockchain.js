@@ -1,5 +1,3 @@
-// blockchain.js
-
 // Buffer'ı doğrudan bir script etiketiyle import ediyoruz
 const script = document.createElement('script');
 script.src = "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
@@ -8,11 +6,8 @@ script.onload = () => {
 };
 document.head.appendChild(script);
 
-// ✅ Solana bağlantısı (Alternatif RPC)
-const proxyUrl = "https://cors.bridged.cc/";
-const rpcUrl = "https://api.mainnet-beta.solana.com";
-
-const connection = new solanaWeb3.Connection(proxyUrl + rpcUrl, "confirmed");
+// ✅ Solana bağlantısı (API Anahtarı ile)
+const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
 
 // ✅ 2JZ Coin mint adresi
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
@@ -28,7 +23,7 @@ async function getUserBalance() {
         // Doğrudan mint filtresi ile token hesaplarını çekiyoruz
         const accounts = await connection.getParsedTokenAccountsByOwner(
             window.solana.publicKey,
-            { mint: tokenMintAddress } // Mint filtresi
+            { mint: tokenMintAddress }
         );
 
         let balance = 0;
