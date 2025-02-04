@@ -6,8 +6,8 @@ script.onload = () => {
 };
 document.head.appendChild(script);
 
-// ✅ Solana bağlantısı
-const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+// ✅ Solana bağlantısı (Alternatif RPC)
+const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana", "confirmed");
 
 // ✅ 2JZ Coin mint adresi
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
