@@ -1,3 +1,5 @@
+// blockchain.js
+
 // Import Buffer directly with a script tag
 const script = document.createElement('script');
 script.src = "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
@@ -6,8 +8,8 @@ script.onload = () => {
 };
 document.head.appendChild(script);
 
-// ✅ Solana connection (Mainnet RPC)
-const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+// ✅ Solana connection using Helius API Key
+const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
 
 // ✅ 2JZ Coin mint address
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
