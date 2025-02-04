@@ -1,9 +1,13 @@
-// 📌 Buffer hatasını çözmek için sadece bir kez tanımladık
-import { Buffer } from "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
-window.Buffer = Buffer;
+// Buffer'ı doğrudan bir script etiketiyle import ediyoruz
+const script = document.createElement('script');
+script.src = "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
+script.onload = () => {
+    window.Buffer = Buffer;
+};
+document.head.appendChild(script);
 
 // ✅ Solana bağlantısı
-const connection = new solanaWeb3.Connection("https://rpc.helius.xyz", "confirmed");
+const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
 // ✅ 2JZ Coin mint adresi
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
@@ -35,4 +39,5 @@ async function getUserBalance() {
     }
 }
 
+// Fonksiyonu global hale getiriyoruz
 window.getUserBalance = getUserBalance;
