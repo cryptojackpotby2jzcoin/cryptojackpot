@@ -5,6 +5,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
+    const slots = document.querySelectorAll(".slot");
+
+    const slotImages = [
+        "https://i.imgur.com/7N2Lyw9.png", // Logo
+        "https://i.imgur.com/5FZCz2P.png", // İkinci görsel
+        "https://i.imgur.com/xX9BzYH.png"  // Üçüncü görsel
+    ];
 
     let userWallet = null;
     let playerBalance = 0;
@@ -72,7 +79,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function spinGame() {
         console.log("🎰 Spin function executed.");
-        // Add your smart contract interaction for spinning here
+
+        // Slot animasyonu
+        slots.forEach(slot => {
+            const randomIndex = Math.floor(Math.random() * slotImages.length);
+            slot.style.backgroundImage = `url('${slotImages[randomIndex]}')`;
+        });
+
+        // Kazanma koşulları
+        const slotResults = Array.from(slots).map(slot => slot.style.backgroundImage);
+        const firstImage = slotResults[0];
+        const matches = slotResults.filter(img => img === firstImage).length;
+
+        if (matches === 3) {
+            playerBalance += 100;
+            resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
+        } else if (matches === 2) {
+            playerBalance += 5;
+            resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
+        } else if (matches === 1) {
+            playerBalance += 1;
+            resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
+        } else {
+            resultMessage.textContent = "❌ No match, better luck next time!";
+        }
+
+        updateBalances();
     }
 
     async function withdrawCoins() {
@@ -93,11 +125,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         resultMessage.textContent = "🎰 Spinning...";
+        playerBalance--;
 
         try {
             await spinGame();
-            await getBalance();
-            resultMessage.textContent = "🎉 Spin completed! Check your updated balance.";
         } catch (error) {
             console.error("❌ Spin failed:", error);
             resultMessage.textContent = "❌ Spin failed. Please try again.";
