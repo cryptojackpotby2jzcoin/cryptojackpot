@@ -1,7 +1,10 @@
+// blockchain.js
+
+// Solana bağlantısı ve Token Program ID'si
 const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
-// ✅ Get user balance from blockchain
+// ✅ Kullanıcının bakiyesini blockchain üzerinden al
 async function getUserBalance() {
     const provider = window.solana;
     if (!provider || !provider.isPhantom) {
@@ -29,10 +32,10 @@ async function getUserBalance() {
     }
 }
 
-// ✅ Spin the game (placeholder for smart contract interaction)
+// ✅ Oyunu döndürme (spin) işlemi
 async function spinGame() {
     console.log("🎰 Spin initiated!");
-    // Smart contract spin logic to be integrated here
+    // Buraya smart contract ile spin işlemi entegre edilecek.
 }
 
 // Fonksiyonları global hale getir
