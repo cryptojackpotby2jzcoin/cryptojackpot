@@ -24,7 +24,7 @@ window.onload = async function () {
         }
     }
 
-    async function getUserBalance() {
+    window.getUserBalance = async function () {
         const provider = window.solana;
         if (!provider || !provider.isPhantom) {
             alert("❌ Wallet is not connected!");
@@ -32,6 +32,9 @@ window.onload = async function () {
         }
 
         try {
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+            const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+
             const accounts = await connection.getParsedTokenAccountsByOwner(
                 provider.publicKey,
                 { programId: TOKEN_PROGRAM_ID }
@@ -53,7 +56,7 @@ window.onload = async function () {
 
     async function getBalance() {
         try {
-            const balance = await getUserBalance();
+            const balance = await window.getUserBalance();
             playerBalance = balance || 0;
             updateBalances();
         } catch (error) {
