@@ -22,17 +22,27 @@ async function getUserBalance() {
     try {
         const accounts = await connection.getParsedTokenAccountsByOwner(
             window.solana.publicKey,
-            { mint: tokenMintAddress }
+            { programId: new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA") }  // SPL Token Program ID
         );
 
-        if (accounts.value.length > 0) {
-            let balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+        let balance = 0;
+
+        // Kullanıcının 2JZ Coin bakiyesi olup olmadığını kontrol ediyoruz
+        accounts.value.forEach(accountInfo => {
+            const tokenInfo = accountInfo.account.data.parsed.info;
+            if (tokenInfo.mint === tokenMintAddress.toString()) {
+                balance = tokenInfo.tokenAmount.uiAmount;
+            }
+        });
+
+        if (balance > 0) {
             console.log(`🔄 Kullanıcının 2JZ Coin Bakiyesi: ${balance}`);
             return balance;
         } else {
             console.log("⚠️ Kullanıcının bakiyesi yok!");
             return 0;
         }
+
     } catch (error) {
         console.error("❌ Bakiye alınırken hata oluştu:", error);
         return 0;
