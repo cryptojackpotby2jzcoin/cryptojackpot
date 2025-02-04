@@ -112,5 +112,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
     depositButton.addEventListener("click", () => alert("Deposit feature is not defined yet."));
 
-    await connectWallet();
+    connectWallet();
 });
