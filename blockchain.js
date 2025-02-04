@@ -114,8 +114,37 @@ async function withdrawCoins() {
     }
 }
 
+// ✅ Get user balance from smart contract
+async function getUserBalance() {
+    const provider = window.solana;
+    if (!provider || !provider.isPhantom) {
+        alert("❌ Wallet is not connected!");
+        return 0;
+    }
+
+    try {
+        const accounts = await connection.getParsedTokenAccountsByOwner(
+            provider.publicKey,
+            { programId: programId }
+        );
+
+        if (accounts.value.length > 0) {
+            const balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+            console.log(`🔄 Current balance: ${balance}`);
+            return balance;
+        } else {
+            console.log("⚠️ No balance found!");
+            return 0;
+        }
+    } catch (error) {
+        console.error("❌ Error fetching balance:", error);
+        return 0;
+    }
+}
+
 // Make the functions global
 window.initializeAccount = initializeAccount;
 window.depositCoins = depositCoins;
 window.spinGame = spinGame;
 window.withdrawCoins = withdrawCoins;
+window.getUserBalance = getUserBalance;
