@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('mainnet-beta'), 'confirmed');
+            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
             const TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
             const accounts = await connection.getParsedTokenAccountsByOwner(
@@ -70,6 +70,16 @@ document.addEventListener("DOMContentLoaded", function () {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
     }
 
+    async function spinGame() {
+        console.log("🎰 Spin function executed.");
+        // Add your smart contract interaction for spinning here
+    }
+
+    async function withdrawCoins() {
+        console.log("💰 Withdraw function executed.");
+        // Add your smart contract interaction for withdrawing here
+    }
+
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", async () => {
         if (!userWallet) {
@@ -85,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
         resultMessage.textContent = "🎰 Spinning...";
 
         try {
-            await window.spinGame();
+            await spinGame();
             await getBalance();
             resultMessage.textContent = "🎉 Spin completed! Check your updated balance.";
         } catch (error) {
@@ -101,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            await window.withdrawCoins();
+            await withdrawCoins();
             await getBalance();
             alert("💰 Coins withdrawn successfully!");
         } catch (error) {
