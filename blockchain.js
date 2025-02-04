@@ -38,27 +38,6 @@ window.onload = async function () {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
     }
 
-    function calculateReward(matches) {
-        if (matches === 1) return 1;
-        if (matches === 2) return 5;
-        if (matches === 3) return 100;
-        return 0;
-    }
-
-    function spinSlots() {
-        const symbols = ["logo", "cherry", "bell", "star", "seven"];
-        const slots = [
-            symbols[Math.floor(Math.random() * symbols.length)],
-            symbols[Math.floor(Math.random() * symbols.length)],
-            symbols[Math.floor(Math.random() * symbols.length)]
-        ];
-        return slots;
-    }
-
-    function countLogos(slots) {
-        return slots.filter(symbol => symbol === "logo").length;
-    }
-
     spinButton.addEventListener("click", async () => {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -71,23 +50,15 @@ window.onload = async function () {
         }
 
         resultMessage.textContent = "🎰 Spinning...";
-        playerBalance--;
-        updateBalances();
 
-        setTimeout(() => {
-            const slots = spinSlots();
-            const logoCount = countLogos(slots);
-            const reward = calculateReward(logoCount);
-
-            if (reward > 0) {
-                playerBalance += reward;
-                resultMessage.textContent = `🎉 Congratulations! You caught ${logoCount} logo(s) and won ${reward} coins!`;
-            } else {
-                resultMessage.textContent = "❌ No logos caught, better luck next time!";
-            }
-
-            updateBalances();
-        }, 2000);
+        try {
+            await window.spinGame();
+            await getBalance();
+            resultMessage.textContent = "🎉 Spin completed! Check your updated balance.";
+        } catch (error) {
+            console.error("❌ Spin failed:", error);
+            resultMessage.textContent = "❌ Spin failed. Please try again.";
+        }
     });
 
     await connectWallet();
