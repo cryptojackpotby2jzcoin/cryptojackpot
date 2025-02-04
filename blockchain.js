@@ -24,17 +24,40 @@ window.onload = async function () {
         }
     }
 
-    async function getBalance() {
-        if (typeof window.getUserBalance === "function") {
-            try {
-                const balance = await window.getUserBalance();
-                playerBalance = balance || 0;
-                updateBalances();
-            } catch (error) {
-                console.error("❌ Error fetching balance:", error);
+    async function getUserBalance() {
+        const provider = window.solana;
+        if (!provider || !provider.isPhantom) {
+            alert("❌ Wallet is not connected!");
+            return 0;
+        }
+
+        try {
+            const accounts = await connection.getParsedTokenAccountsByOwner(
+                provider.publicKey,
+                { programId: TOKEN_PROGRAM_ID }
+            );
+
+            if (accounts.value.length > 0) {
+                const balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
+                console.log(`🔄 Current balance: ${balance}`);
+                return balance;
+            } else {
+                console.log("⚠️ No balance found!");
+                return 0;
             }
-        } else {
-            console.error("getUserBalance function is not defined!");
+        } catch (error) {
+            console.error("❌ Error fetching balance:", error);
+            return 0;
+        }
+    }
+
+    async function getBalance() {
+        try {
+            const balance = await getUserBalance();
+            playerBalance = balance || 0;
+            updateBalances();
+        } catch (error) {
+            console.error("❌ Error fetching balance:", error);
         }
     }
 
