@@ -1,4 +1,4 @@
-// Buffer'ı doğrudan bir script etiketiyle import ediyoruz
+// Import Buffer directly with a script tag
 const script = document.createElement('script');
 script.src = "https://cdnjs.cloudflare.com/ajax/libs/buffer/5.7.1/buffer.min.js";
 script.onload = () => {
@@ -6,16 +6,16 @@ script.onload = () => {
 };
 document.head.appendChild(script);
 
-// ✅ Solana bağlantısı (Mainnet RPC)
+// ✅ Solana connection (Mainnet RPC)
 const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
-// ✅ 2JZ Coin mint adresi
+// ✅ 2JZ Coin mint address
 const tokenMintAddress = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
 
-// ✅ Kullanıcının 2JZ Coin bakiyesini sorgula
+// ✅ Query user's 2JZ Coin balance
 async function getUserBalance() {
     if (!window.solana || !window.solana.isPhantom) {
-        alert("❌ Wallet bağlı değil!");
+        alert("❌ Wallet is not connected!");
         return;
     }
 
@@ -31,57 +31,57 @@ async function getUserBalance() {
             balance = accounts.value[0].account.data.parsed.info.tokenAmount.uiAmount;
         }
 
-        console.log(`🔄 Kullanıcının 2JZ Coin Bakiyesi: ${balance}`);
+        console.log(`🔄 User's 2JZ Coin Balance: ${balance}`);
         return balance;
 
     } catch (error) {
-        console.error("❌ Bakiye alınırken hata oluştu:", error);
+        console.error("❌ Error fetching balance:", error);
         return 0;
     }
 }
 
-// Fonksiyonu global hale getiriyoruz
+// Make the function global
 window.getUserBalance = getUserBalance;
 
-// ✅ Deposit Fonksiyonu - Oyun bakiyesine coin ekleme
+// ✅ Deposit Function - Add coins to game balance
 async function depositCoins(amount) {
     const currentBalance = await getUserBalance();
     if (currentBalance < amount) {
-        alert("❌ Yetersiz bakiye! Daha fazla coin yatırmak için cüzdanınıza coin ekleyin.");
+        alert("❌ Insufficient balance! Please add more coins to your wallet.");
         return 0;
     }
 
-    // Oyun içi bakiye artırma
+    // Increase game balance
     window.gameBalance = (window.gameBalance || 0) + amount;
-    console.log(`💰 ${amount} 2JZ Coin oyun bakiyesine eklendi. Toplam: ${window.gameBalance}`);
+    console.log(`💰 ${amount} 2JZ Coins added to game balance. Total: ${window.gameBalance}`);
     return window.gameBalance;
 }
 
-// Fonksiyonu global hale getiriyoruz
+// Make the function global
 window.depositCoins = depositCoins;
 
-// ✅ Spin Fonksiyonu - Oyun bakiyesinden coin eksiltme
+// ✅ Spin Function - Deduct coins from game balance
 async function spinGame() {
     if (!window.gameBalance || window.gameBalance <= 0) {
-        alert("❌ Oyun bakiyeniz yetersiz. Lütfen coin yatırın!");
+        alert("❌ Insufficient game balance. Please deposit coins!");
         return;
     }
 
     window.gameBalance--;
-    console.log(`🎰 Spin atıldı! Kalan oyun bakiyesi: ${window.gameBalance}`);
+    console.log(`🎰 Spin initiated! Remaining game balance: ${window.gameBalance}`);
 
-    // Kazanma ihtimali ve ödül hesaplaması
+    // Win probability and reward calculation
     const winChance = Math.random();
     if (winChance > 0.7) {
-        const reward = 5;  // Kazanma ödülü
+        const reward = 5;  // Win reward
         window.gameBalance += reward;
-        console.log(`🎉 Tebrikler! ${reward} 2JZ Coin kazandınız! Yeni bakiye: ${window.gameBalance}`);
-        alert(`🎉 Tebrikler! ${reward} 2JZ Coin kazandınız!`);
+        console.log(`🎉 Congratulations! You won ${reward} 2JZ Coins! New balance: ${window.gameBalance}`);
+        alert(`🎉 Congratulations! You won ${reward} 2JZ Coins!`);
     } else {
-        console.log("😢 Maalesef bu sefer kazanamadınız.");
-        alert("😢 Maalesef bu sefer kazanamadınız.");
+        console.log("😢 Unfortunately, you didn't win this time.");
+        alert("😢 Unfortunately, you didn't win this time.");
     }
 }
 
-// Fonksiyonu global hale getiriyoruz
+// Make the function global
 window.spinGame = spinGame;
