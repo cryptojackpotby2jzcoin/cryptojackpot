@@ -3,9 +3,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const spinButton = document.getElementById("spin-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const depositButton = document.getElementById("deposit-button");
+    const transferButton = document.getElementById("transfer-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
     const earnedCoinsDisplay = document.getElementById("earned-coins");
+    const spinCounterDisplay = document.getElementById("spin-counter");
     const slots = document.querySelectorAll(".slot");
 
     const slotImages = [
@@ -23,9 +25,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
 
     let userWallet = null;
-    let playerBalance = 20; // Starting balance
-    let temporaryBalance = 0;
+    let playerBalance = 0;
+    let earnedCoins = 0;
     let spins = 0;
+    let isSpinning = false;
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
@@ -86,11 +89,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${temporaryBalance} Coins`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
+        spinCounterDisplay.textContent = spins;
     }
 
     async function spinGame() {
-        console.log("🎰 Spin function executed.");
+        if (isSpinning) return;
+        isSpinning = true;
+        spinButton.disabled = true;
+        resultMessage.textContent = "🎰 Spinning...";
 
         slots.forEach(slot => slot.classList.remove('winning-slot'));
 
@@ -116,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (animationCompleteCount === slots.length) {
                         evaluateSpin(spinResults);
                         spinButton.disabled = false;
+                        isSpinning = false;
                     }
                 }
             }
@@ -128,30 +136,19 @@ document.addEventListener("DOMContentLoaded", function () {
         const winCount = spinResults.filter(icon => icon === winIcon).length;
 
         if (winCount === 3) {
-            temporaryBalance += 100;
-            highlightWinningSlots(winIcon);
+            earnedCoins += 100;
             resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
         } else if (winCount === 2) {
-            temporaryBalance += 5;
-            highlightWinningSlots(winIcon);
+            earnedCoins += 5;
             resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
         } else if (winCount === 1) {
-            temporaryBalance += 1;
-            highlightWinningSlots(winIcon);
+            earnedCoins += 1;
             resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
         } else {
             resultMessage.textContent = "❌ No match, better luck next time!";
         }
 
         updateBalances();
-    }
-
-    function highlightWinningSlots(winIcon) {
-        slots.forEach(slot => {
-            if (slot.style.backgroundImage.includes(winIcon)) {
-                slot.classList.add('winning-slot');
-            }
-        });
     }
 
     async function withdrawCoins() {
@@ -167,17 +164,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 solanaWeb3.SystemProgram.transfer({
                     fromPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
                     toPubkey: new solanaWeb3.PublicKey(userWallet),
-                    lamports: temporaryBalance * solanaWeb3.LAMPORTS_PER_SOL / 1000 
+                    lamports: earnedCoins * solanaWeb3.LAMPORTS_PER_SOL / 1000 
                 })
             );
             const { signature } = await window.solana.signAndSendTransaction(transaction);
             await connection.confirmTransaction(signature);
             alert("💰 Coins withdrawn successfully!");
-            temporaryBalance = 0;
+            earnedCoins = 0;
             updateBalances();
         } catch (error) {
             console.error("❌ Withdraw failed:", error);
             alert("❌ Withdraw failed. Please try again.");
+        }
+    }
+
+    async function transferCoins() {
+        if (earnedCoins > 0) {
+            playerBalance += earnedCoins;
+            earnedCoins = 0;
+            resultMessage.textContent = "Coins transferred to your main balance!";
+            updateBalances();
+        } else {
+            resultMessage.textContent = "No coins to transfer!";
         }
     }
 
@@ -193,8 +201,8 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        resultMessage.textContent = "🎰 Spinning...";
         playerBalance--;
+        spins++;
 
         try {
             await spinGame();
@@ -205,6 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     withdrawButton.addEventListener("click", withdrawCoins);
+    transferButton.addEventListener("click", transferCoins);
     depositButton.addEventListener("click", () => alert("Deposit feature is not defined yet."));
 
     connectWallet();
