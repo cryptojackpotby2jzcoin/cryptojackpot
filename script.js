@@ -135,6 +135,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const winIcon = "https://i.imgur.com/7N2Lyw9.png";
         const winCount = spinResults.filter(icon => icon === winIcon).length;
 
+        if (winCount > 0) {
+            slots.forEach((slot, index) => {
+                if (spinResults[index] === winIcon) {
+                    slot.classList.add('winning-slot');
+                }
+            });
+        }
+
         if (winCount === 3) {
             earnedCoins += 100;
             resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
@@ -145,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
             earnedCoins += 1;
             resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
         } else {
-            resultMessage.textContent = "❌ No match, better luck next time!";
+            resultMessage.textContent = "No match, better luck next time!";
         }
 
         updateBalances();
@@ -197,7 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (playerBalance <= 0) {
-            resultMessage.textContent = "❌ Insufficient balance!";
+            resultMessage.textContent = "⚠️ Insufficient balance!";
             return;
         }
 
