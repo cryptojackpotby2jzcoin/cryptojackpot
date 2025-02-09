@@ -1,5 +1,8 @@
 // script.js
-window.Buffer = window.Buffer || require("buffer").Buffer;
+window.Buffer = window.Buffer || (() => {
+    const bufferModule = import("buffer");
+    return bufferModule.then((b) => b.Buffer).catch(() => console.error("Buffer module not found"));
+})();
 
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
@@ -36,7 +39,6 @@ document.addEventListener("DOMContentLoaded", function () {
     let spins = 0;
     let isSpinning = false;
 
-    // Wallet connection
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -55,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // House wallet balance
     async function updateHouseBalance() {
         try {
             const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
@@ -67,7 +68,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Player wallet balance
     async function getUserBalance() {
         try {
             const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
@@ -89,14 +89,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Update UI balances
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
         spinCounterDisplay.textContent = spins;
     }
 
-    // Deposit coins
     async function depositCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -133,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Withdraw coins
     async function withdrawCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -168,7 +165,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Transfer coins
     async function transferCoins() {
         if (earnedCoins > 0) {
             playerBalance += earnedCoins;
@@ -180,7 +176,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Spin game
     function spinGame() {
         if (isSpinning) return;
         isSpinning = true;
@@ -247,13 +242,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Event listeners
     connectWalletButton.addEventListener("click", connectWallet);
     spinButton.addEventListener("click", spinGame);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
     transferButton.addEventListener("click", transferCoins);
 
-    // Auto-connect wallet on page load
     connectWallet();
 });
