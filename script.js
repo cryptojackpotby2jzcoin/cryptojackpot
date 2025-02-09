@@ -66,7 +66,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
-            const { signature } = await window.solana.signAndSendTransaction(transaction);
+            // İşlemi Phantom Wallet ile imzala
+            const signedTransaction = await window.solana.signAndSendTransaction(transaction);
+            const signature = signedTransaction.signature;
             await connection.confirmTransaction(signature, "confirmed");
 
             playerBalance += parseInt(amount);
@@ -96,7 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
-            const { signature } = await window.solana.signAndSendTransaction(transaction);
+            const signedTransaction = await window.solana.signAndSendTransaction(transaction);
+            const signature = signedTransaction.signature;
             await connection.confirmTransaction(signature, "confirmed");
 
             earnedCoins = 0;
