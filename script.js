@@ -37,22 +37,22 @@ document.addEventListener("DOMContentLoaded", function () {
     let isSpinning = false;
 
     async function connectWallet() {
-        if (window.solana && window.solana.isPhantom) {
-            try {
-                const response = await window.solana.connect();
-                userWallet = response.publicKey.toString();
-                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
-                console.log("✅ Wallet connected:", userWallet);
-                await getBalance();
-                await updateHouseBalance();
-            } catch (error) {
-                console.error("❌ Wallet connection failed:", error);
-                alert("Wallet connection failed, please try again.");
-            }
-        } else {
-            alert("Phantom Wallet not found. Please install it and try again.");
+    if (window.solana && window.solana.isPhantom) {
+        try {
+            const response = await window.solana.connect();
+            userWallet = response.publicKey.toString();
+            document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
+            console.log("✅ Wallet connected:", userWallet);
+            await getBalance();
+            await updateHouseBalance();
+        } catch (error) {
+            console.error("❌ Wallet connection failed:", error);
+            alert("Wallet connection failed, please try again.");
         }
+    } else {
+        alert("Phantom Wallet not found. Please install it and try again.");
     }
+}
 
    async function updateHouseBalance() {
     try {
@@ -98,8 +98,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const amount = 100; // Sabit miktar: 100 coin
-    const lamports = amount * solanaWeb3.LAMPORTS_PER_SOL / 1000; // Lamport'a çevirme
+    const amount = prompt("Enter the number of coins to deposit (max 10,000):");
+    if (!amount || isNaN(amount) || amount <= 0 || amount > 10000) {
+        alert("❌ Invalid deposit amount!");
+        return;
+    }
+
+    const lamports = amount * solanaWeb3.LAMPORTS_PER_SOL / 1000;
 
     try {
         const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
@@ -110,6 +115,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 lamports: lamports
             })
         );
+
+        const { signature } = await window.solana.signAndSendTransaction(transaction);
+        await connection.confirmTransaction(signature, "confirmed");
+
+        playerBalance += parseInt(amount);
+        alert(`✅ Successfully deposited ${amount} coins!`);
+        updateBalances();
+    } catch (error) {
+        console.error("❌ Deposit failed:", error);
+        alert("❌ Deposit failed. Please try again.");
+    }
+}
 
         const { signature } = await window.solana.signAndSendTransaction(transaction);
         await connection.confirmTransaction(signature, "confirmed");
@@ -160,4 +177,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
     connectWallet();
 });
+
+function evaluateSpin(spinResults) {
+    const winIcon = "https://i.imgur.com/7N2Lyw9.png";
+    const winCount = spinResults.filter(icon => icon === winIcon).length;
+
+    if (winCount > 0) {
+        slots.forEach((slot, index) => {
+            if (spinResults[index] === winIcon) {
+                slot.classList.add("winning-slot");
+            }
+        });
+    }
+
+    if (winCount === 3) {
+        earnedCoins += 100;
+        resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
+    } else if (winCount === 2) {
+        earnedCoins += 5;
+        resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
+    } else if (winCount === 1) {
+        earnedCoins += 1;
+        resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
+    } else {
+        resultMessage.textContent = "❌ No match, better luck next time!";
+    }
+
+    updateBalances();
+}
 
