@@ -1,15 +1,10 @@
-// Tarayıcı ortamı için Buffer modülünü yükle
-window.Buffer = window.Buffer || require("buffer").Buffer;
-
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
-    const spinButton = document.getElementById("spin-button");
-    const withdrawButton = document.getElementById("withdraw-button");
     const depositButton = document.getElementById("deposit-button");
-    const resultMessage = document.getElementById("result-message");
+    const withdrawButton = document.getElementById("withdraw-button");
+    const weeklyRewardDisplay = document.getElementById("weekly-reward");
     const playerBalanceDisplay = document.getElementById("player-balance");
     const earnedCoinsDisplay = document.getElementById("earned-coins");
-    const weeklyRewardDisplay = document.getElementById("weekly-reward");
 
     const programId = "8ZJJj82MrZ9LRq3bhoRHp8wrFPjqf8dZM5CuXnptJa5S";
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
