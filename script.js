@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
     const weeklyRewardDisplay = document.getElementById("weekly-reward");
+    const topPlayersDisplay = document.getElementById("leaderboard");
     const slots = document.querySelectorAll(".slot");
 
     const slotImages = [
@@ -39,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet}`;
                 console.log("✅ Wallet connected:", userWallet);
                 await getBalance();
-                await getHouseBalance();
+                await updateHouseBalance();
             } catch (error) {
                 console.error("❌ Wallet connection failed:", error);
                 alert("Wallet connection failed, please try again.");
@@ -49,12 +50,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    async function getHouseBalance() {
+    async function updateHouseBalance() {
         try {
             const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
             const balance = await connection.getBalance(new solanaWeb3.PublicKey(houseWalletAddress));
-            const solBalance = balance / solanaWeb3.LAMPORTS_PER_SOL;
-            weeklyRewardDisplay.textContent = `Weekly Reward Pool: ${solBalance.toFixed(2)} Coins ($${(solBalance * 0.005).toFixed(2)})`;
+            const coins = balance / solanaWeb3.LAMPORTS_PER_SOL;
+            weeklyRewardDisplay.textContent = `Weekly Reward Pool: ${coins.toFixed(2)} Coins ($${(coins * 0.005).toFixed(2)})`;
         } catch (error) {
             console.error("❌ Error fetching house balance:", error);
         }
@@ -116,6 +117,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     if (animationCompleteCount === slots.length) {
                         evaluateSpin(spinResults);
+                        spins++;
+                        updateBalances();
                         spinButton.disabled = false;
                         isSpinning = false;
                     }
@@ -149,22 +152,17 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             resultMessage.textContent = "❌ No match, better luck next time!";
         }
-
-        updateBalances();
     }
 
     async function depositCoins() {
-        console.log("💰 Deposit function executed.");
-        alert("Deposit feature will connect to wallet and transfer coins.");
+        alert("Deposit feature will allow coin transfer to play the game.");
     }
 
     async function withdrawCoins() {
-        console.log("💰 Withdraw function executed.");
-        alert("Withdraw feature will connect to wallet and transfer earned coins.");
+        alert("Withdraw feature will transfer earned coins to your wallet.");
     }
 
     async function transferCoins() {
-        console.log("💰 Transfer function executed.");
         if (earnedCoins > 0) {
             playerBalance += earnedCoins;
             earnedCoins = 0;
