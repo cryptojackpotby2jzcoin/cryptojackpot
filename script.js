@@ -1,3 +1,6 @@
+// Tarayıcı ortamı için Buffer modülünü yükle
+window.Buffer = window.Buffer || require("buffer").Buffer;
+
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const spinButton = document.getElementById("spin-button");
@@ -7,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const playerBalanceDisplay = document.getElementById("player-balance");
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const weeklyRewardDisplay = document.getElementById("weekly-reward");
-    const slots = document.querySelectorAll(".slot");
 
     const programId = "8ZJJj82MrZ9LRq3bhoRHp8wrFPjqf8dZM5CuXnptJa5S";
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
@@ -111,35 +113,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function spinGame() {
-        if (playerBalance <= 0) {
-            resultMessage.textContent = "❌ Insufficient balance!";
-            return;
-        }
-
-        resultMessage.textContent = "🎰 Spinning...";
-        playerBalance--;
-        updateBalances();
-
-        setTimeout(() => {
-            const win = Math.random() < 0.3; // %30 kazanma şansı
-            if (win) {
-                earnedCoins += 10;
-                resultMessage.textContent = "🎉 You won 10 coins!";
-            } else {
-                resultMessage.textContent = "❌ You lost, try again!";
-            }
-            updateBalances();
-        }, 2000);
-    }
-
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
-    spinButton.addEventListener("click", spinGame);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
 
