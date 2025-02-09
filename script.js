@@ -9,8 +9,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
     const spinCounterDisplay = document.getElementById("spin-counter");
     const weeklyRewardDisplay = document.getElementById("weekly-reward");
+    const slots = document.querySelectorAll(".slot");
+
+    const slotImages = [
+        "https://i.imgur.com/Xpf9bil.png",
+        "https://i.imgur.com/toIiHGF.png",
+        "https://i.imgur.com/tuXO9tn.png",
+        "https://i.imgur.com/7XZCiRx.png",
+        "https://i.imgur.com/7N2Lyw9.png",
+        "https://i.imgur.com/OazBXaj.png",
+        "https://i.imgur.com/bIBTHd0.png",
+        "https://i.imgur.com/PTrhXRa.png",
+        "https://i.imgur.com/cAkESML.png"
+    ];
 
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
+
     let userWallet = null;
     let playerBalance = 0;
     let earnedCoins = 0;
@@ -73,96 +87,92 @@ document.addEventListener("DOMContentLoaded", function () {
         spinCounterDisplay.textContent = spins;
     }
 
-    async function withdrawCoins() {
-        console.log("💰 Withdraw function executed.");
-        if (!userWallet) {
-            alert("⚠️ Please connect your wallet first!");
-            return;
+    function spinGame() {
+        if (isSpinning) return;
+        isSpinning = true;
+        spinButton.disabled = true;
+        resultMessage.textContent = "🎰 Spinning...";
+
+        let spinResults = [];
+        let animationCompleteCount = 0;
+
+        slots.forEach(slot => slot.classList.remove("winning-slot"));
+
+        slots.forEach((slot) => {
+            let totalSpins = slotImages.length * 8;
+            let currentSpin = 0;
+
+            function animateSpin() {
+                if (currentSpin < totalSpins) {
+                    const randomIcon = slotImages[Math.floor(Math.random() * slotImages.length)];
+                    slot.style.backgroundImage = `url(${randomIcon})`;
+                    currentSpin++;
+                    setTimeout(animateSpin, 50);
+                } else {
+                    const finalIcon = slotImages[Math.floor(Math.random() * slotImages.length)];
+                    slot.style.backgroundImage = `url(${finalIcon})`;
+                    spinResults.push(finalIcon);
+                    animationCompleteCount++;
+
+                    if (animationCompleteCount === slots.length) {
+                        evaluateSpin(spinResults);
+                        spinButton.disabled = false;
+                        isSpinning = false;
+                    }
+                }
+            }
+            animateSpin();
+        });
+    }
+
+    function evaluateSpin(spinResults) {
+        const winIcon = "https://i.imgur.com/7N2Lyw9.png";
+        const winCount = spinResults.filter(icon => icon === winIcon).length;
+
+        if (winCount > 0) {
+            slots.forEach((slot, index) => {
+                if (spinResults[index] === winIcon) {
+                    slot.classList.add("winning-slot");
+                }
+            });
         }
 
-        if (earnedCoins <= 0) {
-            alert("⚠️ No coins to withdraw!");
-            return;
+        if (winCount === 3) {
+            earnedCoins += 100;
+            resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
+        } else if (winCount === 2) {
+            earnedCoins += 5;
+            resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
+        } else if (winCount === 1) {
+            earnedCoins += 1;
+            resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
+        } else {
+            resultMessage.textContent = "❌ No match, better luck next time!";
         }
 
-        try {
-            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
-                    toPubkey: new solanaWeb3.PublicKey(userWallet),
-                    lamports: earnedCoins * solanaWeb3.LAMPORTS_PER_SOL / 1000 
-                })
-            );
-            const { signature } = await window.solana.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signature);
-            alert("💰 Coins withdrawn successfully!");
-            earnedCoins = 0;
-            updateBalances();
-        } catch (error) {
-            console.error("❌ Withdraw failed:", error);
-            alert("❌ Withdraw failed. Please try again.");
-        }
+        updateBalances();
     }
 
     async function depositCoins() {
-        if (!userWallet) {
-            alert("⚠️ Please connect your wallet first!");
-            return;
-        }
-
-        const depositAmount = prompt("Enter the number of coins to deposit (max 10,000):");
-        if (depositAmount > 10000 || depositAmount <= 0) {
-            alert("⚠️ Invalid deposit amount. Max: 10,000 coins.");
-            return;
-        }
-
-        try {
-            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new solanaWeb3.PublicKey(userWallet),
-                    toPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
-                    lamports: depositAmount * solanaWeb3.LAMPORTS_PER_SOL / 1000 
-                })
-            );
-            const { signature } = await window.solana.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signature);
-            alert("✅ Coins deposited successfully!");
-            playerBalance += parseInt(depositAmount, 10);
-            updateBalances();
-        } catch (error) {
-            console.error("❌ Deposit failed:", error);
-            alert("❌ Deposit failed. Please try again.");
-        }
+        console.log("💰 Deposit function executed.");
+        alert("Deposit feature is not defined yet.");
     }
 
+    async function withdrawCoins() {
+        console.log("💰 Withdraw function executed.");
+        alert("Withdraw feature is not defined yet.");
+    }
+
+    async function transferCoins() {
+        console.log("💰 Transfer function executed.");
+        alert("Transfer feature is not defined yet.");
+    }
+
+    connectWalletButton.addEventListener("click", connectWallet);
+    spinButton.addEventListener("click", spinGame);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
-    connectWalletButton.addEventListener("click", connectWallet);
-
-    spinButton.addEventListener("click", async () => {
-        if (!userWallet) {
-            alert("⚠️ Please connect your wallet first!");
-            return;
-        }
-
-        if (playerBalance <= 0) {
-            resultMessage.textContent = "⚠️ Insufficient balance!";
-            return;
-        }
-
-        playerBalance--;
-        spins++;
-        try {
-            resultMessage.textContent = "🎰 Spinning...";
-            await spinGame();
-        } catch (error) {
-            console.error("❌ Spin failed:", error);
-            resultMessage.textContent = "❌ Spin failed. Please try again.";
-        }
-    });
-
     transferButton.addEventListener("click", transferCoins);
+
     connectWallet();
 });
