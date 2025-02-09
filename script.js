@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
         spinCounterDisplay.textContent = spins;
     }
@@ -155,17 +155,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function depositCoins() {
         console.log("💰 Deposit function executed.");
-        alert("Deposit feature is not defined yet.");
+        alert("Deposit feature will connect to wallet and transfer coins.");
     }
 
     async function withdrawCoins() {
         console.log("💰 Withdraw function executed.");
-        alert("Withdraw feature is not defined yet.");
+        alert("Withdraw feature will connect to wallet and transfer earned coins.");
     }
 
     async function transferCoins() {
         console.log("💰 Transfer function executed.");
-        alert("Transfer feature is not defined yet.");
+        if (earnedCoins > 0) {
+            playerBalance += earnedCoins;
+            earnedCoins = 0;
+            updateBalances();
+            alert("Coins transferred to your main balance!");
+        } else {
+            alert("No coins to transfer!");
+        }
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
