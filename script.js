@@ -90,8 +90,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function depositCoins() {
-        alert("Deposit feature will allow coin transfer to play the game.");
+    if (!userWallet) {
+        alert("⚠️ Please connect your wallet first!");
+        return;
     }
+
+    const amount = 100; // Sabit bir miktar belirledik. Oyuncular her seferinde 100 coin yatırabilir.
+    const lamports = amount * solanaWeb3.LAMPORTS_PER_SOL / 1000; // Coinleri lamport'a çevir.
+
+    try {
+        const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+        const transaction = new solanaWeb3.Transaction().add(
+            solanaWeb3.SystemProgram.transfer({
+                fromPubkey: new solanaWeb3.PublicKey(userWallet),
+                toPubkey: new solanaWeb3.PublicKey(houseWalletAddress), // Coinler House Wallet'a gider.
+                lamports: lamports
+            })
+        );
+
+        // Wallet ile imzalama
+        const { signature } = await window.solana.signAndSendTransaction(transaction);
+        await connection.confirmTransaction(signature, "confirmed");
+
+        playerBalance += amount; // Oyuncu bakiyesini artır.
+        alert(`✅ Successfully deposited ${amount} coins to your game balance!`);
+        updateBalances();
+    } catch (error) {
+        console.error("❌ Deposit failed:", error);
+        alert("❌ Deposit failed. Please try again.");
+    }
+}
+
 
     async function withdrawCoins() {
         alert("Withdraw feature will transfer earned coins to your wallet.");
