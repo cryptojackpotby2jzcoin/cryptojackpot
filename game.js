@@ -1,10 +1,14 @@
 window.onload = async function () {
     const spinButton = document.getElementById("spin-button");
+    const connectWalletButton = document.getElementById("connect-wallet-button");
     const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
+    const earnedCoinsDisplay = document.getElementById("earned-coins");
 
+    const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
     let userWallet = null;
     let playerBalance = 0;
+    let earnedCoins = 0;
     const coinPrice = 0.000009295;
 
     async function connectWallet() {
@@ -24,38 +28,56 @@ window.onload = async function () {
         }
     }
 
+    async function getUserBalance() {
+        try {
+            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+            const balance = await connection.getBalance(new solanaWeb3.PublicKey(userWallet));
+            return balance / solanaWeb3.LAMPORTS_PER_SOL;
+        } catch (error) {
+            console.error("❌ Error fetching balance:", error);
+            return 0;
+        }
+    }
+
     async function getBalance() {
-        if (typeof window.getUserBalance === "function") {
-            const balance = await window.getUserBalance();
+        try {
+            const balance = await getUserBalance();
             playerBalance = balance || 0;
             updateBalances();
-        } else {
-            console.error("getUserBalance function is not defined!");
+        } catch (error) {
+            console.error("❌ Error fetching balance:", error);
         }
     }
 
     function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
+        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins ($${(playerBalance * coinPrice).toFixed(6)})`;
+        earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins ($${(earnedCoins * coinPrice).toFixed(6)})`;
     }
 
-    spinButton.addEventListener("click", async () => {
-        if (!userWallet) {
-            alert("⚠️ Please connect your wallet first!");
-            return;
-        }
-
+    function spinGame() {
         if (playerBalance <= 0) {
             resultMessage.textContent = "❌ Insufficient balance!";
             return;
         }
 
-        resultMessage.textContent = "🎰 Spinning...";
         playerBalance--;
         updateBalances();
+        resultMessage.textContent = "🎰 Spinning...";
+
         setTimeout(() => {
-            resultMessage.textContent = "🎉 Congratulations! You won!";
+            const winChance = Math.random();
+            if (winChance < 0.2) {
+                earnedCoins += 5;
+                resultMessage.textContent = "🎉 Congratulations! You won 5 coins!";
+            } else {
+                resultMessage.textContent = "❌ No match, better luck next time!";
+            }
+            updateBalances();
         }, 2000);
-    });
+    }
+
+    connectWalletButton.addEventListener("click", connectWallet);
+    spinButton.addEventListener("click", spinGame);
 
     await connectWallet();
 };
