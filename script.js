@@ -54,16 +54,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    async function updateHouseBalance() {
-        try {
-            const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
-            const balance = await connection.getBalance(new solanaWeb3.PublicKey(houseWalletAddress));
-            const coins = balance / solanaWeb3.LAMPORTS_PER_SOL;
-            weeklyRewardDisplay.textContent = `Weekly Reward Pool: ${coins.toFixed(2)} Coins ($${(coins * 0.005).toFixed(2)})`;
-        } catch (error) {
-            console.error("❌ Error fetching house balance:", error);
-        }
+   async function updateHouseBalance() {
+    try {
+        const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+        const balance = await connection.getBalance(new solanaWeb3.PublicKey(houseWalletAddress));
+        const coins = balance / solanaWeb3.LAMPORTS_PER_SOL;
+        weeklyRewardDisplay.textContent = `Weekly Reward Pool: ${coins.toFixed(2)} Coins ($${(coins * 0.005).toFixed(2)})`;
+    } catch (error) {
+        console.error("❌ Error fetching house balance:", error);
     }
+}
 
     async function getUserBalance() {
         try {
