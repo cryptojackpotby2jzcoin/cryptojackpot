@@ -75,7 +75,7 @@ window.onload = async function () {
         }
 
         if (playerBalance <= 0) {
-            resultMessage.textContent = "❌ Insufficient balance!";
+            resultMessage.textContent = "";
             return;
         }
 
