@@ -46,6 +46,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    async function getUserBalance() {
+        try {
+            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+            const balance = await connection.getBalance(new solanaWeb3.PublicKey(userWallet));
+            return balance / solanaWeb3.LAMPORTS_PER_SOL;
+        } catch (error) {
+            console.error("❌ Error fetching balance:", error);
+            return 0;
+        }
+    }
+
     async function getBalance() {
         try {
             const balance = await getUserBalance();
@@ -60,6 +71,38 @@ document.addEventListener("DOMContentLoaded", function () {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance} Coins`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
         spinCounterDisplay.textContent = spins;
+    }
+
+    async function withdrawCoins() {
+        console.log("💰 Withdraw function executed.");
+        if (!userWallet) {
+            alert("⚠️ Please connect your wallet first!");
+            return;
+        }
+
+        if (earnedCoins <= 0) {
+            alert("⚠️ No coins to withdraw!");
+            return;
+        }
+
+        try {
+            const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+            const transaction = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
+                    toPubkey: new solanaWeb3.PublicKey(userWallet),
+                    lamports: earnedCoins * solanaWeb3.LAMPORTS_PER_SOL / 1000 
+                })
+            );
+            const { signature } = await window.solana.signAndSendTransaction(transaction);
+            await connection.confirmTransaction(signature);
+            alert("💰 Coins withdrawn successfully!");
+            earnedCoins = 0;
+            updateBalances();
+        } catch (error) {
+            console.error("❌ Withdraw failed:", error);
+            alert("❌ Withdraw failed. Please try again.");
+        }
     }
 
     async function depositCoins() {
@@ -96,7 +139,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
-
     connectWalletButton.addEventListener("click", connectWallet);
 
     spinButton.addEventListener("click", async () => {
