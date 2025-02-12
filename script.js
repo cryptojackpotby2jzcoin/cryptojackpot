@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const lamports = Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL);
+            const lamports = BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL)); // BigInt ile dönüşüm yapıldı
             const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
 
             const transaction = new solanaWeb3.Transaction().add(
