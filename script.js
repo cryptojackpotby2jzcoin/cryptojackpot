@@ -1,8 +1,3 @@
-// Buffer Polyfill
-if (typeof Buffer === "undefined") {
-    window.Buffer = require("buffer/").Buffer;
-}
-
 document.addEventListener("DOMContentLoaded", async function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const depositButton = document.getElementById("deposit-button");
@@ -13,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const earnedCoinsDisplay = document.getElementById("earned-coins");
 
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
-    const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
     let userWallet = null;
     let playerBalance = 0;
