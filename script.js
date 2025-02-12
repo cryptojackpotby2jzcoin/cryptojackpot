@@ -1,8 +1,6 @@
-// Smart Contract ile entegre edilmiş script.js
-
-// Buffer için tarayıcı Polyfill
-if (typeof Buffer === "undefined") {
-    window.Buffer = require("buffer/").Buffer;
+// Buffer için Polyfill
+if (typeof window.Buffer === "undefined") {
+    window.Buffer = new TextEncoder();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
