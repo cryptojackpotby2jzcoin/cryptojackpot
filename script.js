@@ -1,26 +1,23 @@
 // Buffer için Polyfill
 if (typeof window.Buffer === "undefined") {
-    window.Buffer = new TextEncoder();
+    window.Buffer = {
+        from: function (str, encoding) {
+            return new TextEncoder().encode(str);
+        },
+    };
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
-    const spinButton = document.getElementById("spin-button");
-    const withdrawButton = document.getElementById("withdraw-button");
     const depositButton = document.getElementById("deposit-button");
-    const resultMessage = document.getElementById("result-message");
     const playerBalanceDisplay = document.getElementById("player-balance");
-    const earnedCoinsDisplay = document.getElementById("earned-coins");
-    const spinCounterDisplay = document.getElementById("spin-counter");
 
-    const programId = new solanaWeb3.PublicKey("8ZJJj82MrZ9LRq3bhoRHp8wrFPjqf8dZM5CuXnptJa5S"); // Smart Contract ID
-    const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF"); // House Wallet
-    const RPC_URL = "https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0"; // Helius RPC
+    const programId = new solanaWeb3.PublicKey("8ZJJj82MrZ9LRq3bhoRHp8wrFPjqf8dZM5CuXnptJa5S");
+    const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
+    const RPC_URL = "https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0";
 
     let userWallet = null;
     let playerBalance = 0;
-    let earnedCoins = 0;
-    let spins = 0;
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
@@ -53,8 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
-        spinCounterDisplay.textContent = `Total Spins: ${spins}`;
     }
 
     async function depositCoins() {
@@ -88,37 +83,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    async function withdrawCoins() {
-        if (earnedCoins <= 0) {
-            alert("❌ No coins to withdraw!");
-            return;
-        }
-
-        try {
-            const lamports = earnedCoins * solanaWeb3.LAMPORTS_PER_SOL;
-            const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
-
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: houseWalletAddress,
-                    toPubkey: userWallet,
-                    lamports: lamports,
-                })
-            );
-
-            const { signature } = await window.solana.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signature, "confirmed");
-
-            alert(`✅ Successfully withdrew ${earnedCoins} coins!`);
-            earnedCoins = 0;
-            updateBalances();
-        } catch (error) {
-            console.error("❌ Withdraw failed:", error);
-            alert("❌ Withdraw failed. Please try again.");
-        }
-    }
-
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
-    withdrawButton.addEventListener("click", withdrawCoins);
 });
