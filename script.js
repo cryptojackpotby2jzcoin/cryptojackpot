@@ -3,18 +3,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const depositButton = document.getElementById("deposit-button");
-    const withdrawButton = document.getElementById("withdraw-button");
-    const spinButton = document.getElementById("spin-button");
     const weeklyRewardDisplay = document.getElementById("weekly-reward");
     const playerBalanceDisplay = document.getElementById("player-balance");
-    const earnedCoinsDisplay = document.getElementById("earned-coins");
 
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
-    const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
+    const rpcUrl = "https://api.metaplex.solana.com"; // Alternatif RPC kullanıyoruz
+    const connection = new solanaWeb3.Connection(rpcUrl, "confirmed");
 
     let userWallet = null;
-    let playerBalance = 0;
-    let earnedCoins = 0;
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
@@ -71,9 +67,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             const { signature } = await window.solana.signAndSendTransaction(transaction);
             await connection.confirmTransaction(signature, "confirmed");
 
-            playerBalance += parseInt(amount);
             alert(`✅ Successfully deposited ${amount} coins!`);
-            updateBalances();
         } catch (error) {
             console.error("❌ Deposit failed:", error);
             alert("❌ Deposit failed. Please try again.");
