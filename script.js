@@ -1,12 +1,3 @@
-// Tarayıcı için Buffer polyfill
-if (typeof window.Buffer === "undefined") {
-    window.Buffer = {
-        from: function (str, encoding) {
-            return new TextEncoder().encode(str);
-        },
-    };
-}
-
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const depositButton = document.getElementById("deposit-button");
@@ -60,7 +51,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const lamports = BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL)); // BigInt ile dönüşüm yapıldı
+            const lamports = BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL)); // BigInt kullanımı
+            const lamportsArray = new Uint8Array(new ArrayBuffer(8));
+            const dataView = new DataView(lamportsArray.buffer);
+            dataView.setBigUint64(0, lamports, true); // Little-endian
+
             const connection = new solanaWeb3.Connection(RPC_URL, "confirmed");
 
             const transaction = new solanaWeb3.Transaction().add(
