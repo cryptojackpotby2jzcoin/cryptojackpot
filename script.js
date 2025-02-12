@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function () {
+    window.Buffer = window.Buffer || require("buffer").Buffer;
+
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const depositButton = document.getElementById("deposit-button");
     const withdrawButton = document.getElementById("withdraw-button");
@@ -14,7 +16,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     let playerBalance = 0;
     let earnedCoins = 0;
 
-    // Wallet Connect
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -32,7 +33,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Update House Wallet Balance
     async function updateHouseBalance() {
         try {
             const balance = await connection.getBalance(new solanaWeb3.PublicKey(houseWalletAddress));
@@ -45,7 +45,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Deposit Coins
     async function depositCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -81,72 +80,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Withdraw Coins
-    async function withdrawCoins() {
-        if (!userWallet) {
-            alert("⚠️ Please connect your wallet first!");
-            return;
-        }
-
-        if (earnedCoins <= 0) {
-            alert("❌ No coins to withdraw!");
-            return;
-        }
-
-        const lamports = (earnedCoins * solanaWeb3.LAMPORTS_PER_SOL) / 1000;
-
-        try {
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: new solanaWeb3.PublicKey(houseWalletAddress),
-                    toPubkey: new solanaWeb3.PublicKey(userWallet),
-                    lamports: lamports,
-                })
-            );
-
-            const { signature } = await window.solana.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signature, "confirmed");
-
-            earnedCoins = 0;
-            alert("✅ Coins successfully withdrawn!");
-            updateBalances();
-        } catch (error) {
-            console.error("❌ Withdraw failed:", error);
-            alert("❌ Withdraw failed. Please try again.");
-        }
-    }
-
-    // Spin Game
-    function spinGame() {
-        if (playerBalance <= 0) {
-            alert("⚠️ Insufficient balance!");
-            return;
-        }
-
-        playerBalance -= 1; // Decrease player balance
-        const winChance = Math.random();
-
-        if (winChance < 0.5) {
-            earnedCoins += 5; // Simulate a win
-            alert("🎉 You won 5 coins!");
-        } else {
-            alert("❌ You lost! Better luck next time.");
-        }
-
-        updateBalances();
-    }
-
-    // Update Balances
-    function updateBalances() {
-        playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
-        earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
-    }
-
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
-    withdrawButton.addEventListener("click", withdrawCoins);
-    spinButton.addEventListener("click", spinGame);
 
     await connectWallet();
-    await updateHouseBalance();
 });
