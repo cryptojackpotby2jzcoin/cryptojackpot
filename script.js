@@ -1,4 +1,4 @@
-// Buffer için polyfill ekliyoruz
+// Buffer Polyfill
 if (typeof Buffer === "undefined") {
     window.Buffer = require("buffer/").Buffer;
 }
@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const depositButton = document.getElementById("deposit-button");
     const withdrawButton = document.getElementById("withdraw-button");
+    const spinButton = document.getElementById("spin-button");
     const weeklyRewardDisplay = document.getElementById("weekly-reward");
     const playerBalanceDisplay = document.getElementById("player-balance");
     const earnedCoinsDisplay = document.getElementById("earned-coins");
@@ -18,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     let playerBalance = 0;
     let earnedCoins = 0;
 
+    // Wallet Connect
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -35,6 +37,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Update House Wallet Balance
     async function updateHouseBalance() {
         try {
             const balance = await connection.getBalance(new solanaWeb3.PublicKey(houseWalletAddress));
@@ -47,6 +50,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Deposit Coins
     async function depositCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -82,6 +86,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Withdraw Coins
     async function withdrawCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -116,6 +121,27 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    // Spin Game
+    function spinGame() {
+        if (playerBalance <= 0) {
+            alert("⚠️ Insufficient balance!");
+            return;
+        }
+
+        playerBalance -= 1; // Decrease player balance
+        const winChance = Math.random();
+
+        if (winChance < 0.5) {
+            earnedCoins += 5; // Simulate a win
+            alert("🎉 You won 5 coins!");
+        } else {
+            alert("❌ You lost! Better luck next time.");
+        }
+
+        updateBalances();
+    }
+
+    // Update Balances
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
@@ -124,6 +150,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
+    spinButton.addEventListener("click", spinGame);
 
     await connectWallet();
     await updateHouseBalance();
