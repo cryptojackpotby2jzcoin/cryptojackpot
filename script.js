@@ -1,12 +1,15 @@
+// Buffer için polyfill ekliyoruz
+if (typeof Buffer === "undefined") {
+    window.Buffer = require("buffer/").Buffer;
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const depositButton = document.getElementById("deposit-button");
     const withdrawButton = document.getElementById("withdraw-button");
-    const spinButton = document.getElementById("spin-button");
     const weeklyRewardDisplay = document.getElementById("weekly-reward");
     const playerBalanceDisplay = document.getElementById("player-balance");
     const earnedCoinsDisplay = document.getElementById("earned-coins");
-    const resultMessage = document.getElementById("result-message");
 
     const houseWalletAddress = "6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF";
     const connection = new solanaWeb3.Connection("https://rpc.helius.xyz/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
@@ -15,7 +18,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     let playerBalance = 0;
     let earnedCoins = 0;
 
-    // Connect Wallet
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
@@ -33,7 +35,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Fetch House Wallet Balance
     async function updateHouseBalance() {
         try {
             const balance = await connection.getBalance(new solanaWeb3.PublicKey(houseWalletAddress));
@@ -46,7 +47,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Deposit Coins
     async function depositCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -82,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Withdraw Coins
     async function withdrawCoins() {
         if (!userWallet) {
             alert("⚠️ Please connect your wallet first!");
@@ -117,18 +116,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Update Balances
     function updateBalances() {
         playerBalanceDisplay.textContent = `Your Balance: ${playerBalance.toFixed(2)} Coins`;
         earnedCoinsDisplay.textContent = `Earned Coins: ${earnedCoins} Coins`;
     }
 
-    // Event Listeners
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
     withdrawButton.addEventListener("click", withdrawCoins);
 
-    // Initialize
     await connectWallet();
     await updateHouseBalance();
 });
