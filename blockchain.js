@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
 
     const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0"; // API key
-    const programId = new solanaWeb3.PublicKey("8ZJJj82MrZ9LRq3bhoRHp8wrFPjqf8dZM5CuXnptJa5S");
+    const programId = new solanaWeb3.PublicKey("Dernj3xEN3a9UPGXdosdHTmnT5N97uRCEyDQ3cS7ftbe");
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
     let userWallet = null;
 
