@@ -1,5 +1,3 @@
-// Buffer polyfill zaten index.html'de eklendi, burada manuel tanımlamaya gerek yok
-
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const withdrawButton = document.getElementById("withdraw-button");
