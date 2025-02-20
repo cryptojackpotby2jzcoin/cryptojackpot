@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
                 await initializeUserAccount();
                 await updateBalance();
-                updateRewardPool();
+                await updateRewardPool();
             } catch (error) {
                 console.error("❌ Wallet connection failed:", error);
                 alert("Please connect your wallet again.");
@@ -30,19 +30,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function initializeUserAccount() {
-        const userAccount = solanaWeb3.Keypair.generate();
+        const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("user"), userWallet.toBytes()],
+            programId
+        );
+        const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("game_state")],
+            programId
+        );
+
         const tx = new solanaWeb3.Transaction().add(
-            solanaWeb3.SystemProgram.createAccount({
-                fromPubkey: userWallet,
-                newAccountPubkey: userAccount.publicKey,
-                lamports: await connection.getMinimumBalanceForRentExemption(16),
-                space: 16,
-                programId,
-            }),
             new solanaWeb3.TransactionInstruction({
                 keys: [
-                    { pubkey: userAccount.publicKey, isSigner: false, isWritable: true },
-                    { pubkey: userWallet, isSigner: true, isWritable: false },
+                    { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                    { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                    { pubkey: userWallet, isSigner: true, isWritable: true },
                     { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
                 ],
                 programId,
@@ -55,11 +57,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function updateBalance() {
         if (userWallet) {
-            const userAccountPDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("user", userWallet.toBuffer())], programId);
-            const accountInfo = await connection.getAccountInfo(userAccountPDA[0]);
+            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
-                const balance = accountInfo.data.readBigUInt64LE(0) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
+                const balance = accountInfo.data.readBigUInt64LE(8) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
                 document.getElementById("player-balance").innerText = `Your Balance: ${balance} Coins`;
+            } else {
+                document.getElementById("player-balance").innerText = `Your Balance: 0 Coins`;
             }
         }
     }
@@ -71,14 +78,20 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const userAccountPDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("user", userWallet.toBuffer())], programId);
-        const gameStatePDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("game_state")], programId);
+        const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("user"), userWallet.toBytes()],
+            programId
+        );
+        const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("game_state")],
+            programId
+        );
 
         const tx = new solanaWeb3.Transaction().add(
             new solanaWeb3.TransactionInstruction({
                 keys: [
-                    { pubkey: userAccountPDA[0], isSigner: false, isWritable: true },
-                    { pubkey: gameStatePDA[0], isSigner: false, isWritable: true },
+                    { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                    { pubkey: gameStatePDA, isSigner: false, isWritable: true },
                     { pubkey: houseWalletAddress, isSigner: false, isWritable: true },
                     { pubkey: userWallet, isSigner: true, isWritable: true },
                     { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
@@ -94,14 +107,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function spinGameOnChain() {
-        const userAccountPDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("user", userWallet.toBuffer())], programId);
-        const gameStatePDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("game_state")], programId);
+        const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("user"), userWallet.toBytes()],
+            programId
+        );
+        const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("game_state")],
+            programId
+        );
 
         const tx = new solanaWeb3.Transaction().add(
             new solanaWeb3.TransactionInstruction({
                 keys: [
-                    { pubkey: userAccountPDA[0], isSigner: false, isWritable: true },
-                    { pubkey: gameStatePDA[0], isSigner: false, isWritable: true },
+                    { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                    { pubkey: gameStatePDA, isSigner: false, isWritable: true },
                     { pubkey: userWallet, isSigner: true, isWritable: false },
                 ],
                 programId,
@@ -115,8 +134,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function updateRewardPool() {
-        const gameStatePDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("game_state")], programId);
-        const accountInfo = await connection.getAccountInfo(gameStatePDA[0]);
+        const [gameStatePDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            [Buffer.from("game_state")],
+            programId
+        );
+        const accountInfo = await connection.getAccountInfo(gameStatePDA);
         if (accountInfo) {
             const houseBalance = accountInfo.data.readBigUInt64LE(16) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
             const rewardPool = Number(houseBalance) / 10;
