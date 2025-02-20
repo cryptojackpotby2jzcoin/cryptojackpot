@@ -22,128 +22,174 @@ document.addEventListener("DOMContentLoaded", function () {
                 await updateRewardPool();
             } catch (error) {
                 console.error("❌ Wallet connection failed:", error);
-                alert("Please connect your wallet again.");
+                alert("Wallet connection failed. Please try again.");
             }
         } else {
-            alert("Phantom Wallet not found.");
+            alert("Phantom Wallet not found. Please install it.");
         }
     }
 
     async function initializeUserAccount() {
-        const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("user"), userWallet.toBytes()],
-            programId
-        );
-        const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("game_state")],
-            programId
-        );
+        if (!userWallet) {
+            alert("Please connect your wallet first!");
+            return;
+        }
+        try {
+            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        const tx = new solanaWeb3.Transaction().add(
-            new solanaWeb3.TransactionInstruction({
-                keys: [
-                    { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                    { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                    { pubkey: userWallet, isSigner: true, isWritable: true },
-                    { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
-                ],
-                programId,
-                data: Buffer.from([0]), // Initialize
-            })
-        );
-        const signature = await window.solana.signAndSendTransaction(tx);
-        await connection.confirmTransaction(signature);
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: true },
+                        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([0]), // Initialize
+                })
+            );
+            const { blockhash } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+            const signature = await window.solana.signAndSendTransaction(tx);
+            await connection.confirmTransaction(signature, "confirmed");
+            console.log("✅ User account initialized");
+        } catch (error) {
+            console.error("❌ Initialization failed:", error);
+            alert("Failed to initialize account. Please try again.");
+        }
     }
 
     async function updateBalance() {
-        if (userWallet) {
+        if (!userWallet) return;
+        try {
             const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
             const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
-                const balance = accountInfo.data.readBigUInt64LE(8) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
+                const balance = Number(accountInfo.data.readBigUInt64LE(8)) / solanaWeb3.LAMPORTS_PER_SOL;
                 document.getElementById("player-balance").innerText = `Your Balance: ${balance} Coins`;
             } else {
-                document.getElementById("player-balance").innerText = `Your Balance: 0 Coins`;
+                document.getElementById("player-balance").innerText = `Your Balance: 0 Coins (Account not initialized)`;
             }
+        } catch (error) {
+            console.error("❌ Balance update failed:", error);
         }
     }
 
     async function depositCoins() {
+        if (!userWallet) {
+            alert("Please connect your wallet first!");
+            return;
+        }
         const amount = parseFloat(prompt("Enter coins to deposit (max 10,000):"));
         if (amount <= 0 || amount > 10000 || isNaN(amount)) {
             alert("❌ Invalid deposit amount!");
             return;
         }
 
-        const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("user"), userWallet.toBytes()],
-            programId
-        );
-        const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("game_state")],
-            programId
-        );
+        try {
+            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        const tx = new solanaWeb3.Transaction().add(
-            new solanaWeb3.TransactionInstruction({
-                keys: [
-                    { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                    { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                    { pubkey: houseWalletAddress, isSigner: false, isWritable: true },
-                    { pubkey: userWallet, isSigner: true, isWritable: true },
-                    { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
-                ],
-                programId,
-                data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL))]).buffer)]), // Deposit
-            })
-        );
-        const signature = await window.solana.signAndSendTransaction(tx);
-        await connection.confirmTransaction(signature);
-        alert(`✅ Deposited ${amount} coins!`);
-        await updateBalance();
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: houseWalletAddress, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: true },
+                        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL))]).buffer)]), // Deposit
+                })
+            );
+            const { blockhash } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+            const signature = await window.solana.signAndSendTransaction(tx);
+            await connection.confirmTransaction(signature, "confirmed");
+            alert(`✅ Deposited ${amount} coins!`);
+            await updateBalance();
+        } catch (error) {
+            console.error("❌ Deposit failed:", error);
+            alert("Deposit failed. Please check your wallet and try again.");
+        }
     }
 
     async function spinGameOnChain() {
-        const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("user"), userWallet.toBytes()],
-            programId
-        );
-        const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("game_state")],
-            programId
-            window.dispatchEvent(new Event("spinComplete"));
-        );
+        if (!userWallet) {
+            alert("Please connect your wallet first!");
+            return;
+        }
+        try {
+            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        const tx = new solanaWeb3.Transaction().add(
-            new solanaWeb3.TransactionInstruction({
-                keys: [
-                    { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                    { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                    { pubkey: userWallet, isSigner: true, isWritable: false },
-                ],
-                programId,
-                data: Buffer.from([2]), // Spin
-            })
-        );
-        const signature = await window.solana.signAndSendTransaction(tx);
-        await connection.confirmTransaction(signature);
-        await updateBalance();
-        spinGame(); // Frontend spin animasyonu
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([2]), // Spin
+                })
+            );
+            const { blockhash } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+            const signature = await window.solana.signAndSendTransaction(tx);
+            await connection.confirmTransaction(signature, "confirmed");
+            await updateBalance();
+            spinGame(); // Frontend spin animasyonu
+            window.dispatchEvent(new Event("spinComplete")); // Spin sayaçlarını güncelle
+        } catch (error) {
+            console.error("❌ Spin failed:", error);
+            alert("Spin failed. Please check your balance and try again.");
+        }
     }
 
     async function updateRewardPool() {
-        const [gameStatePDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-            [Buffer.from("game_state")],
-            programId
-        );
-        const accountInfo = await connection.getAccountInfo(gameStatePDA);
-        if (accountInfo) {
-            const houseBalance = accountInfo.data.readBigUInt64LE(16) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
-            const rewardPool = Number(houseBalance) / 10;
-            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} Coins`;
+        try {
+            const [gameStatePDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
+            const accountInfo = await connection.getAccountInfo(gameStatePDA);
+            if (accountInfo) {
+                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / solanaWeb3.LAMPORTS_PER_SOL;
+                const rewardPool = houseBalance / 10;
+                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} Coins`;
+            } else {
+                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 Coins`;
+            }
+        } catch (error) {
+            console.error("❌ Reward pool update failed:", error);
         }
     }
 
