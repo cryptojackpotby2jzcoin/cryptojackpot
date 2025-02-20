@@ -1,3 +1,5 @@
+// Buffer polyfill zaten index.html'de eklendi, burada manuel tanımlamaya gerek yok
+
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const withdrawButton = document.getElementById("withdraw-button");
@@ -12,20 +14,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
-        if (window.solana && window.solana.isPhantom) {
-            try {
-                const response = await window.solana.connect();
-                userWallet = response.publicKey;
-                document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
-                await initializeUserAccount();
-                await updateBalance();
-                await updateRewardPool();
-            } catch (error) {
-                console.error("❌ Wallet connection failed:", error);
-                alert("Wallet connection failed. Please try again.");
-            }
-        } else {
+        if (!window.solana || !window.solana.isPhantom) {
             alert("Phantom Wallet not found. Please install it.");
+            return;
+        }
+        try {
+            const response = await window.solana.connect();
+            userWallet = response.publicKey;
+            document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
+            await initializeUserAccount();
+            await updateBalance();
+            await updateRewardPool();
+        } catch (error) {
+            console.error("❌ Wallet connection failed:", error);
+            alert("Wallet connection failed. Please try again.");
         }
     }
 
@@ -35,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA, bump] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
@@ -56,11 +58,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: Buffer.from([0]), // Initialize
                 })
             );
-            const { blockhash } = await connection.getLatestBlockhash();
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
             const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction(signature, "confirmed");
+            await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
             console.log("✅ User account initialized");
         } catch (error) {
             console.error("❌ Initialization failed:", error);
@@ -84,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } catch (error) {
             console.error("❌ Balance update failed:", error);
+            alert("Failed to update balance. Please try again.");
         }
     }
 
@@ -121,11 +128,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL))]).buffer)]), // Deposit
                 })
             );
-            const { blockhash } = await connection.getLatestBlockhash();
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
             const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction(signature, "confirmed");
+            await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
             alert(`✅ Deposited ${amount} coins!`);
             await updateBalance();
         } catch (error) {
@@ -160,11 +171,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: Buffer.from([2]), // Spin
                 })
             );
-            const { blockhash } = await connection.getLatestBlockhash();
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
             const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction(signature, "confirmed");
+            await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
             await updateBalance();
             spinGame(); // Frontend spin animasyonu
             window.dispatchEvent(new Event("spinComplete")); // Spin sayaçlarını güncelle
@@ -190,6 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } catch (error) {
             console.error("❌ Reward pool update failed:", error);
+            alert("Failed to update reward pool. Please try again.");
         }
     }
 
