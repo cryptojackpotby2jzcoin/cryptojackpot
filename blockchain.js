@@ -2,94 +2,130 @@ document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const depositButton = document.getElementById("deposit-button");
+    const spinButton = document.getElementById("spin-button");
 
-    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0"; // API key
+    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
     const programId = new solanaWeb3.PublicKey("Dernj3xEN3a9UPGXdosdHTmnT5N97uRCEyDQ3cS7ftbe");
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
     let userWallet = null;
+
+    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
         if (window.solana && window.solana.isPhantom) {
             try {
                 const response = await window.solana.connect();
                 userWallet = response.publicKey;
-                console.log("✅ Wallet connected:", userWallet.toString());
                 document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
+                await initializeUserAccount();
                 await updateBalance();
+                updateRewardPool();
             } catch (error) {
                 console.error("❌ Wallet connection failed:", error);
                 alert("Please connect your wallet again.");
             }
         } else {
-            alert("Phantom Wallet not found. Please install it and try again.");
+            alert("Phantom Wallet not found.");
         }
+    }
+
+    async function initializeUserAccount() {
+        const userAccount = solanaWeb3.Keypair.generate();
+        const tx = new solanaWeb3.Transaction().add(
+            solanaWeb3.SystemProgram.createAccount({
+                fromPubkey: userWallet,
+                newAccountPubkey: userAccount.publicKey,
+                lamports: await connection.getMinimumBalanceForRentExemption(16),
+                space: 16,
+                programId,
+            }),
+            new solanaWeb3.TransactionInstruction({
+                keys: [
+                    { pubkey: userAccount.publicKey, isSigner: false, isWritable: true },
+                    { pubkey: userWallet, isSigner: true, isWritable: false },
+                    { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                ],
+                programId,
+                data: Buffer.from([0]), // Initialize
+            })
+        );
+        const signature = await window.solana.signAndSendTransaction(tx);
+        await connection.confirmTransaction(signature);
     }
 
     async function updateBalance() {
         if (userWallet) {
-            const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
-            const balance = await connection.getBalance(userWallet);
-            document.getElementById("player-balance").innerText = `Your Balance: ${balance / solanaWeb3.LAMPORTS_PER_SOL} Coins`;
+            const userAccountPDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("user", userWallet.toBuffer())], programId);
+            const accountInfo = await connection.getAccountInfo(userAccountPDA[0]);
+            if (accountInfo) {
+                const balance = accountInfo.data.readBigUInt64LE(0) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
+                document.getElementById("player-balance").innerText = `Your Balance: ${balance} Coins`;
+            }
         }
     }
 
     async function depositCoins() {
-        const amount = parseFloat(prompt("Enter the number of coins to deposit (max 10,000):"));
+        const amount = parseFloat(prompt("Enter coins to deposit (max 10,000):"));
         if (amount <= 0 || amount > 10000 || isNaN(amount)) {
             alert("❌ Invalid deposit amount!");
             return;
         }
 
-        try {
-            const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
-            const lamports = BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL));
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: userWallet,
-                    toPubkey: houseWalletAddress,
-                    lamports: lamports,
-                })
-            );
-            const signature = await window.solana.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signature, "confirmed");
-            alert(`✅ Successfully deposited ${amount} coins!`);
-            await updateBalance();
-        } catch (error) {
-            console.error("❌ Deposit failed:", error);
-            alert("❌ Deposit failed. Please try again.");
-        }
+        const userAccountPDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("user", userWallet.toBuffer())], programId);
+        const gameStatePDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("game_state")], programId);
+
+        const tx = new solanaWeb3.Transaction().add(
+            new solanaWeb3.TransactionInstruction({
+                keys: [
+                    { pubkey: userAccountPDA[0], isSigner: false, isWritable: true },
+                    { pubkey: gameStatePDA[0], isSigner: false, isWritable: true },
+                    { pubkey: houseWalletAddress, isSigner: false, isWritable: true },
+                    { pubkey: userWallet, isSigner: true, isWritable: true },
+                    { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                ],
+                programId,
+                data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL))]).buffer)]), // Deposit
+            })
+        );
+        const signature = await window.solana.signAndSendTransaction(tx);
+        await connection.confirmTransaction(signature);
+        alert(`✅ Deposited ${amount} coins!`);
+        await updateBalance();
     }
 
-    async function withdrawCoins() {
-        const amount = parseFloat(prompt("Enter the number of coins to withdraw:"));
-        if (isNaN(amount) || amount <= 0) {
-            alert("❌ Invalid withdrawal amount!");
-            return;
-        }
+    async function spinGameOnChain() {
+        const userAccountPDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("user", userWallet.toBuffer())], programId);
+        const gameStatePDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("game_state")], programId);
 
-        try {
-            // Withdraw işlemi için akıllı sözleşme çağrısı yapılmalı, burada sadece bir örnek gösterilmiştir.
-            // Gerçek uygulamada, akıllı sözleşme ile kullanıcı bakiyesini kontrol edip, çekme işlemi gerçekleştirilmelidir.
-            const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
-            const lamports = BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL));
-            const transaction = new solanaWeb3.Transaction().add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: houseWalletAddress,
-                    toPubkey: userWallet,
-                    lamports: lamports,
-                })
-            );
-            const signature = await window.solana.signAndSendTransaction(transaction);
-            await connection.confirmTransaction(signature, "confirmed");
-            alert(`✅ Successfully withdrew ${amount} coins!`);
-            await updateBalance();
-        } catch (error) {
-            console.error("❌ Withdrawal failed:", error);
-            alert("❌ Withdrawal failed. Please try again.");
+        const tx = new solanaWeb3.Transaction().add(
+            new solanaWeb3.TransactionInstruction({
+                keys: [
+                    { pubkey: userAccountPDA[0], isSigner: false, isWritable: true },
+                    { pubkey: gameStatePDA[0], isSigner: false, isWritable: true },
+                    { pubkey: userWallet, isSigner: true, isWritable: false },
+                ],
+                programId,
+                data: Buffer.from([2]), // Spin
+            })
+        );
+        const signature = await window.solana.signAndSendTransaction(tx);
+        await connection.confirmTransaction(signature);
+        await updateBalance();
+        spinGame(); // Frontend spin animasyonu
+    }
+
+    async function updateRewardPool() {
+        const gameStatePDA = await solanaWeb3.PublicKey.findProgramAddress([Buffer.from("game_state")], programId);
+        const accountInfo = await connection.getAccountInfo(gameStatePDA[0]);
+        if (accountInfo) {
+            const houseBalance = accountInfo.data.readBigUInt64LE(16) / BigInt(solanaWeb3.LAMPORTS_PER_SOL);
+            const rewardPool = Number(houseBalance) / 10;
+            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} Coins`;
         }
     }
 
     connectWalletButton.addEventListener("click", connectWallet);
-    withdrawButton.addEventListener("click", withdrawCoins);
     depositButton.addEventListener("click", depositCoins);
+    spinButton.addEventListener("click", spinGameOnChain);
+    withdrawButton.addEventListener("click", () => alert("Withdraw disabled as per game rules."));
 });
