@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             await window.solana.connect();
             const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
-            const programId = new solanaWeb3.PublicKey("Dernj3xEN3a9UPGXdosdHTmnT5N97uRCEyDQ3cS7ftbe");
+            const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
             const userWallet = window.solana.publicKey;
 
             // Burada spin işlemini akıllı sözleşme üzerinden yapmanız gerekecek.
