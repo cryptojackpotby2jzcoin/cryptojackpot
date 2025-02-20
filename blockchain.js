@@ -114,6 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
             [Buffer.from("game_state")],
             programId
+            window.dispatchEvent(new Event("spinComplete"));
         );
 
         const tx = new solanaWeb3.Transaction().add(
