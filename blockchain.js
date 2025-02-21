@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
     let userWallet = null;
 
-    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${d1c5af3f-7119-494d-8987-cd72bc00bfd0}`, "confirmed");
+    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
