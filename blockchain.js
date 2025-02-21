@@ -1,244 +1,79 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const connectWalletButton = document.getElementById("connect-wallet-button");
-    const withdrawButton = document.getElementById("withdraw-button");
-    const depositButton = document.getElementById("deposit-button");
-    const spinButton = document.getElementById("spin-button");
-
-    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
-    const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
-    const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
-    const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
-    let userWallet = null;
-
-    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
-
-    async function connectWallet() {
-        if (!window.solana || !window.solana.isPhantom) {
-            alert("Phantom Wallet not found. Please install Phantom extension.");
-            return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Jackpot</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Buffer Polyfill (elle tanımlama ile destek) -->
+    <script>
+        if (typeof Buffer === 'undefined') {
+            window.Buffer = require('buffer/').Buffer;
         }
-        try {
-            const response = await window.solana.connect();
-            userWallet = response.publicKey;
-            document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
-            await initializeUserAccount();
-            await updateBalance();
-            await updateRewardPool();
-        } catch (error) {
-            console.error("❌ Wallet connection failed:", error.message, error.stack);
-            alert("Wallet connection failed. Please try again or install Phantom.");
-        }
-    }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
+    
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
+    
+    <!-- Solana SPL Token (2JZ Coin için gerekli) -->
+    <script src="https://unpkg.com/@solana/spl-token@0.3.7/lib/index.iife.min.js"></script>
 
-    async function initializeUserAccount() {
-        if (!userWallet) {
-            alert("Please connect your wallet first!");
-            return;
-        }
-        try {
-            const [userAccountPDA, bump] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("user"), userWallet.toBytes()],
-                programId
-            );
-            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
+    <!-- JavaScript Dosyaları -->
+    <script src="blockchain.js" defer></script>
+    <script src="script.js" defer></script>
+    <script src="game.js" defer></script>
+</head>
+<body>
+    <div class="machine">
+        <h2>Crypto Jackpot by 2JZ Coin</h2>
+        <p id="weekly-reward">Weekly Reward Pool: 13,200,000 Coins ($74.99)</p>
 
-            const tx = new solanaWeb3.Transaction().add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [
-                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                        { pubkey: userWallet, isSigner: true, isWritable: true },
-                        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
-                    ],
-                    programId,
-                    data: Buffer.from([0]), // Initialize
-                })
-            );
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-            const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-            console.log("✅ User account initialized");
-        } catch (error) {
-            console.error("❌ Initialization failed:", error);
-            alert("Failed to initialize account. Please try again.");
-        }
-    }
+        <div class="container">
+            <div class="slot"></div>
+            <div class="slot"></div>
+            <div class="slot"></div>
+        </div>
 
-    async function updateBalance() {
-        if (!userWallet) return;
-        try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("user"), userWallet.toBytes()],
-                programId
-            );
-            const accountInfo = await connection.getAccountInfo(userAccountPDA);
-            if (accountInfo) {
-                const balance = Number(accountInfo.data.readBigUInt64LE(8)); // 2JZ Coin balance (decimal)
-                document.getElementById("player-balance").innerText = `Your Balance: ${balance} 2JZ Coins ($0.0000)`;
-            } else {
-                document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
-            }
-        } catch (error) {
-            console.error("❌ Balance update failed:", error);
-            alert("Failed to update balance. Please try again.");
-        }
-    }
+        <p id="result-message">Try your luck!</p>
 
-    async function depositCoins() {
-        if (!userWallet) {
-            alert("Please connect your wallet first!");
-            return;
-        }
-        const amount = parseFloat(prompt("Enter 2JZ Coins to deposit (max 10,000,000):"));
-        if (amount <= 0 || amount > 10000000 || isNaN(amount)) {
-            alert("❌ Invalid deposit amount!");
-            return;
-        }
+        <div class="button-container">
+            <div class="left-buttons">
+                <button id="connect-wallet-button">Connect Wallet</button>
+                <button id="deposit-button">Deposit Coins</button>
+                <button id="transfer-button">Transfer Coins</button>
+                <button id="withdraw-button">Withdraw Coins</button>
+            </div>
+            <div class="right-button">
+                <button id="spin-button"></button>
+            </div>
+        </div>
 
-        try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("user"), userWallet.toBytes()],
-                programId
-            );
-            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
+        <div id="wallet-info">
+            <p id="wallet-address">Wallet: N/A</p>
+        </div>
 
-            // 2JZ Coin ile token transferi
-            const userTokenAccount = await getAssociatedTokenAddress(
-                tokenMint,
-                userWallet,
-                false
-            );
-            const houseTokenAccount = await getAssociatedTokenAddress(
-                tokenMint,
-                houseWalletAddress,
-                false
-            );
+        <div id="spin-info">
+            <p>
+                <span id="total-spins-label">Total Spins: <span id="total-spins">0</span></span>
+                <span id="spin-counter-label"> Spin: <span id="spin-counter">0</span></span>
+            </p>
+        </div>
 
-            const tx = new solanaWeb3.Transaction();
-            tx.add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [
-                        { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-                        { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
-                        { pubkey: userWallet, isSigner: true, isWritable: false },
-                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-                    ],
-                    programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount))]).buffer)]), // Deposit
-                })
-            );
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-            const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-            alert(`✅ Deposited ${amount} 2JZ Coins!`);
-            await updateBalance();
-        } catch (error) {
-            console.error("❌ Deposit failed:", error);
-            alert("Deposit failed. Please check your wallet and try again.");
-        }
-    }
+        <div id="balance-section">
+            <p><span id="player-balance">Your Balance: 0 Coins ($0.0000)</span></p>
+            <p><span id="earned-coins">Earned Coins: 0 Coins ($0.0000)</span></p>
+        </div>
 
-    async function spinGameOnChain() {
-        if (!userWallet) {
-            alert("Please connect your wallet first!");
-            return;
-        }
-        try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("user"), userWallet.toBytes()],
-                programId
-            );
-            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
-
-            const tx = new solanaWeb3.Transaction().add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [
-                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                        { pubkey: userWallet, isSigner: true, isWritable: false },
-                    ],
-                    programId,
-                    data: Buffer.from([2]), // Spin
-                })
-            );
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-            const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-            await updateBalance();
-            spinGame(); // Frontend spin animasyonu
-            window.dispatchEvent(new Event("spinComplete")); // Spin sayaçlarını güncelle
-        } catch (error) {
-            console.error("❌ Spin failed:", error);
-            alert("Spin failed. Please check your balance and try again.");
-        }
-    }
-
-    async function updateRewardPool() {
-        try {
-            const [gameStatePDA, bump] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
-            const accountInfo = await connection.getAccountInfo(gameStatePDA);
-            if (accountInfo && accountInfo.data) {
-                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)); // 2JZ Coin balance (decimal)
-                if (houseBalance > 0) {
-                    const rewardPool = houseBalance / 10;
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
-                } else {
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00)`;
-                }
-            } else {
-                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00) (Account not initialized)`;
-            }
-        } catch (error) {
-            console.error("❌ Reward pool update failed:", error.message, error.stack);
-            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error (Retry)`;
-            alert("Failed to update reward pool. This may be due to network issues. Please try refreshing the page.");
-        }
-    }
-
-    // Yardımcı fonksiyon: Associated Token Account adresini al
-    async function getAssociatedTokenAddress(mint, owner, allowOwnerOffCurve = false) {
-        return await splToken.getAssociatedTokenAddress(
-            mint,
-            owner,
-            allowOwnerOffCurve,
-            splToken.TOKEN_PROGRAM_ID,
-            splToken.ASSOCIATED_TOKEN_PROGRAM_ID
-        );
-    }
-
-    // Event Listeners
-    connectWalletButton.addEventListener("click", connectWallet);
-    depositButton.addEventListener("click", depositCoins);
-    spinButton.addEventListener("click", spinGameOnChain);
-    // Withdraw butonu zaten etkisiz, event listener eklenmedi
-});
+        <div id="leaderboard">
+            <p>Top Player Prizes:</p>
+            <ul>
+                <li>1st: 6,600,000 Coins ($37.50) Spins: <span id="first-spin-count">0</span></li>
+                <li>2nd: 3,960,000 Coins ($22.50) Spins: <span id="second-spin-count">0</span></li>
+                <li>3rd: 2,640,000 Coins ($15.00) Spins: <span id="third-spin-count">0</span></li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
