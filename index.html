@@ -6,7 +6,12 @@
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Buffer Polyfill -->
+    <!-- Buffer Polyfill (elle tanımlama ile destek) -->
+    <script>
+        if (typeof Buffer === 'undefined') {
+            window.Buffer = require('buffer/').Buffer;
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
     
     <!-- Solana Web3.js -->
@@ -37,6 +42,7 @@
             <div class="left-buttons">
                 <button id="connect-wallet-button">Connect Wallet</button>
                 <button id="deposit-button">Deposit 2JZ Coins</button>
+                <button id="transfer-button">Transfer Coins</button>
                 <button id="withdraw-button">Withdraw Coins</button>
             </div>
             <div class="right-button">
@@ -56,8 +62,17 @@
         </div>
 
         <div id="balance-section">
-            <p><span id="player-balance">Your Balance: 0 2JZ Coins</span></p>
-            <p><span id="earned-coins">Earned Coins: 0 2JZ Coins</span></p>
+            <p><span id="player-balance">Your Balance: 0 2JZ Coins ($0.0000)</span></p>
+            <p><span id="earned-coins">Earned Coins: 0 2JZ Coins ($0.0000)</span></p>
+        </div>
+
+        <div id="leaderboard">
+            <p>Top Player Prizes:</p>
+            <ul>
+                <li>1st: 6,600,000 Coins ($37.50) Spins: <span id="first-spin-count">0</span></li>
+                <li>2nd: 3,960,000 Coins ($22.50) Spins: <span id="second-spin-count">0</span></li>
+                <li>3rd: 2,640,000 Coins ($15.00) Spins: <span id="third-spin-count">0</span></li>
+            </ul>
         </div>
     </div>
 </body>
