@@ -10,11 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
-    // Buffer polyfill kontrolü
-    if (typeof Buffer === 'undefined') {
-        window.Buffer = require('buffer/').Buffer;
-    }
-
     const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
@@ -216,12 +211,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)); // 2JZ Coin balance (decimal)
                 if (houseBalance > 0) {
                     const rewardPool = houseBalance / 10;
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toFixed(2)} 2JZ Coins`;
+                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
                 } else {
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins`;
+                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00)`;
                 }
             } else {
-                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins (Account not initialized)`;
+                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00) (Account not initialized)`;
             }
         } catch (error) {
             console.error("❌ Reward pool update failed:", error.message, error.stack);
