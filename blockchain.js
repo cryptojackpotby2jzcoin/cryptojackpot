@@ -10,6 +10,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
+    // Buffer polyfill kontrolü
+    if (typeof Buffer === 'undefined') {
+        window.Buffer = require('buffer/').Buffer;
+    }
+
     const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
@@ -83,9 +88,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
                 const balance = Number(accountInfo.data.readBigUInt64LE(8)); // 2JZ Coin balance (decimal)
-                document.getElementById("player-balance").innerText = `Your Balance: ${balance} 2JZ Coins`;
+                document.getElementById("player-balance").innerText = `Your Balance: ${balance} 2JZ Coins ($0.0000)`;
             } else {
-                document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins`;
+                document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
             }
         } catch (error) {
             console.error("❌ Balance update failed:", error);
