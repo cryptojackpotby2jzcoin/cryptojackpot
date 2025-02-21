@@ -6,12 +6,7 @@
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Buffer Polyfill (elle tanımlama ile destek) -->
-    <script>
-        if (typeof Buffer === 'undefined') {
-            window.Buffer = require('buffer/').Buffer;
-        }
-    </script>
+    <!-- Buffer Polyfill (sadece CDN üzerinden) -->
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
     
     <!-- Solana Web3.js -->
@@ -28,7 +23,7 @@
 <body>
     <div class="machine">
         <h2>Crypto Jackpot by 2JZ Coin</h2>
-        <p id="weekly-reward">Weekly Reward Pool: Loading...</p>
+        <p id="weekly-reward">Weekly Reward Pool: 13,200,000 Coins ($74.99)</p>
 
         <div class="container">
             <div class="slot"></div>
@@ -41,7 +36,7 @@
         <div class="button-container">
             <div class="left-buttons">
                 <button id="connect-wallet-button">Connect Wallet</button>
-                <button id="deposit-button">Deposit 2JZ Coins</button>
+                <button id="deposit-button">Deposit Coins</button>
                 <button id="transfer-button">Transfer Coins</button>
                 <button id="withdraw-button">Withdraw Coins</button>
             </div>
@@ -62,8 +57,8 @@
         </div>
 
         <div id="balance-section">
-            <p><span id="player-balance">Your Balance: 0 2JZ Coins ($0.0000)</span></p>
-            <p><span id="earned-coins">Earned Coins: 0 2JZ Coins ($0.0000)</span></p>
+            <p><span id="player-balance">Your Balance: 0 Coins ($0.0000)</span></p>
+            <p><span id="earned-coins">Earned Coins: 0 Coins ($0.0000)</span></p>
         </div>
 
         <div id="leaderboard">
