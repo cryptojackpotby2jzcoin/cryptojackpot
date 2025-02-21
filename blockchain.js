@@ -4,9 +4,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
     const spinButton = document.getElementById("spin-button");
 
-    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0"; // Gerçek bir API anahtarı kullan
+    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
     const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
+    const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
     const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
@@ -81,10 +82,10 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
-                const balance = Number(accountInfo.data.readBigUInt64LE(8)) / solanaWeb3.LAMPORTS_PER_SOL;
-                document.getElementById("player-balance").innerText = `Your Balance: ${balance.toFixed(2)} Coins`;
+                const balance = Number(accountInfo.data.readBigUInt64LE(8)); // 2JZ Coin balance (decimal)
+                document.getElementById("player-balance").innerText = `Your Balance: ${balance} 2JZ Coins`;
             } else {
-                document.getElementById("player-balance").innerText = `Your Balance: 0 Coins`;
+                document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins`;
             }
         } catch (error) {
             console.error("❌ Balance update failed:", error);
@@ -97,8 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please connect your wallet first!");
             return;
         }
-        const amount = parseFloat(prompt("Enter coins to deposit (max 10,000 SOL):"));
-        if (amount <= 0 || amount > 10000 || isNaN(amount)) {
+        const amount = parseFloat(prompt("Enter 2JZ Coins to deposit (max 10,000,000):"));
+        if (amount <= 0 || amount > 10000000 || isNaN(amount)) {
             alert("❌ Invalid deposit amount!");
             return;
         }
@@ -113,18 +114,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 programId
             );
 
-            const lamports = Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL);
-            const tx = new solanaWeb3.Transaction().add(
+            // 2JZ Coin ile token transferi
+            const userTokenAccount = await getAssociatedTokenAddress(
+                tokenMint,
+                userWallet,
+                false
+            );
+            const houseTokenAccount = await getAssociatedTokenAddress(
+                tokenMint,
+                houseWalletAddress,
+                false
+            );
+
+            const tx = new solanaWeb3.Transaction();
+            tx.add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
-                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                        { pubkey: houseWalletAddress, isSigner: false, isWritable: true },
-                        { pubkey: userWallet, isSigner: true, isWritable: true },
-                        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                        { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: false },
+                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(lamports)]).buffer)]), // Deposit
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount))]).buffer)]), // Deposit
                 })
             );
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -136,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 blockhash,
                 lastValidBlockHeight
             });
-            alert(`✅ Deposited ${amount} SOL!`);
+            alert(`✅ Deposited ${amount} 2JZ Coins!`);
             await updateBalance();
         } catch (error) {
             console.error("❌ Deposit failed:", error);
@@ -196,23 +208,32 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             const accountInfo = await connection.getAccountInfo(gameStatePDA);
             if (accountInfo && accountInfo.data) {
-                // registered_users (8 byte) + total_deposited (8 byte) + house_balance (8 byte)
-                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / solanaWeb3.LAMPORTS_PER_SOL;
+                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)); // 2JZ Coin balance (decimal)
                 if (houseBalance > 0) {
                     const rewardPool = houseBalance / 10;
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toFixed(2)} Coins`;
+                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toFixed(2)} 2JZ Coins`;
                 } else {
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 Coins`;
+                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins`;
                 }
             } else {
-                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 Coins (Account not initialized)`;
+                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins (Account not initialized)`;
             }
         } catch (error) {
             console.error("❌ Reward pool update failed:", error.message, error.stack);
             document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error (Retry)`;
-            // Kullanıcıya daha az rahatsız edici bir şekilde bildirim yap
             alert("Failed to update reward pool. This may be due to network issues. Please try refreshing the page.");
         }
+    }
+
+    // Yardımcı fonksiyon: Associated Token Account adresini al
+    async function getAssociatedTokenAddress(mint, owner, allowOwnerOffCurve = false) {
+        return await splToken.getAssociatedTokenAddress(
+            mint,
+            owner,
+            allowOwnerOffCurve,
+            splToken.TOKEN_PROGRAM_ID,
+            splToken.ASSOCIATED_TOKEN_PROGRAM_ID
+        );
     }
 
     // Event Listeners
