@@ -6,13 +6,7 @@
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Buffer Polyfill (daha robust ve manuel tanımlama) -->
-    <script>
-        // Buffer polyfill'i manuel olarak tanımla (tarayıcıda çalışmasını garantile)
-        if (typeof Buffer === 'undefined') {
-            window.Buffer = require('buffer/').Buffer;
-        }
-    </script>
+    <!-- Buffer Polyfill (yalnızca CDN üzerinden, require olmadan) -->
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
     
     <!-- Solana Web3.js (tarayıcı dostu IIEF sürüm) -->
