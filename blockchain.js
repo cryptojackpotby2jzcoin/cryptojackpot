@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
     const spinButton = document.getElementById("spin-button");
 
-    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
+    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0"; // Gerçek bir API anahtarı kullan
     const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
     let userWallet = null;
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
-            alert("Phantom Wallet not found. Please install it.");
+            alert("Phantom Wallet not found. Please install Phantom extension.");
             return;
         }
         try {
@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", function () {
             await updateBalance();
             await updateRewardPool();
         } catch (error) {
-            console.error("❌ Wallet connection failed:", error);
-            alert("Wallet connection failed. Please try again.");
+            console.error("❌ Wallet connection failed:", error.message, error.stack);
+            alert("Wallet connection failed. Please try again or install Phantom.");
         }
     }
 
@@ -82,9 +82,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
                 const balance = Number(accountInfo.data.readBigUInt64LE(8)) / solanaWeb3.LAMPORTS_PER_SOL;
-                document.getElementById("player-balance").innerText = `Your Balance: ${balance} Coins`;
+                document.getElementById("player-balance").innerText = `Your Balance: ${balance.toFixed(2)} Coins`;
             } else {
-                document.getElementById("player-balance").innerText = `Your Balance: 0 Coins (Account not initialized)`;
+                document.getElementById("player-balance").innerText = `Your Balance: 0 Coins`;
             }
         } catch (error) {
             console.error("❌ Balance update failed:", error);
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please connect your wallet first!");
             return;
         }
-        const amount = parseFloat(prompt("Enter coins to deposit (max 10,000):"));
+        const amount = parseFloat(prompt("Enter coins to deposit (max 10,000 SOL):"));
         if (amount <= 0 || amount > 10000 || isNaN(amount)) {
             alert("❌ Invalid deposit amount!");
             return;
@@ -113,6 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 programId
             );
 
+            const lamports = Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL);
             const tx = new solanaWeb3.Transaction().add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
@@ -123,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * solanaWeb3.LAMPORTS_PER_SOL))]).buffer)]), // Deposit
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(lamports)]).buffer)]), // Deposit
                 })
             );
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -135,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 blockhash,
                 lastValidBlockHeight
             });
-            alert(`✅ Deposited ${amount} coins!`);
+            alert(`✅ Deposited ${amount} SOL!`);
             await updateBalance();
         } catch (error) {
             console.error("❌ Deposit failed:", error);
@@ -189,26 +190,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function updateRewardPool() {
         try {
-            const [gameStatePDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA, bump] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
             const accountInfo = await connection.getAccountInfo(gameStatePDA);
-            if (accountInfo) {
+            if (accountInfo && accountInfo.data) {
+                // registered_users (8 byte) + total_deposited (8 byte) + house_balance (8 byte)
                 const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / solanaWeb3.LAMPORTS_PER_SOL;
-                const rewardPool = houseBalance / 10;
-                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} Coins`;
+                if (houseBalance > 0) {
+                    const rewardPool = houseBalance / 10;
+                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toFixed(2)} Coins`;
+                } else {
+                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 Coins`;
+                }
             } else {
-                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 Coins`;
+                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 Coins (Account not initialized)`;
             }
         } catch (error) {
-            console.error("❌ Reward pool update failed:", error);
-            alert("Failed to update reward pool. Please try again.");
+            console.error("❌ Reward pool update failed:", error.message, error.stack);
+            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error (Retry)`;
+            // Kullanıcıya daha az rahatsız edici bir şekilde bildirim yap
+            alert("Failed to update reward pool. This may be due to network issues. Please try refreshing the page.");
         }
     }
 
+    // Event Listeners
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
     spinButton.addEventListener("click", spinGameOnChain);
-    withdrawButton.addEventListener("click", () => alert("Withdraw disabled as per game rules."));
+    // Withdraw butonu zaten etkisiz, event listener eklenmedi
 });
