@@ -59,13 +59,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new solanaWeb3.Transaction();
 
-            // Priority fee ekle (5000 lamports = 0.000005 SOL)
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            // Priority fee ekle (ComputeBudgetProgram ile, 5000 lamports = 0.000005 SOL)
             tx.add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: userWallet,
-                    toPubkey: userWallet, // Kendine transfer, sadece fee için
-                    lamports: 5000 // Ek fee
+                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 5000 // Priority fee, microLamports cinsinden (1 SOL = 1,000,000,000 lamports)
                 })
             );
 
@@ -83,6 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             console.log("Please approve the transaction in Phantom within 30 seconds to initialize your account...");
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
@@ -168,12 +166,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new solanaWeb3.Transaction();
 
             // Priority fee ekle
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: userWallet,
-                    toPubkey: userWallet,
-                    lamports: 5000 // Ek fee
+                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 5000 // Priority fee
                 })
             );
 
@@ -217,6 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             console.log("Please approve the deposit transaction in Phantom within 30 seconds...");
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
@@ -283,12 +279,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new solanaWeb3.Transaction();
 
             // Priority fee ekle
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: userWallet,
-                    toPubkey: userWallet,
-                    lamports: 5000 // Ek fee
+                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 5000 // Priority fee
                 })
             );
 
@@ -308,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             console.log("Please approve the withdraw transaction in Phantom within 30 seconds...");
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
@@ -359,12 +353,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new solanaWeb3.Transaction();
 
             // Priority fee ekle
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.add(
-                solanaWeb3.SystemProgram.transfer({
-                    fromPubkey: userWallet,
-                    toPubkey: userWallet,
-                    lamports: 5000 // Ek fee
+                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: 5000 // Priority fee
                 })
             );
 
@@ -381,6 +372,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             console.log("Please approve the spin transaction in Phantom within 30 seconds...");
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
