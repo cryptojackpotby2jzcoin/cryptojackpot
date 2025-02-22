@@ -4,13 +4,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
     const spinButton = document.getElementById("spin-button");
 
-    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
     const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
-    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
+    // QuickNode ücretsiz Mainnet RPC (kendi key’inle değiştirebilirsin)
+    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+    // Eğer Helius’u kullanmak istersen: 
+    // const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
+    // const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
@@ -57,7 +60,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            const tx = new solanaWeb3.Transaction().add(
+            const tx = new solanaWeb3.Transaction();
+
+            // Priority fee ekle (örneğin 5000 lamports = 0.000005 SOL)
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: userWallet,
+                    toPubkey: userWallet, // Kendine transfer, sadece fee için
+                    lamports: 5000 // Küçük bir ek fee
+                })
+            );
+
+            tx.add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
                         { pubkey: userAccountPDA, isSigner: false, isWritable: true },
@@ -70,9 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
-            // Blockhash’i imzalama anında al
             console.log("Please approve the transaction in Phantom within 30 seconds to initialize your account...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
