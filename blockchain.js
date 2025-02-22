@@ -61,15 +61,19 @@ document.addEventListener("DOMContentLoaded", function () {
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
             const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction({
+            const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
                 lastValidBlockHeight
             });
-            console.log("✅ User account initialized");
+
+            if (confirmation.value.err) {
+                throw new Error("Initialization transaction failed");
+            }
+            console.log("✅ User account initialized:", signature);
         } catch (error) {
-            console.error("❌ Initialization failed:", error);
-            alert("Failed to initialize account. Please try again.");
+            console.error("❌ Initialization failed:", error.message, error.stack);
+            alert("Failed to initialize account: " + error.message);
         }
     }
 
@@ -88,8 +92,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
             }
         } catch (error) {
-            console.error("❌ Balance update failed:", error);
-            alert("Failed to update balance. Please try again.");
+            console.error("❌ Balance update failed:", error.message, error.stack);
+            document.getElementById("player-balance").innerText = `Your Balance: Error`;
         }
     }
 
@@ -125,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new solanaWeb3.Transaction();
 
-            // ATA yoksa oluştur
+            // Kullanıcı ATA'sını kontrol et ve yoksa oluştur
             const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
             if (!userTokenAccountInfo) {
                 tx.add(
@@ -138,6 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
+            // House ATA'sını kontrol et ve yoksa oluştur
             const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
             if (!houseTokenAccountInfo) {
                 tx.add(
@@ -150,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
+            // Deposit işlemi
             tx.add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
@@ -161,25 +167,31 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // 6 decimals
                 })
             );
 
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
+
             const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction({
+            const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
                 lastValidBlockHeight
             });
 
+            if (confirmation.value.err) {
+                throw new Error("Deposit transaction failed: " + JSON.stringify(confirmation.value.err));
+            }
+
+            console.log("✅ Deposit successful:", signature);
             alert(`✅ Deposited ${amount} 2JZ Coins!`);
             await updateBalance();
         } catch (error) {
-            console.error("❌ Deposit failed:", error);
-            alert("Deposit failed. Please check your wallet and try again.");
+            console.error("❌ Deposit failed:", error.message, error.stack);
+            alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees.`);
         }
     }
 
@@ -213,17 +225,23 @@ document.addEventListener("DOMContentLoaded", function () {
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
             const signature = await window.solana.signAndSendTransaction(tx);
-            await connection.confirmTransaction({
+            const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
                 lastValidBlockHeight
             });
+
+            if (confirmation.value.err) {
+                throw new Error("Spin transaction failed");
+            }
+
+            console.log("✅ Spin successful:", signature);
             await updateBalance();
             spinGame(); // Frontend spin animasyonu
             window.dispatchEvent(new Event("spinComplete"));
         } catch (error) {
-            console.error("❌ Spin failed:", error);
-            alert("Spin failed. Please check your balance and try again.");
+            console.error("❌ Spin failed:", error.message, error.stack);
+            alert("Spin failed: " + error.message);
         }
     }
 
@@ -247,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } catch (error) {
             console.error("❌ Reward pool update failed:", error.message, error.stack);
-            alert("Failed to update reward pool. Please try refreshing the page.");
+            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error`;
         }
     }
 
@@ -255,4 +273,5 @@ document.addEventListener("DOMContentLoaded", function () {
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
     spinButton.addEventListener("click", spinGameOnChain);
+    // withdrawButton event listener eklenmedi, çünkü şu an işlevsiz
 });
