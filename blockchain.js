@@ -88,8 +88,11 @@ document.addEventListener("DOMContentLoaded", function () {
             if (accountInfo) {
                 const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 6 decimals
                 document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
+                // Earned Coins’i burada güncelleyebiliriz, şu an sabit bırakıyorum
+                document.getElementById("earned-coins").innerText = `Earned Coins: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
             } else {
                 document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
+                document.getElementById("earned-coins").innerText = `Earned Coins: 0 2JZ Coins ($0.0000)`;
             }
         } catch (error) {
             console.error("❌ Balance update failed:", error.message, error.stack);
@@ -129,7 +132,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new solanaWeb3.Transaction();
 
-            // Kullanıcı ATA'sını kontrol et ve yoksa oluştur
             const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
             if (!userTokenAccountInfo) {
                 tx.add(
@@ -142,7 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
-            // House ATA'sını kontrol et ve yoksa oluştur
             const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
             if (!houseTokenAccountInfo) {
                 tx.add(
@@ -155,7 +156,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
-            // Deposit işlemi
             tx.add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // 6 decimals
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit
                 })
             );
 
@@ -192,6 +192,75 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("❌ Deposit failed:", error.message, error.stack);
             alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees.`);
+        }
+    }
+
+    async function withdrawCoins() {
+        if (!userWallet) {
+            alert("Please connect your wallet first!");
+            return;
+        }
+        const amount = parseFloat(prompt("Enter 2JZ Coins to withdraw:"));
+        if (amount <= 0 || isNaN(amount)) {
+            alert("❌ Invalid withdraw amount!");
+            return;
+        }
+
+        try {
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
+
+            const userTokenAccount = await splToken.getAssociatedTokenAddress(
+                tokenMint,
+                userWallet
+            );
+            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
+                tokenMint,
+                houseWalletAddress
+            );
+
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: false },
+                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw (3)
+                })
+            );
+
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+
+            const signature = await window.solana.signAndSendTransaction(tx);
+            const confirmation = await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
+
+            if (confirmation.value.err) {
+                throw new Error("Withdraw transaction failed: " + JSON.stringify(confirmation.value.err));
+            }
+
+            console.log("✅ Withdraw successful:", signature);
+            alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
+            await updateBalance();
+        } catch (error) {
+            console.error("❌ Withdraw failed:", error.message, error.stack);
+            alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees.`);
         }
     }
 
@@ -272,6 +341,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Event Listeners
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
+    withdrawButton.addEventListener("click", withdrawCoins);
     spinButton.addEventListener("click", spinGameOnChain);
-    // withdrawButton event listener eklenmedi, çünkü şu an işlevsiz
 });
