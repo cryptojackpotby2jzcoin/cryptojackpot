@@ -82,8 +82,8 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
-                const balance = Number(accountInfo.data.readBigUInt64LE(8)); // 2JZ Coin balance (decimal)
-                document.getElementById("player-balance").innerText = `Your Balance: ${balance} 2JZ Coins ($0.0000)`;
+                const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 2JZ Coin balance (6 decimal assumed)
+                document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
             } else {
                 document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
             }
@@ -114,31 +114,55 @@ document.addEventListener("DOMContentLoaded", function () {
                 programId
             );
 
-            // 2JZ Coin ile token transferi
-            const userTokenAccount = await getAssociatedTokenAddress(
+            const userTokenAccount = await splToken.getAssociatedTokenAddress(
                 tokenMint,
-                userWallet,
-                false
+                userWallet
             );
-            const houseTokenAccount = await getAssociatedTokenAddress(
+            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
                 tokenMint,
-                houseWalletAddress,
-                false
+                houseWalletAddress
             );
 
-            const tx = new solanaWeb3.Transaction();
-            tx.add(
+            // ATA yoksa oluştur
+            const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
+            if (!userTokenAccountInfo) {
+                tx.add(
+                    splToken.createAssociatedTokenAccountInstruction(
+                        userWallet,
+                        userTokenAccount,
+                        userWallet,
+                        tokenMint
+                    )
+                );
+            }
+
+            const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
+            if (!houseTokenAccountInfo) {
+                tx.add(
+                    splToken.createAssociatedTokenAccountInstruction(
+                        userWallet,
+                        houseTokenAccount,
+                        houseWalletAddress,
+                        tokenMint
+                    )
+                );
+            }
+
+            const tx = new solanaWeb3.Transaction().add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
                         { pubkey: userTokenAccount, isSigner: false, isWritable: true },
                         { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
                         { pubkey: userWallet, isSigner: true, isWritable: false },
                         { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount))]).buffer)]), // Deposit
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit (6 decimals)
                 })
             );
+
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
@@ -148,6 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 blockhash,
                 lastValidBlockHeight
             });
+
             alert(`✅ Deposited ${amount} 2JZ Coins!`);
             await updateBalance();
         } catch (error) {
@@ -208,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             const accountInfo = await connection.getAccountInfo(gameStatePDA);
             if (accountInfo && accountInfo.data) {
-                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)); // 2JZ Coin balance (decimal)
+                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000; // 2JZ Coin balance (6 decimals)
                 if (houseBalance > 0) {
                     const rewardPool = houseBalance / 10;
                     document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
@@ -220,25 +245,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } catch (error) {
             console.error("❌ Reward pool update failed:", error.message, error.stack);
-            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error (Retry)`;
-            alert("Failed to update reward pool. This may be due to network issues. Please try refreshing the page.");
+            alert("Failed to update reward pool. Please try refreshing the page.");
         }
-    }
-
-    // Yardımcı fonksiyon: Associated Token Account adresini al
-    async function getAssociatedTokenAddress(mint, owner, allowOwnerOffCurve = false) {
-        return await splToken.getAssociatedTokenAddress(
-            mint,
-            owner,
-            allowOwnerOffCurve,
-            splToken.TOKEN_PROGRAM_ID,
-            splToken.ASSOCIATED_TOKEN_PROGRAM_ID
-        );
     }
 
     // Event Listeners
     connectWalletButton.addEventListener("click", connectWallet);
     depositButton.addEventListener("click", depositCoins);
     spinButton.addEventListener("click", spinGameOnChain);
-    // Withdraw butonu zaten etkisiz, event listener eklenmedi
 });
