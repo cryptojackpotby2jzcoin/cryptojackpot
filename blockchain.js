@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
-    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
+    const connection = new solanaWeb3.Connection(`https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29}`, "confirmed");
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
