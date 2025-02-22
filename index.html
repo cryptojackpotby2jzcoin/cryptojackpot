@@ -6,8 +6,8 @@
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Buffer Polyfill (tarayıcı uyumlu sürüm) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/buffer/6.0.3/buffer.min.js"></script>
+    <!-- Yerel Buffer Polyfill -->
+    <script src="/buffer.js"></script>
     
     <!-- Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
@@ -75,6 +75,8 @@
     <script>
         if (typeof Buffer === "undefined" || typeof Buffer.from !== "function") {
             alert("Buffer polyfill failed to load or is not functional. Please refresh the page.");
+        } else {
+            console.log("Buffer polyfill loaded successfully!");
         }
     </script>
 </body>
