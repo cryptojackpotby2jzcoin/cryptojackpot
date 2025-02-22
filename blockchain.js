@@ -10,7 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
-    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
+    // Alternatif RPC ile deneyelim
+    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
             await updateRewardPool();
         } catch (error) {
             console.error("❌ Wallet connection failed:", error.message, error.stack);
-            alert("Wallet connection failed. Please try again or install Phantom.");
+            alert("Wallet connection failed: " + error.message);
         }
     }
 
@@ -35,67 +36,66 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please connect your wallet first!");
             return;
         }
-        let attempts = 0;
-        const maxAttempts = 3;
+        try {
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        while (attempts < maxAttempts) {
-            try {
-                const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("user"), userWallet.toBytes()],
-                    programId
-                );
-                const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("game_state")],
-                    programId
-                );
-
-                const tx = new solanaWeb3.Transaction().add(
-                    new solanaWeb3.TransactionInstruction({
-                        keys: [
-                            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                            { pubkey: userWallet, isSigner: true, isWritable: true },
-                            { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
-                        ],
-                        programId,
-                        data: Buffer.from([0]), // Initialize
-                    })
-                );
-
-                // Blockhash’i her denemede taze al
-                const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-                tx.recentBlockhash = blockhash;
-                tx.feePayer = userWallet;
-
-                const signedTx = await window.solana.signAndSendTransaction(tx);
-                const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
-                console.log("Transaction signature:", signature);
-
-                const confirmation = await connection.confirmTransaction({
-                    signature,
-                    blockhash,
-                    lastValidBlockHeight
-                });
-
-                if (confirmation.value.err) {
-                    throw new Error("Initialization transaction failed: " + JSON.stringify(confirmation.value.err));
-                }
-                console.log("✅ User account initialized:", signature);
-                return; // Başarılıysa döngüden çık
-            } catch (error) {
-                attempts++;
-                console.error(`❌ Initialization attempt ${attempts} failed:`, error.message, error.stack);
-                if (attempts === maxAttempts) {
-                    alert("Failed to initialize account after multiple attempts: " + error.message);
-                    throw error; // Maksimum deneme sonrası vazgeç
-                }
-                if (error.message.includes("block height exceeded")) {
-                    console.log("Block height exceeded, retrying...");
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // 1 saniye bekle
-                } else {
-                    throw error; // Diğer hatalarda hemen vazgeç
-                }
+            // Hesap zaten varsa işlemi atla
+            const accountInfo = await connection.getAccountInfo(userAccountPDA);
+            if (accountInfo) {
+                console.log("✅ User account already initialized:", userAccountPDA.toString());
+                return;
             }
+
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: true },
+                        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([0]), // Initialize
+                })
+            );
+
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+
+            // Kullanıcıyı bilgilendir
+            console.log("Please approve the transaction in Phantom to initialize your account...");
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Transaction signature:", signature);
+
+            const confirmation = await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
+
+            if (confirmation.value.err) {
+                throw new Error("Initialization transaction failed: " + JSON.stringify(confirmation.value.err));
+            }
+            console.log("✅ User account initialized:", signature);
+        } catch (error) {
+            console.error("❌ Initialization failed:", error.message, error.stack);
+            if (error.message.includes("block height exceeded")) {
+                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+            } else if (error.message.includes("User rejected")) {
+                alert("You rejected the transaction. Please approve it to initialize your account.");
+            } else {
+                alert("Failed to initialize account: " + error.message);
+            }
+            throw error;
         }
     }
 
@@ -132,106 +132,98 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let attempts = 0;
-        const maxAttempts = 3;
+        try {
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        while (attempts < maxAttempts) {
-            try {
-                const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("user"), userWallet.toBytes()],
-                    programId
-                );
-                const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("game_state")],
-                    programId
-                );
+            const userTokenAccount = await splToken.getAssociatedTokenAddress(
+                tokenMint,
+                userWallet
+            );
+            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
+                tokenMint,
+                houseWalletAddress
+            );
 
-                const userTokenAccount = await splToken.getAssociatedTokenAddress(
-                    tokenMint,
-                    userWallet
-                );
-                const houseTokenAccount = await splToken.getAssociatedTokenAddress(
-                    tokenMint,
-                    houseWalletAddress
-                );
+            const tx = new solanaWeb3.Transaction();
 
-                const tx = new solanaWeb3.Transaction();
-
-                const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
-                if (!userTokenAccountInfo) {
-                    tx.add(
-                        splToken.createAssociatedTokenAccountInstruction(
-                            userWallet,
-                            userTokenAccount,
-                            userWallet,
-                            tokenMint
-                        )
-                    );
-                }
-
-                const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
-                if (!houseTokenAccountInfo) {
-                    tx.add(
-                        splToken.createAssociatedTokenAccountInstruction(
-                            userWallet,
-                            houseTokenAccount,
-                            houseWalletAddress,
-                            tokenMint
-                        )
-                    );
-                }
-
+            const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
+            if (!userTokenAccountInfo) {
                 tx.add(
-                    new solanaWeb3.TransactionInstruction({
-                        keys: [
-                            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                            { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-                            { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
-                            { pubkey: userWallet, isSigner: true, isWritable: false },
-                            { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-                        ],
-                        programId,
-                        data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit
-                    })
+                    splToken.createAssociatedTokenAccountInstruction(
+                        userWallet,
+                        userTokenAccount,
+                        userWallet,
+                        tokenMint
+                    )
                 );
-
-                const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-                tx.recentBlockhash = blockhash;
-                tx.feePayer = userWallet;
-
-                const signedTx = await window.solana.signAndSendTransaction(tx);
-                const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
-                console.log("Deposit transaction signature:", signature);
-
-                const confirmation = await connection.confirmTransaction({
-                    signature,
-                    blockhash,
-                    lastValidBlockHeight
-                });
-
-                if (confirmation.value.err) {
-                    throw new Error("Deposit transaction failed: " + JSON.stringify(confirmation.value.err));
-                }
-
-                console.log("✅ Deposit successful:", signature);
-                alert(`✅ Deposited ${amount} 2JZ Coins!`);
-                await updateBalance();
-                return;
-            } catch (error) {
-                attempts++;
-                console.error(`❌ Deposit attempt ${attempts} failed:`, error.message, error.stack);
-                if (attempts === maxAttempts) {
-                    alert(`Deposit failed after ${maxAttempts} attempts: ${error.message}`);
-                    throw error;
-                }
-                if (error.message.includes("block height exceeded")) {
-                    console.log("Block height exceeded, retrying...");
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                } else {
-                    throw error;
-                }
             }
+
+            const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
+            if (!houseTokenAccountInfo) {
+                tx.add(
+                    splToken.createAssociatedTokenAccountInstruction(
+                        userWallet,
+                        houseTokenAccount,
+                        houseWalletAddress,
+                        tokenMint
+                    )
+                );
+            }
+
+            tx.add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: false },
+                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit
+                })
+            );
+
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+
+            console.log("Please approve the deposit transaction in Phantom...");
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Deposit transaction signature:", signature);
+
+            const confirmation = await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
+
+            if (confirmation.value.err) {
+                throw new Error("Deposit transaction failed: " + JSON.stringify(confirmation.value.err));
+            }
+
+            console.log("✅ Deposit successful:", signature);
+            alert(`✅ Deposited ${amount} 2JZ Coins!`);
+            await updateBalance();
+        } catch (error) {
+            console.error("❌ Deposit failed:", error.message, error.stack);
+            if (error.message.includes("block height exceeded")) {
+                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+            } else if (error.message.includes("User rejected")) {
+                alert("You rejected the deposit transaction. Please approve it to continue.");
+            } else {
+                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees.`);
+            }
+            throw error;
         }
     }
 
@@ -246,80 +238,72 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        let attempts = 0;
-        const maxAttempts = 3;
+        try {
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        while (attempts < maxAttempts) {
-            try {
-                const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("user"), userWallet.toBytes()],
-                    programId
-                );
-                const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("game_state")],
-                    programId
-                );
+            const userTokenAccount = await splToken.getAssociatedTokenAddress(
+                tokenMint,
+                userWallet
+            );
+            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
+                tokenMint,
+                houseWalletAddress
+            );
 
-                const userTokenAccount = await splToken.getAssociatedTokenAddress(
-                    tokenMint,
-                    userWallet
-                );
-                const houseTokenAccount = await splToken.getAssociatedTokenAddress(
-                    tokenMint,
-                    houseWalletAddress
-                );
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: false },
+                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw
+                })
+            );
 
-                const tx = new solanaWeb3.Transaction().add(
-                    new solanaWeb3.TransactionInstruction({
-                        keys: [
-                            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                            { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
-                            { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-                            { pubkey: userWallet, isSigner: true, isWritable: false },
-                            { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-                        ],
-                        programId,
-                        data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw
-                    })
-                );
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
 
-                const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-                tx.recentBlockhash = blockhash;
-                tx.feePayer = userWallet;
+            console.log("Please approve the withdraw transaction in Phantom...");
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Withdraw transaction signature:", signature);
 
-                const signedTx = await window.solana.signAndSendTransaction(tx);
-                const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
-                console.log("Withdraw transaction signature:", signature);
+            const confirmation = await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
 
-                const confirmation = await connection.confirmTransaction({
-                    signature,
-                    blockhash,
-                    lastValidBlockHeight
-                });
-
-                if (confirmation.value.err) {
-                    throw new Error("Withdraw transaction failed: " + JSON.stringify(confirmation.value.err));
-                }
-
-                console.log("✅ Withdraw successful:", signature);
-                alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
-                await updateBalance();
-                return;
-            } catch (error) {
-                attempts++;
-                console.error(`❌ Withdraw attempt ${attempts} failed:`, error.message, error.stack);
-                if (attempts === maxAttempts) {
-                    alert(`Withdraw failed after ${maxAttempts} attempts: ${error.message}`);
-                    throw error;
-                }
-                if (error.message.includes("block height exceeded")) {
-                    console.log("Block height exceeded, retrying...");
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                } else {
-                    throw error;
-                }
+            if (confirmation.value.err) {
+                throw new Error("Withdraw transaction failed: " + JSON.stringify(confirmation.value.err));
             }
+
+            console.log("✅ Withdraw successful:", signature);
+            alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
+            await updateBalance();
+        } catch (error) {
+            console.error("❌ Withdraw failed:", error.message, error.stack);
+            if (error.message.includes("block height exceeded")) {
+                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+            } else if (error.message.includes("User rejected")) {
+                alert("You rejected the withdraw transaction. Please approve it to continue.");
+            } else {
+                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees.`);
+            }
+            throw error;
         }
     }
 
@@ -328,69 +312,61 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Please connect your wallet first!");
             return;
         }
-        let attempts = 0;
-        const maxAttempts = 3;
+        try {
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("user"), userWallet.toBytes()],
+                programId
+            );
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+                [Buffer.from("game_state")],
+                programId
+            );
 
-        while (attempts < maxAttempts) {
-            try {
-                const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("user"), userWallet.toBytes()],
-                    programId
-                );
-                const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                    [Buffer.from("game_state")],
-                    programId
-                );
+            const tx = new solanaWeb3.Transaction().add(
+                new solanaWeb3.TransactionInstruction({
+                    keys: [
+                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+                        { pubkey: userWallet, isSigner: true, isWritable: false },
+                    ],
+                    programId,
+                    data: Buffer.from([2]), // Spin
+                })
+            );
 
-                const tx = new solanaWeb3.Transaction().add(
-                    new solanaWeb3.TransactionInstruction({
-                        keys: [
-                            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                            { pubkey: userWallet, isSigner: true, isWritable: false },
-                        ],
-                        programId,
-                        data: Buffer.from([2]), // Spin
-                    })
-                );
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
 
-                const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-                tx.recentBlockhash = blockhash;
-                tx.feePayer = userWallet;
+            console.log("Please approve the spin transaction in Phantom...");
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Spin transaction signature:", signature);
 
-                const signedTx = await window.solana.signAndSendTransaction(tx);
-                const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
-                console.log("Spin transaction signature:", signature);
+            const confirmation = await connection.confirmTransaction({
+                signature,
+                blockhash,
+                lastValidBlockHeight
+            });
 
-                const confirmation = await connection.confirmTransaction({
-                    signature,
-                    blockhash,
-                    lastValidBlockHeight
-                });
-
-                if (confirmation.value.err) {
-                    throw new Error("Spin transaction failed: " + JSON.stringify(confirmation.value.err));
-                }
-
-                console.log("✅ Spin successful:", signature);
-                await updateBalance();
-                spinGame(); // Frontend spin animasyonu
-                window.dispatchEvent(new Event("spinComplete"));
-                return;
-            } catch (error) {
-                attempts++;
-                console.error(`❌ Spin attempt ${attempts} failed:`, error.message, error.stack);
-                if (attempts === maxAttempts) {
-                    alert(`Spin failed after ${maxAttempts} attempts: ${error.message}`);
-                    throw error;
-                }
-                if (error.message.includes("block height exceeded")) {
-                    console.log("Block height exceeded, retrying...");
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                } else {
-                    throw error;
-                }
+            if (confirmation.value.err) {
+                throw new Error("Spin transaction failed: " + JSON.stringify(confirmation.value.err));
             }
+
+            console.log("✅ Spin successful:", signature);
+            await updateBalance();
+            spinGame(); // Frontend spin animasyonu
+            window.dispatchEvent(new Event("spinComplete"));
+        } catch (error) {
+            console.error("❌ Spin failed:", error.message, error.stack);
+            if (error.message.includes("block height exceeded")) {
+                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+            } else if (error.message.includes("User rejected")) {
+                alert("You rejected the spin transaction. Please approve it to continue.");
+            } else {
+                alert("Spin failed: " + error.message);
+            }
+            throw error;
         }
     }
 
