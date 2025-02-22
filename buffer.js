@@ -1,4 +1,4 @@
-// buffer.js - Tarayıcı uyumlu Buffer polyfill
+// buffer.js - Tarayıcı uyumlu Buffer polyfill (Uint8Array desteği eklendi)
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
@@ -109,14 +109,18 @@
             obj.copy(buf, 0, 0, len);
             return that ? Object.assign(that, buf) : buf;
         }
-        throw new TypeError('Unsupported type');
+        // Uint8Array veya diğer array-like tipleri destekle
+        if (ArrayBuffer.isView(obj) || (obj && typeof obj.length === 'number')) {
+            return fromArrayLike(that, obj);
+        }
+        throw new TypeError('Unsupported type: ' + typeof obj);
     }
 
     function byteLength(string, encoding) {
         if (typeof string !== 'string') string = '' + string;
         var len = string.length;
         if (len === 0) return 0;
-        return len; // Basit bir hesaplama, encoding’e göre gerçek byte uzunluğu için daha fazla mantık eklenebilir
+        return len; // Basit hesaplama, encoding’e bağlı daha karmaşık mantık eklenebilir
     }
 
     function write(buf, string, offset, length, encoding) {
