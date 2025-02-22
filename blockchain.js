@@ -62,10 +62,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new solanaWeb3.Transaction();
 
-            // Priority fee ekle (doğru formatta, number olarak)
+            // Priority fee ekle (8 baytlık Uint8Array olarak, 5000 microLamports = 0.000005 SOL)
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee, 0.000005 SOL (number olarak)
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -171,9 +175,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new solanaWeb3.Transaction();
 
             // Priority fee ekle
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -286,9 +294,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new solanaWeb3.Transaction();
 
             // Priority fee ekle
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -362,9 +374,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new solanaWeb3.Transaction();
 
             // Priority fee ekle
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
