@@ -10,8 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
-    // Alternatif RPC ile deneyelim
-    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+    const connection = new solanaWeb3.Connection(`https://rpc.helius.xyz/?api-key=${heliusApiKey}`, "confirmed");
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
@@ -46,8 +45,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 programId
             );
 
-            // Hesap zaten varsa işlemi atla
-            const accountInfo = await connection.getAccountInfo(userAccountPDA);
+            // Hesap kontrolü, hata alırsa yine de devam et
+            let accountInfo;
+            try {
+                accountInfo = await connection.getAccountInfo(userAccountPDA);
+            } catch (e) {
+                console.warn("Failed to check account info, proceeding anyway:", e.message);
+            }
             if (accountInfo) {
                 console.log("✅ User account already initialized:", userAccountPDA.toString());
                 return;
@@ -70,7 +74,6 @@ document.addEventListener("DOMContentLoaded", function () {
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            // Kullanıcıyı bilgilendir
             console.log("Please approve the transaction in Phantom to initialize your account...");
             const signedTx = await window.solana.signAndSendTransaction(tx);
             const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
@@ -89,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("❌ Initialization failed:", error.message, error.stack);
             if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+                alert("Transaction expired. Please try again and approve quickly in Phantom.");
             } else if (error.message.includes("User rejected")) {
                 alert("You rejected the transaction. Please approve it to initialize your account.");
             } else {
