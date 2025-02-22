@@ -60,7 +60,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
-            const signature = await window.solana.signAndSendTransaction(tx);
+
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            // Phantom'dan dönen değerin bir obje olup olmadığını kontrol et
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Transaction signature:", signature); // Hata ayıklamak için
+
             const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
@@ -68,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (confirmation.value.err) {
-                throw new Error("Initialization transaction failed");
+                throw new Error("Initialization transaction failed: " + JSON.stringify(confirmation.value.err));
             }
             console.log("✅ User account initialized:", signature);
         } catch (error) {
@@ -88,7 +93,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (accountInfo) {
                 const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 6 decimals
                 document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
-                // Earned Coins’i burada güncelleyebiliriz, şu an sabit bırakıyorum
                 document.getElementById("earned-coins").innerText = `Earned Coins: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
             } else {
                 document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
@@ -175,7 +179,10 @@ document.addEventListener("DOMContentLoaded", function () {
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            const signature = await window.solana.signAndSendTransaction(tx);
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Deposit transaction signature:", signature);
+
             const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
@@ -236,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw (3)
+                    data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw
                 })
             );
 
@@ -244,7 +251,10 @@ document.addEventListener("DOMContentLoaded", function () {
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            const signature = await window.solana.signAndSendTransaction(tx);
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Withdraw transaction signature:", signature);
+
             const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
@@ -293,7 +303,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
-            const signature = await window.solana.signAndSendTransaction(tx);
+
+            const signedTx = await window.solana.signAndSendTransaction(tx);
+            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            console.log("Spin transaction signature:", signature);
+
             const confirmation = await connection.confirmTransaction({
                 signature,
                 blockhash,
@@ -301,7 +315,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (confirmation.value.err) {
-                throw new Error("Spin transaction failed");
+                throw new Error("Spin transaction failed: " + JSON.stringify(confirmation.value.err));
             }
 
             console.log("✅ Spin successful:", signature);
