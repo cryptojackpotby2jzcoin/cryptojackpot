@@ -4,13 +4,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const depositButton = document.getElementById("deposit-button");
     const spinButton = document.getElementById("spin-button");
 
-    const heliusApiKey = "d1c5af3f-7119-494d-8987-cd72bc00bfd0";
     const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
     const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
     const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
-    const connection = new solanaWeb3.Connection(`https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29}`, "confirmed");
+    // QuickNode Solana Mainnet Endpoint
+    const connection = new solanaWeb3.Connection(
+        "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29",
+        "confirmed"
+    );
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
@@ -59,10 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new solanaWeb3.Transaction();
 
-            // Priority fee ekle (ComputeBudgetProgram ile, 5000 lamports = 0.000005 SOL)
+            // Priority fee ekle (5000 microLamports = 0.000005 SOL)
             tx.add(
                 solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee, microLamports cinsinden (1 SOL = 1,000,000,000 lamports)
+                    microLamports: 5000 // Priority fee
                 })
             );
 
@@ -263,177 +266,4 @@ document.addEventListener("DOMContentLoaded", function () {
                 programId
             );
             const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
-
-            const userTokenAccount = await splToken.getAssociatedTokenAddress(
-                tokenMint,
-                userWallet
-            );
-            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
-                tokenMint,
-                houseWalletAddress
-            );
-
-            const tx = new solanaWeb3.Transaction();
-
-            // Priority fee ekle
-            tx.add(
-                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee
-                })
-            );
-
-            tx.add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [
-                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                        { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
-                        { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-                        { pubkey: userWallet, isSigner: true, isWritable: false },
-                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-                    ],
-                    programId,
-                    data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw
-                })
-            );
-
-            console.log("Please approve the withdraw transaction in Phantom within 30 seconds...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-
-            const signedTx = await window.solana.signAndSendTransaction(tx);
-            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
-            console.log("Withdraw transaction signature:", signature);
-
-            const confirmation = await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-
-            if (confirmation.value.err) {
-                throw new Error("Withdraw transaction failed: " + JSON.stringify(confirmation.value.err));
-            }
-
-            console.log("✅ Withdraw successful:", signature);
-            alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
-            await updateBalance();
-        } catch (error) {
-            console.error("❌ Withdraw failed:", error.message, error.stack);
-            if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired! Please try again and approve within 30 seconds in Phantom.");
-            } else if (error.message.includes("User rejected")) {
-                alert("You rejected the withdraw transaction. Please approve it to continue.");
-            } else {
-                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees.`);
-            }
-            throw error;
-        }
-    }
-
-    async function spinGameOnChain() {
-        if (!userWallet) {
-            alert("Please connect your wallet first!");
-            return;
-        }
-        try {
-            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("user"), userWallet.toBytes()],
-                programId
-            );
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
-
-            const tx = new solanaWeb3.Transaction();
-
-            // Priority fee ekle
-            tx.add(
-                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Priority fee
-                })
-            );
-
-            tx.add(
-                new solanaWeb3.TransactionInstruction({
-                    keys: [
-                        { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-                        { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-                        { pubkey: userWallet, isSigner: true, isWritable: false },
-                    ],
-                    programId,
-                    data: Buffer.from([2]), // Spin
-                })
-            );
-
-            console.log("Please approve the spin transaction in Phantom within 30 seconds...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-
-            const signedTx = await window.solana.signAndSendTransaction(tx);
-            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
-            console.log("Spin transaction signature:", signature);
-
-            const confirmation = await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-
-            if (confirmation.value.err) {
-                throw new Error("Spin transaction failed: " + JSON.stringify(confirmation.value.err));
-            }
-
-            console.log("✅ Spin successful:", signature);
-            await updateBalance();
-            spinGame(); // Frontend spin animasyonu
-            window.dispatchEvent(new Event("spinComplete"));
-        } catch (error) {
-            console.error("❌ Spin failed:", error.message, error.stack);
-            if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired! Please try again and approve within 30 seconds in Phantom.");
-            } else if (error.message.includes("User rejected")) {
-                alert("You rejected the spin transaction. Please approve it to continue.");
-            } else {
-                alert("Spin failed: " + error.message);
-            }
-            throw error;
-        }
-    }
-
-    async function updateRewardPool() {
-        try {
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
-                [Buffer.from("game_state")],
-                programId
-            );
-            const accountInfo = await connection.getAccountInfo(gameStatePDA);
-            if (accountInfo && accountInfo.data) {
-                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000; // 6 decimals
-                if (houseBalance > 0) {
-                    const rewardPool = houseBalance / 10;
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
-                } else {
-                    document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00)`;
-                }
-            } else {
-                document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00) (Account not initialized)`;
-            }
-        } catch (error) {
-            console.error("❌ Reward pool update failed:", error.message, error.stack);
-            document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error`;
-        }
-    }
-
-    // Event Listeners
-    connectWalletButton.addEventListener("click", connectWallet);
-    depositButton.addEventListener("click", depositCoins);
-    withdrawButton.addEventListener("click", withdrawCoins);
-    spinButton.addEventListener("click", spinGameOnChain);
-});
+                [Buffer.from
