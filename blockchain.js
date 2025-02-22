@@ -36,11 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         try {
-            const [userAccountPDA, bump] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
@@ -76,13 +76,13 @@ document.addEventListener("DOMContentLoaded", function () {
     async function updateBalance() {
         if (!userWallet) return;
         try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
             const accountInfo = await connection.getAccountInfo(userAccountPDA);
             if (accountInfo) {
-                const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 2JZ Coin balance (6 decimal assumed)
+                const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 6 decimals
                 document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
             } else {
                 document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
@@ -105,11 +105,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
@@ -122,6 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 tokenMint,
                 houseWalletAddress
             );
+
+            const tx = new solanaWeb3.Transaction();
 
             // ATA yoksa oluştur
             const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
@@ -148,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
-            const tx = new solanaWeb3.Transaction().add(
+            tx.add(
                 new solanaWeb3.TransactionInstruction({
                     keys: [
                         { pubkey: userAccountPDA, isSigner: false, isWritable: true },
@@ -159,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit (6 decimals)
+                    data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit
                 })
             );
 
@@ -187,11 +189,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         try {
-            const [userAccountPDA, _] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA, __] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
@@ -218,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
             await updateBalance();
             spinGame(); // Frontend spin animasyonu
-            window.dispatchEvent(new Event("spinComplete")); // Spin sayaçlarını güncelle
+            window.dispatchEvent(new Event("spinComplete"));
         } catch (error) {
             console.error("❌ Spin failed:", error);
             alert("Spin failed. Please check your balance and try again.");
@@ -227,13 +229,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function updateRewardPool() {
         try {
-            const [gameStatePDA, bump] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
             const accountInfo = await connection.getAccountInfo(gameStatePDA);
             if (accountInfo && accountInfo.data) {
-                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000; // 2JZ Coin balance (6 decimals)
+                const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000; // 6 decimals
                 if (houseBalance > 0) {
                     const rewardPool = houseBalance / 10;
                     document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
