@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 programId
             );
 
-            // Hesap kontrolü, hata alırsa yine de devam et
+            // Hesap kontrolü, hata alırsa devam et
             let accountInfo;
             try {
                 accountInfo = await connection.getAccountInfo(userAccountPDA);
@@ -70,11 +70,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
+            // Blockhash’i imzalama anında al
+            console.log("Please approve the transaction in Phantom within 30 seconds to initialize your account...");
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            console.log("Please approve the transaction in Phantom to initialize your account...");
             const signedTx = await window.solana.signAndSendTransaction(tx);
             const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
             console.log("Transaction signature:", signature);
@@ -92,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("❌ Initialization failed:", error.message, error.stack);
             if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired. Please try again and approve quickly in Phantom.");
+                alert("Transaction expired! Please try again and approve within 30 seconds in Phantom.");
             } else if (error.message.includes("User rejected")) {
                 alert("You rejected the transaction. Please approve it to initialize your account.");
             } else {
@@ -195,11 +196,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
+            console.log("Please approve the deposit transaction in Phantom within 30 seconds...");
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            console.log("Please approve the deposit transaction in Phantom...");
             const signedTx = await window.solana.signAndSendTransaction(tx);
             const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
             console.log("Deposit transaction signature:", signature);
@@ -220,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("❌ Deposit failed:", error.message, error.stack);
             if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+                alert("Transaction expired! Please try again and approve within 30 seconds in Phantom.");
             } else if (error.message.includes("User rejected")) {
                 alert("You rejected the deposit transaction. Please approve it to continue.");
             } else {
@@ -275,11 +276,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
+            console.log("Please approve the withdraw transaction in Phantom within 30 seconds...");
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            console.log("Please approve the withdraw transaction in Phantom...");
             const signedTx = await window.solana.signAndSendTransaction(tx);
             const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
             console.log("Withdraw transaction signature:", signature);
@@ -300,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("❌ Withdraw failed:", error.message, error.stack);
             if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+                alert("Transaction expired! Please try again and approve within 30 seconds in Phantom.");
             } else if (error.message.includes("User rejected")) {
                 alert("You rejected the withdraw transaction. Please approve it to continue.");
             } else {
@@ -337,11 +338,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
             );
 
+            console.log("Please approve the spin transaction in Phantom within 30 seconds...");
             const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
             tx.recentBlockhash = blockhash;
             tx.feePayer = userWallet;
 
-            console.log("Please approve the spin transaction in Phantom...");
             const signedTx = await window.solana.signAndSendTransaction(tx);
             const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
             console.log("Spin transaction signature:", signature);
@@ -363,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("❌ Spin failed:", error.message, error.stack);
             if (error.message.includes("block height exceeded")) {
-                alert("Transaction expired. Please try again quickly after approving in Phantom.");
+                alert("Transaction expired! Please try again and approve within 30 seconds in Phantom.");
             } else if (error.message.includes("User rejected")) {
                 alert("You rejected the spin transaction. Please approve it to continue.");
             } else {
