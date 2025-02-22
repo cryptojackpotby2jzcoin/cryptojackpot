@@ -6,8 +6,8 @@
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Buffer Polyfill (önce yüklenmeli) -->
-    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
+    <!-- Buffer Polyfill (çalışan bir alternatif) -->
+    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
     
     <!-- Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
@@ -66,12 +66,12 @@
         </div>
     </div>
 
-    <!-- JavaScript Dosyaları (body sonunda, kütüphanelerden sonra) -->
+    <!-- JavaScript Dosyaları -->
     <script src="blockchain.js"></script>
     <script src="script.js"></script>
     <script src="game.js"></script>
 
-    <!-- Buffer’ın yüklendiğini garantile -->
+    <!-- Buffer kontrolü -->
     <script>
         if (typeof Buffer === "undefined") {
             alert("Buffer polyfill failed to load. Please refresh the page or check your internet connection.");
