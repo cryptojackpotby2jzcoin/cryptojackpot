@@ -6,14 +6,14 @@
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- Buffer Polyfill (sadece CDN üzerinden) -->
+    <!-- Buffer Polyfill -->
     <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/dist/buffer.min.js"></script>
     
-    <!-- Solana Web3.js -->
-    <script src="https://unpkg.com/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
+    <!-- Solana Web3.js (en son sürüm) -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     
-    <!-- Solana SPL Token (2JZ Coin için gerekli) -->
-    <script src="https://unpkg.com/@solana/spl-token@0.3.7/lib/index.iife.min.js"></script>
+    <!-- Solana SPL Token (en son sürüm) -->
+    <script src="https://unpkg.com/@solana/spl-token@latest/lib/index.iife.min.js"></script>
 
     <!-- JavaScript Dosyaları -->
     <script src="blockchain.js" defer></script>
@@ -23,7 +23,7 @@
 <body>
     <div class="machine">
         <h2>Crypto Jackpot by 2JZ Coin</h2>
-        <p id="weekly-reward">Weekly Reward Pool: 13,200,000 Coins ($74.99)</p>
+        <p id="weekly-reward">Weekly Reward Pool: Loading...</p>
 
         <div class="container">
             <div class="slot"></div>
@@ -36,12 +36,12 @@
         <div class="button-container">
             <div class="left-buttons">
                 <button id="connect-wallet-button">Connect Wallet</button>
-                <button id="deposit-button">Deposit Coins</button>
-                <button id="transfer-button">Transfer Coins</button>
-                <button id="withdraw-button">Withdraw Coins</button>
+                <button id="deposit-button" disabled>Deposit Coins</button>
+                <button id="transfer-button" disabled>Transfer Coins</button>
+                <button id="withdraw-button" disabled>Withdraw Coins</button>
             </div>
             <div class="right-button">
-                <button id="spin-button"></button>
+                <button id="spin-button" disabled></button>
             </div>
         </div>
 
@@ -57,7 +57,7 @@
         </div>
 
         <div id="balance-section">
-            <p><span id="player-balance">Your Balance: 0 Coins ($0.0000)</span></p>
+            <p><span id="player-balance">Your Balance: Loading...</span></p>
             <p><span id="earned-coins">Earned Coins: 0 Coins ($0.0000)</span></p>
         </div>
 
@@ -70,5 +70,30 @@
             </ul>
         </div>
     </div>
+
+    <!-- Bağlantı durumunu kontrol eden ek script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const buttonsToEnable = [
+                "deposit-button",
+                "transfer-button",
+                "withdraw-button",
+                "spin-button"
+            ];
+            const walletAddressElement = document.getElementById("wallet-address");
+
+            // Cüzdan bağlandığında butonları aktif et
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (walletAddressElement.textContent !== "Wallet: N/A") {
+                        buttonsToEnable.forEach((id) => {
+                            document.getElementById(id).disabled = false;
+                        });
+                    }
+                });
+            });
+            observer.observe(walletAddressElement, { childList: true, subtree: true });
+        });
+    </script>
 </body>
 </html>
