@@ -9,15 +9,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
   let userWallet = null;
 
-  // QuickNode Solana Mainnet Endpoint
+  // Solana Devnet Endpoint (test için)
   const connection = new window.solanaWeb3.Connection(
-    "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
+    "https://api.devnet.solana.com",
     "confirmed"
   );
 
   // ---------------------------------------------------------------------
   // Yardımcı Fonksiyon: ComputeBudgetProgram.setComputeUnitPrice için
-  // 9 baytlık (1 bayt instruction index + 8 bayt u64 little-endian) veri oluşturur.
   function createSetComputeUnitPriceInstruction(microLamports) {
     const buffer = new ArrayBuffer(9); // 9 baytlık alan oluştur
     const view = new DataView(buffer);
@@ -36,50 +35,49 @@ document.addEventListener("DOMContentLoaded", function () {
   // ---------------------------------------------------------------------
 
   // ---------------------------------------------------------------------
-  // Yardımcı Fonksiyon: Her denemede yeni transaction oluşturup onay alana kadar yeniden gönderme.
-  async function sendTransactionWithRetry(instructions, walletInterface, connection, retries = 5) {
-    for (let i = 0; i < retries; i++) {
-      try {
-        // Her denemede yeni bir transaction oluşturuyoruz
-        const tx = new window.solanaWeb3.Transaction();
-        instructions.forEach((inst) => tx.add(inst));
-        
-        // Güncel blockhash ve lastValidBlockHeight alıyoruz
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-        tx.recentBlockhash = blockhash;
-        tx.feePayer = userWallet;
+  // Yeni Yardımcı Fonksiyon: Güvenilir işlem gönderme
+  async function sendTransactionWithRetry(instructions, walletInterface, connection) {
+    try {
+      // İşlem oluştur
+      const tx = new window.solanaWeb3.Transaction();
+      instructions.forEach((inst) => tx.add(inst));
 
-        // Phantom ile yeni bir imza alıyoruz
-        const signedTx = await walletInterface.signAndSendTransaction(tx);
-        const signature = (typeof signedTx === "object" && signedTx.signature)
-          ? signedTx.signature
-          : signedTx;
+      // Güncel blockhash al ve geçerlilik süresini genişlet
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = userWallet;
 
-        // İşlemi onay bekliyoruz
-        const confirmation = await connection.confirmTransaction({
-          signature,
-          blockhash,
-          lastValidBlockHeight,
-        });
+      // Phantom ile tek seferde imza al
+      const signedTx = await walletInterface.signTransaction(tx);
+      const serializedTx = signedTx.serialize();
 
-        if (!confirmation.value.err) {
-          console.log("Transaction confirmed:", signature);
-          return signature;
-        } else {
-          throw new Error("Transaction error: " + JSON.stringify(confirmation.value.err));
-        }
-      } catch (e) {
-        console.warn(`Transaction attempt ${i + 1}/${retries} failed:`, e.message);
-        if (e.message.includes("block height exceeded") && i < retries - 1) {
-          console.log("Transaction expired, retrying with fresh blockhash and signature...");
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 saniye bekle
-          continue;
-        } else {
-          throw e;
-        }
+      // İşlemi gönder ve onay bekle
+      const signature = await connection.sendRawTransaction(serializedTx, {
+        skipPreflight: false, // İşlem öncesi kontrol açık
+        maxRetries: 5, // RPC tarafında 5 retry
+      });
+
+      // Onay için genişletilmiş block height ile bekle
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight: lastValidBlockHeight + 300, // 300 block tampon (~2-3 dakika)
+      }, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed: " + JSON.stringify(confirmation.value.err));
       }
+
+      console.log("Transaction confirmed:", signature);
+      return signature;
+    } catch (error) {
+      if (error.message.includes("block height exceeded")) {
+        console.warn("Transaction expired due to block height, but retry handled by RPC.");
+      } else {
+        console.error("Transaction error:", error.message);
+      }
+      throw error;
     }
-    throw new Error("Transaction failed after maximum retries");
   }
   // ---------------------------------------------------------------------
 
@@ -128,8 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const instructions = [];
-      // İşleminizin daha hızlı işlenmesi için compute budget değerini 500.000 microLamports olarak belirliyoruz.
-      instructions.push(createSetComputeUnitPriceInstruction(500000));
+      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -154,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the transaction. Please approve it to initialize your account.");
       } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
+        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert("Failed to initialize account: " + error.message);
       }
@@ -207,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(500000));
+      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
       const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
       if (!userTokenAccountInfo) {
         instructions.push(
@@ -259,7 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the deposit transaction. Please approve it to continue.");
       } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
+        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert(`Deposit failed: ${error.message}`);
       }
@@ -290,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(500000));
+      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -320,7 +317,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the withdraw transaction. Please approve it to continue.");
       } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
+        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert(`Withdraw failed: ${error.message}`);
       }
@@ -343,7 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
         programId
       );
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(500000));
+      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -368,7 +365,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the spin transaction. Please approve it to continue.");
       } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
+        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert("Spin failed: " + error.message);
       }
