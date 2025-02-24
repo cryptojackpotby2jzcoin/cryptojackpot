@@ -15,22 +15,26 @@ document.addEventListener("DOMContentLoaded", function () {
         "confirmed"
     );
 
-    // === YARDIMCI FONKSİYON ===
-    // ComputeBudgetProgram.setComputeUnitPrice için talimatı (instruction) manuel oluşturur.
-    // ComputeBudget programında, setComputeUnitPrice talimatının layout'ı:
-    //   [ instructionIndex: u8, microLamports: u64 (little-endian) ]
-    // Burada instructionIndex 1’dir.
+    // YARDIMCI FONKSİYON:
+    // ComputeBudgetProgram.setComputeUnitPrice talimatı için,
+    // 9 baytlık (1 bayt instruction index + 8 bayt u64 little-endian) veri oluşturur.
     function createSetComputeUnitPriceInstruction(microLamports) {
-        const data = Buffer.alloc(9); // 1 byte (instruction index) + 8 byte (u64)
-        data.writeUInt8(1, 0); // 1 = setComputeUnitPrice talimat indexi
-        data.writeBigUInt64LE(BigInt(microLamports), 1);
+        const buffer = new ArrayBuffer(9); // 9 baytlık alan oluştur
+        const view = new DataView(buffer);
+        view.setUint8(0, 1); // 1: setComputeUnitPrice instruction indexi
+        let value = BigInt(microLamports);
+        // 8 baytı little-endian olarak yazıyoruz:
+        for (let i = 0; i < 8; i++) {
+            view.setUint8(1 + i, Number(value & 0xffn));
+            value = value >> 8n;
+        }
         return new window.solanaWeb3.TransactionInstruction({
             programId: window.solanaWeb3.ComputeBudgetProgram.programId,
             keys: [],
-            data: data,
+            data: new Uint8Array(buffer),
         });
     }
-    // === YARDIMCI FONKSİYON SON ===
+    // YARDIMCI FONKSİYON SON
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
@@ -79,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new window.solanaWeb3.Transaction();
 
-            // Priority fee ekle: createSetComputeUnitPriceInstruction(5000)
+            // Priority fee ekle: 5000 microLamports
             tx.add(createSetComputeUnitPriceInstruction(5000));
 
             tx.add(
