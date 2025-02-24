@@ -1,8 +1,3 @@
-// Önce @solana/web3.js’yi belirli bir sürümle yükle (örneğin 1.78.0)
-// Netlify veya yerel projende package.json’a şu satırı ekle:
-// "solana-web3.js": "1.78.0"
-// Ardından npm install yap
-
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const withdrawButton = document.getElementById("withdraw-button");
