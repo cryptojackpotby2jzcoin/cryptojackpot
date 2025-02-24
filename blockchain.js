@@ -62,10 +62,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new window.solanaWeb3.Transaction();
 
-            // Priority fee ekle (number olarak, 5000 microLamports = 0.000005 SOL)
+            // Priority fee ekle (8 baytlık Uint8Array olarak, 5000 microLamports = 0.000005 SOL)
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Number olarak, 5000 microLamports
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -110,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)");
+                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)");
             }
             throw error;
         }
@@ -171,9 +175,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Number olarak, 5000 microLamports
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -247,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)`);
+                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)`);
             }
             throw error;
         }
@@ -286,9 +294,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Number olarak, 5000 microLamports
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -338,7 +350,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)`);
+                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)`);
             }
             throw error;
         }
@@ -362,9 +374,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle
+            const microLamports = new Uint8Array([
+                0, 0, 0, 0, // İlk 4 byte sıfır
+                0x88, 0x13, 0, 0 // 5000 = 0x1388 (little-endian, 64-bit)
+            ]);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: 5000 // Number olarak, 5000 microLamports
+                    microLamports: microLamports // 8 baytlık Uint8Array
                 })
             );
 
@@ -412,7 +428,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Spin failed: " + error.message + " (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)");
+                alert("Spin failed: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)");
             }
             throw error;
         }
