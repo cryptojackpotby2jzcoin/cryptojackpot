@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is number)");
+                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)");
             }
             throw error;
         }
@@ -247,7 +247,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is number)`);
+                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)`);
             }
             throw error;
         }
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is number)`);
+                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)`);
             }
             throw error;
         }
@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Spin failed: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is number)");
+                alert("Spin failed: " + error.message + " (Ensure @solana/web3.js is 1.78.0, @solana/spl-token is 0.3.7, and microLamports is number)");
             }
             throw error;
         }
