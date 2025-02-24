@@ -44,10 +44,10 @@ document.addEventListener("DOMContentLoaded", function () {
       instructions.forEach((inst) => tx.add(inst));
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
-      // Burada feePayer olarak walletInterface değil, cüzdanın PublicKey'si (userWallet) kullanılmalıdır.
+      // feePayer olarak userWallet kullanıyoruz.
       tx.feePayer = userWallet;
       try {
-        // Phantom üzerinden imzalama ve gönderme
+        // Phantom üzerinden imzala ve gönder.
         const signedTx = await walletInterface.signAndSendTransaction(tx);
         const signature = (typeof signedTx === "object" && signedTx.signature)
           ? signedTx.signature
@@ -122,8 +122,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const instructions = [];
-      // Öncelik ücretini artırıyoruz: 10.000 microLamports
-      instructions.push(createSetComputeUnitPriceInstruction(10000));
+      // İşleminizin daha hızlı işlenmesi için compute budget değerini 500.000 microLamports olarak belirliyoruz.
+      instructions.push(createSetComputeUnitPriceInstruction(500000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(10000));
+      instructions.push(createSetComputeUnitPriceInstruction(500000));
       const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
       if (!userTokenAccountInfo) {
         instructions.push(
@@ -284,7 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(10000));
+      instructions.push(createSetComputeUnitPriceInstruction(500000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
         programId
       );
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(10000));
+      instructions.push(createSetComputeUnitPriceInstruction(500000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
