@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
         "confirmed"
     );
 
-    // YARDIMCI FONKSİYON:
-    // ComputeBudgetProgram.setComputeUnitPrice talimatı için,
+    // ---------------------------------------------------------------------
+    // Yardımcı Fonksiyon: ComputeBudgetProgram.setComputeUnitPrice için
     // 9 baytlık (1 bayt instruction index + 8 bayt u64 little-endian) veri oluşturur.
     function createSetComputeUnitPriceInstruction(microLamports) {
         const buffer = new ArrayBuffer(9); // 9 baytlık alan oluştur
@@ -34,7 +34,45 @@ document.addEventListener("DOMContentLoaded", function () {
             data: new Uint8Array(buffer),
         });
     }
-    // YARDIMCI FONKSİYON SON
+    // ---------------------------------------------------------------------
+
+    // ---------------------------------------------------------------------
+    // Yardımcı Fonksiyon: İşlemi otomatik yeniden gönderme (retry) mekanizması.
+    async function sendTransactionWithRetry(tx, wallet, connection, retries = 3) {
+        for (let i = 0; i < retries; i++) {
+            // Her denemede en güncel blockhash ve lastValidBlockHeight alınır.
+            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+            tx.recentBlockhash = blockhash;
+            tx.feePayer = userWallet;
+            try {
+                // İşlemi imzala ve gönder. Phantom cüzdanı window.solana üzerinden sağlanıyor.
+                const signedTx = await wallet.signAndSendTransaction(tx);
+                const signature = (typeof signedTx === 'object' && signedTx.signature) ? signedTx.signature : signedTx;
+                // İşlemi onaylamak için blockchain'den teyit alınır.
+                const confirmation = await connection.confirmTransaction({
+                    signature,
+                    blockhash,
+                    lastValidBlockHeight
+                });
+                if (!confirmation.value.err) {
+                    console.log("Transaction confirmed:", signature);
+                    return signature;
+                } else {
+                    throw new Error("Transaction error: " + JSON.stringify(confirmation.value.err));
+                }
+            } catch (e) {
+                if (e.message.includes("block height exceeded") && i < retries - 1) {
+                    console.warn("Transaction expired, retrying...", e.message);
+                    // Yeniden deneme öncesinde kısa bir bekleme (500ms)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } else {
+                    throw e;
+                }
+            }
+        }
+        throw new Error("Transaction failed after retries");
+    }
+    // ---------------------------------------------------------------------
 
     async function connectWallet() {
         if (!window.solana || !window.solana.isPhantom) {
@@ -82,8 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             const tx = new window.solanaWeb3.Transaction();
-
-            // Priority fee ekle: 5000 microLamports
+            // Öncelik ücretini ekle: 5000 microLamports
             tx.add(createSetComputeUnitPriceInstruction(5000));
 
             tx.add(
@@ -95,28 +132,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: window.solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([0]), // Initialize
+                    data: Buffer.from([0]), // Initialize instruction
                 })
             );
 
             console.log("Please approve the transaction in Phantom within 30 seconds to initialize your account...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-
-            const signedTx = await window.solana.signAndSendTransaction(tx);
-            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            const signature = await sendTransactionWithRetry(new window.solanaWeb3.Transaction().add(...tx.instructions), window.solana, connection);
             console.log("Transaction signature:", signature);
-
-            const confirmation = await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-
-            if (confirmation.value.err) {
-                throw new Error("Initialization transaction failed: " + JSON.stringify(confirmation.value.err));
-            }
             console.log("✅ User account initialized:", signature);
         } catch (error) {
             console.error("❌ Initialization failed:", error.message, error.stack);
@@ -127,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0)");
+                alert("Failed to initialize account: " + error.message);
             }
             throw error;
         }
@@ -186,8 +208,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             const tx = new window.solanaWeb3.Transaction();
-
-            // Priority fee ekle
+            // Öncelik ücretini ekle
             tx.add(createSetComputeUnitPriceInstruction(5000));
 
             const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
@@ -228,30 +249,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: Buffer.from([
                         1,
                         ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)
-                    ]), // Deposit
+                    ]), // Deposit instruction
                 })
             );
 
             console.log("Please approve the deposit transaction in Phantom within 30 seconds...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-
-            const signedTx = await window.solana.signAndSendTransaction(tx);
-            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            const signature = await sendTransactionWithRetry(tx, window.solana, connection);
             console.log("Deposit transaction signature:", signature);
-
-            const confirmation = await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-
-            if (confirmation.value.err) {
-                throw new Error("Deposit transaction failed: " + JSON.stringify(confirmation.value.err));
-            }
-
-            console.log("✅ Deposit successful:", signature);
             alert(`✅ Deposited ${amount} 2JZ Coins!`);
             await updateBalance();
         } catch (error) {
@@ -263,7 +267,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees.`);
+                alert(`Deposit failed: ${error.message}`);
             }
             throw error;
         }
@@ -300,8 +304,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             const tx = new window.solanaWeb3.Transaction();
-
-            // Priority fee ekle
+            // Öncelik ücretini ekle
             tx.add(createSetComputeUnitPriceInstruction(5000));
 
             tx.add(
@@ -318,30 +321,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: Buffer.from([
                         3,
                         ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)
-                    ]), // Withdraw
+                    ]), // Withdraw instruction
                 })
             );
 
             console.log("Please approve the withdraw transaction in Phantom within 30 seconds...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-
-            const signedTx = await window.solana.signAndSendTransaction(tx);
-            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            const signature = await sendTransactionWithRetry(tx, window.solana, connection);
             console.log("Withdraw transaction signature:", signature);
-
-            const confirmation = await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-
-            if (confirmation.value.err) {
-                throw new Error("Withdraw transaction failed: " + JSON.stringify(confirmation.value.err));
-            }
-
-            console.log("✅ Withdraw successful:", signature);
             alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
             await updateBalance();
         } catch (error) {
@@ -353,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees.`);
+                alert(`Withdraw failed: ${error.message}`);
             }
             throw error;
         }
@@ -375,8 +361,7 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             const tx = new window.solanaWeb3.Transaction();
-
-            // Priority fee ekle
+            // Öncelik ücretini ekle
             tx.add(createSetComputeUnitPriceInstruction(5000));
 
             tx.add(
@@ -387,30 +372,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         { pubkey: userWallet, isSigner: true, isWritable: false },
                     ],
                     programId,
-                    data: Buffer.from([2]), // Spin
+                    data: Buffer.from([2]), // Spin instruction
                 })
             );
 
             console.log("Please approve the spin transaction in Phantom within 30 seconds...");
-            const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-            tx.recentBlockhash = blockhash;
-            tx.feePayer = userWallet;
-
-            const signedTx = await window.solana.signAndSendTransaction(tx);
-            const signature = typeof signedTx === 'object' && signedTx.signature ? signedTx.signature : signedTx;
+            const signature = await sendTransactionWithRetry(tx, window.solana, connection);
             console.log("Spin transaction signature:", signature);
-
-            const confirmation = await connection.confirmTransaction({
-                signature,
-                blockhash,
-                lastValidBlockHeight
-            });
-
-            if (confirmation.value.err) {
-                throw new Error("Spin transaction failed: " + JSON.stringify(confirmation.value.err));
-            }
-
-            console.log("✅ Spin successful:", signature);
             await updateBalance();
             spinGame(); // Frontend spin animasyonu
             window.dispatchEvent(new Event("spinComplete"));
