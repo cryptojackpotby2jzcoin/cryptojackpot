@@ -62,12 +62,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const tx = new window.solanaWeb3.Transaction();
 
-            // Priority fee ekle (5000 microLamports)
-            // 5000n değerini 8 baytlık Uint8Array formatına çeviriyoruz.
-            const microLamports = new Uint8Array(new BigUint64Array([5000n]).buffer);
+            // Priority fee ekle (5000 microLamports = 0.000005 SOL)
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: microLamports
+                    microLamports: 5000n
                 })
             );
 
@@ -112,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)");
+                alert("Failed to initialize account: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is BigInt)");
             }
             throw error;
         }
@@ -173,10 +171,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle (5000 microLamports)
-            const microLamports = new Uint8Array(new BigUint64Array([5000n]).buffer);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: microLamports
+                    microLamports: 5000n
                 })
             );
 
@@ -217,9 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     programId,
                     data: Buffer.from([
                         1,
-                        ...new Uint8Array(
-                            new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer
-                        )
+                        ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)
                     ]), // Deposit
                 })
             );
@@ -255,7 +250,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)`);
+                alert(`Deposit failed: ${error.message}. Check your 2JZ Coin balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is BigInt)`);
             }
             throw error;
         }
@@ -294,10 +289,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle (5000 microLamports)
-            const microLamports = new Uint8Array(new BigUint64Array([5000n]).buffer);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: microLamports
+                    microLamports: 5000n
                 })
             );
 
@@ -314,9 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     programId,
                     data: Buffer.from([
                         3,
-                        ...new Uint8Array(
-                            new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer
-                        )
+                        ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)
                     ]), // Withdraw
                 })
             );
@@ -352,7 +344,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)`);
+                alert(`Withdraw failed: ${error.message}. Check your balance and SOL for fees. (Ensure @solana/web3.js is 1.78.0 and microLamports is BigInt)`);
             }
             throw error;
         }
@@ -376,10 +368,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle (5000 microLamports)
-            const microLamports = new Uint8Array(new BigUint64Array([5000n]).buffer);
             tx.add(
                 window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
-                    microLamports: microLamports
+                    microLamports: 5000n
                 })
             );
 
@@ -427,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
             } else if (error.message.includes("UNAUTHORIZED")) {
                 alert("RPC access denied. Please check your QuickNode API key or contact QuickNode support.");
             } else {
-                alert("Spin failed: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is Uint8Array)");
+                alert("Spin failed: " + error.message + " (Ensure @solana/web3.js is 1.78.0 and microLamports is BigInt)");
             }
             throw error;
         }
