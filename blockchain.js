@@ -1,16 +1,17 @@
+// Solana Web3.js artık 1.78.0 sürümünü kullanıyor, global olarak window.solanaWeb3 olarak erişilebilir
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const withdrawButton = document.getElementById("withdraw-button");
     const depositButton = document.getElementById("deposit-button");
     const spinButton = document.getElementById("spin-button");
 
-    const programId = new solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
-    const houseWalletAddress = new solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
-    const tokenMint = new solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
+    const programId = new window.solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
+    const houseWalletAddress = new window.solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
+    const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
     let userWallet = null;
 
     // QuickNode Solana Mainnet Endpoint (API anahtarıyla)
-    const connection = new solanaWeb3.Connection(
+    const connection = new window.solanaWeb3.Connection(
         "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
         "confirmed"
     );
@@ -39,11 +40,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         try {
-            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
@@ -60,22 +61,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            const tx = new solanaWeb3.Transaction();
+            const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle (number olarak, 5000 microLamports = 0.000005 SOL)
             tx.add(
-                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
                     microLamports: 5000 // Number olarak, 5000 microLamports
                 })
             );
 
             tx.add(
-                new solanaWeb3.TransactionInstruction({
+                new window.solanaWeb3.TransactionInstruction({
                     keys: [
                         { pubkey: userAccountPDA, isSigner: false, isWritable: true },
                         { pubkey: gameStatePDA, isSigner: false, isWritable: true },
                         { pubkey: userWallet, isSigner: true, isWritable: true },
-                        { pubkey: solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+                        { pubkey: window.solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
                     ],
                     programId,
                     data: Buffer.from([0]), // Initialize
@@ -119,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function updateBalance() {
         if (!userWallet) return;
         try {
-            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
@@ -150,29 +151,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
 
-            const userTokenAccount = await splToken.getAssociatedTokenAddress(
+            const userTokenAccount = await window.splToken.getAssociatedTokenAddress(
                 tokenMint,
                 userWallet
             );
-            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
+            const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(
                 tokenMint,
                 houseWalletAddress
             );
 
-            const tx = new solanaWeb3.Transaction();
+            const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle
             tx.add(
-                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
                     microLamports: 5000 // Number olarak, 5000 microLamports
                 })
             );
@@ -180,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
             if (!userTokenAccountInfo) {
                 tx.add(
-                    splToken.createAssociatedTokenAccountInstruction(
+                    window.splToken.createAssociatedTokenAccountInstruction(
                         userWallet,
                         userTokenAccount,
                         userWallet,
@@ -192,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
             if (!houseTokenAccountInfo) {
                 tx.add(
-                    splToken.createAssociatedTokenAccountInstruction(
+                    window.splToken.createAssociatedTokenAccountInstruction(
                         userWallet,
                         houseTokenAccount,
                         houseWalletAddress,
@@ -202,14 +203,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             tx.add(
-                new solanaWeb3.TransactionInstruction({
+                new window.solanaWeb3.TransactionInstruction({
                     keys: [
                         { pubkey: userAccountPDA, isSigner: false, isWritable: true },
                         { pubkey: gameStatePDA, isSigner: false, isWritable: true },
                         { pubkey: userTokenAccount, isSigner: false, isWritable: true },
                         { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
                         { pubkey: userWallet, isSigner: true, isWritable: false },
-                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                        { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
                     data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Deposit
@@ -265,42 +266,42 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
 
-            const userTokenAccount = await splToken.getAssociatedTokenAddress(
+            const userTokenAccount = await window.splToken.getAssociatedTokenAddress(
                 tokenMint,
                 userWallet
             );
-            const houseTokenAccount = await splToken.getAssociatedTokenAddress(
+            const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(
                 tokenMint,
                 houseWalletAddress
             );
 
-            const tx = new solanaWeb3.Transaction();
+            const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle
             tx.add(
-                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
                     microLamports: 5000 // Number olarak, 5000 microLamports
                 })
             );
 
             tx.add(
-                new solanaWeb3.TransactionInstruction({
+                new window.solanaWeb3.TransactionInstruction({
                     keys: [
                         { pubkey: userAccountPDA, isSigner: false, isWritable: true },
                         { pubkey: gameStatePDA, isSigner: false, isWritable: true },
                         { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
                         { pubkey: userTokenAccount, isSigner: false, isWritable: true },
                         { pubkey: userWallet, isSigner: true, isWritable: false },
-                        { pubkey: splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+                        { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
                     ],
                     programId,
                     data: Buffer.from([3, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]), // Withdraw
@@ -350,26 +351,26 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         try {
-            const [userAccountPDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("user"), userWallet.toBytes()],
                 programId
             );
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
 
-            const tx = new solanaWeb3.Transaction();
+            const tx = new window.solanaWeb3.Transaction();
 
             // Priority fee ekle
             tx.add(
-                solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+                window.solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
                     microLamports: 5000 // Number olarak, 5000 microLamports
                 })
             );
 
             tx.add(
-                new solanaWeb3.TransactionInstruction({
+                new window.solanaWeb3.TransactionInstruction({
                     keys: [
                         { pubkey: userAccountPDA, isSigner: false, isWritable: true },
                         { pubkey: gameStatePDA, isSigner: false, isWritable: true },
@@ -420,7 +421,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function updateRewardPool() {
         try {
-            const [gameStatePDA] = await solanaWeb3.PublicKey.findProgramAddress(
+            const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
                 [Buffer.from("game_state")],
                 programId
             );
