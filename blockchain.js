@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
   let userWallet = null;
 
-  // QuickNode Solana Mainnet Endpoint (API anahtarıyla)
+  // QuickNode Solana Mainnet Endpoint
   const connection = new window.solanaWeb3.Connection(
     "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
     "confirmed"
@@ -36,19 +36,19 @@ document.addEventListener("DOMContentLoaded", function () {
   // ---------------------------------------------------------------------
 
   // ---------------------------------------------------------------------
-  // Yardımcı Fonksiyon: Verilen talimatlar üzerinden, her denemede yeni bir transaction oluşturup
-  // onay alınana kadar yeniden göndermeyi dener.
-  async function sendTransactionWithRetry(instructions, wallet, connection, retries = 3) {
+  // Yardımcı Fonksiyon: Her denemede yeni transaction oluşturup onay alana kadar yeniden gönderme.
+  async function sendTransactionWithRetry(instructions, walletInterface, connection, retries = 3) {
     for (let i = 0; i < retries; i++) {
       // Her denemede yeni bir transaction oluşturuyoruz.
       const tx = new window.solanaWeb3.Transaction();
       instructions.forEach((inst) => tx.add(inst));
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
-      tx.feePayer = wallet;
+      // Burada feePayer olarak walletInterface değil, cüzdanın PublicKey'si (userWallet) kullanılmalıdır.
+      tx.feePayer = userWallet;
       try {
-        // Phantom üzerinden imzalayıp gönderiyoruz.
-        const signedTx = await wallet.signAndSendTransaction(tx);
+        // Phantom üzerinden imzalama ve gönderme
+        const signedTx = await walletInterface.signAndSendTransaction(tx);
         const signature = (typeof signedTx === "object" && signedTx.signature)
           ? signedTx.signature
           : signedTx;
@@ -110,7 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
         programId
       );
 
-      // Eğer hesap zaten varsa, yeniden başlatmaya gerek yok.
       let accountInfo;
       try {
         accountInfo = await connection.getAccountInfo(userAccountPDA);
@@ -122,10 +121,8 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // Talimatları oluşturuyoruz:
-      // 1. Öncelik ücreti talimatı (burada 10.000 microLamports kullanıyoruz)
-      // 2. Kullanıcı hesabını başlatma talimatı
       const instructions = [];
+      // Öncelik ücretini artırıyoruz: 10.000 microLamports
       instructions.push(createSetComputeUnitPriceInstruction(10000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
@@ -168,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
       );
       const accountInfo = await connection.getAccountInfo(userAccountPDA);
       if (accountInfo) {
-        const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 6 decimals
+        const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000;
         document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
         document.getElementById("earned-coins").innerText = `Earned Coins: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
       } else {
@@ -205,7 +202,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(10000));
-      // Eğer kullanıcı token hesabı yoksa oluştur
       const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
       if (!userTokenAccountInfo) {
         instructions.push(
@@ -217,7 +213,6 @@ document.addEventListener("DOMContentLoaded", function () {
           )
         );
       }
-      // Eğer ev token hesabı yoksa oluştur
       const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
       if (!houseTokenAccountInfo) {
         instructions.push(
@@ -229,7 +224,6 @@ document.addEventListener("DOMContentLoaded", function () {
           )
         );
       }
-      // Deposit instruction: İlk bayt 1 (deposit), sonrasında 8 bayt miktar (u64 little-endian)
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
