@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let userWallet = null;
 
   const connection = new window.solanaWeb3.Connection(
-    "https://api.devnet.solana.com",
+    "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
     "confirmed"
   );
 
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const signedTx = await walletInterface.signTransaction(tx);
       const serializedTx = signedTx.serialize();
 
-      console.log("Sending transaction to Devnet...");
+      console.log("Sending transaction to Mainnet...");
       const signature = await connection.sendRawTransaction(serializedTx, {
         skipPreflight: false,
         maxRetries: 5,
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const tokenBalance = await connection.getTokenAccountBalance(userTokenAccount);
             console.log("Wallet 2JZ Coin balance:", tokenBalance.value.uiAmount, "2JZ Coins");
           } catch (e) {
-            console.warn("No 2JZ Coin account found or token not deployed on Devnet.");
+            console.warn("No 2JZ Coin account found or token not deployed on Mainnet.");
           }
         } else {
           console.error("spl-token library is not loaded. Please include <script src='https://unpkg.com/@solana/spl-token@0.3.7/lib/index.iife.min.js'></script> in your HTML.");
@@ -164,6 +164,8 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the transaction. Please approve it to initialize your account.");
+      } else if (error.message.includes("invalid instruction data")) {
+        alert("Invalid instruction data! Check your smart contract’s initialize function and programId.");
       } else {
         alert("Failed to initialize account: " + error.message);
       }
@@ -216,8 +218,8 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
       } catch (e) {
-        console.error("Failed to get token account, token may not be deployed on Devnet:", e.message);
-        alert("2JZ Coin is not available on Devnet. Please deploy it or switch to Mainnet.");
+        console.error("Failed to get token account, token may not be deployed on Mainnet:", e.message);
+        alert("2JZ Coin issue on Mainnet. Check token deployment or balance.");
         return;
       }
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
@@ -301,8 +303,8 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
       } catch (e) {
-        console.error("Failed to get token account, token may not be deployed on Devnet:", e.message);
-        alert("2JZ Coin is not available on Devnet. Please deploy it or switch to Mainnet.");
+        console.error("Failed to get token account, token may not be deployed on Mainnet:", e.message);
+        alert("2JZ Coin issue on Mainnet. Check token deployment or balance.");
         return;
       }
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
