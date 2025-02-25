@@ -4,23 +4,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const depositButton = document.getElementById("deposit-button");
   const spinButton = document.getElementById("spin-button");
 
+  // Mainnet’teki programId
   const programId = new window.solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
   const houseWalletAddress = new window.solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
   let userWallet = null;
 
-  // Solana Devnet Endpoint (test için)
+  // QuickNode Solana Mainnet Endpoint
   const connection = new window.solanaWeb3.Connection(
-    "https://api.devnet.solana.com",
+    "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
     "confirmed"
   );
 
-  // ---------------------------------------------------------------------
-  // Yardımcı Fonksiyon: ComputeBudgetProgram.setComputeUnitPrice için
   function createSetComputeUnitPriceInstruction(microLamports) {
-    const buffer = new ArrayBuffer(9); // 9 baytlık alan oluştur
+    const buffer = new ArrayBuffer(9);
     const view = new DataView(buffer);
-    view.setUint8(0, 1); // 1: setComputeUnitPrice instruction indexi
+    view.setUint8(0, 1);
     let value = BigInt(microLamports);
     for (let i = 0; i < 8; i++) {
       view.setUint8(1 + i, Number(value & 0xffn));
@@ -32,36 +31,31 @@ document.addEventListener("DOMContentLoaded", function () {
       data: new Uint8Array(buffer),
     });
   }
-  // ---------------------------------------------------------------------
 
-  // ---------------------------------------------------------------------
-  // Yeni Yardımcı Fonksiyon: Güvenilir işlem gönderme
   async function sendTransactionWithRetry(instructions, walletInterface, connection) {
     try {
-      // İşlem oluştur
       const tx = new window.solanaWeb3.Transaction();
       instructions.forEach((inst) => tx.add(inst));
 
-      // Güncel blockhash al ve geçerlilik süresini genişlet
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
       tx.recentBlockhash = blockhash;
       tx.feePayer = userWallet;
 
-      // Phantom ile tek seferde imza al
+      console.log("Transaction prepared, awaiting Phantom signature...");
       const signedTx = await walletInterface.signTransaction(tx);
       const serializedTx = signedTx.serialize();
 
-      // İşlemi gönder ve onay bekle
+      console.log("Sending transaction to Mainnet...");
       const signature = await connection.sendRawTransaction(serializedTx, {
-        skipPreflight: false, // İşlem öncesi kontrol açık
-        maxRetries: 5, // RPC tarafında 5 retry
+        skipPreflight: false,
+        maxRetries: 5,
       });
 
-      // Onay için genişletilmiş block height ile bekle
+      console.log("Waiting for confirmation...");
       const confirmation = await connection.confirmTransaction({
         signature,
         blockhash,
-        lastValidBlockHeight: lastValidBlockHeight + 300, // 300 block tampon (~2-3 dakika)
+        lastValidBlockHeight: lastValidBlockHeight + 300,
       }, 'confirmed');
 
       if (confirmation.value.err) {
@@ -71,15 +65,10 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Transaction confirmed:", signature);
       return signature;
     } catch (error) {
-      if (error.message.includes("block height exceeded")) {
-        console.warn("Transaction expired due to block height, but retry handled by RPC.");
-      } else {
-        console.error("Transaction error:", error.message);
-      }
+      console.error("Transaction error:", error.message, error.stack);
       throw error;
     }
   }
-  // ---------------------------------------------------------------------
 
   async function connectWallet() {
     if (!window.solana || !window.solana.isPhantom) {
@@ -118,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         accountInfo = await connection.getAccountInfo(userAccountPDA);
       } catch (e) {
-        console.warn("Failed to check account info, proceeding anyway:", e.message);
+        console.warn("Failed to check account info:", e.message);
       }
       if (accountInfo) {
         console.log("✅ User account already initialized:", userAccountPDA.toString());
@@ -126,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
+      instructions.push(createSetComputeUnitPriceInstruction(2000000)); // 2 lamport
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -136,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { pubkey: window.solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
           ],
           programId,
-          data: Buffer.from([0]), // Initialize instruction
+          data: Buffer.from([0]), // initialize: index 0
         })
       );
 
@@ -150,8 +139,8 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the transaction. Please approve it to initialize your account.");
-      } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your endpoint or contact support.");
+      } else if (error.message.includes("invalid instruction data")) {
+        alert("Invalid instruction data! Check your smart contract’s initialize function and programId.");
       } else {
         alert("Failed to initialize account: " + error.message);
       }
@@ -204,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
       const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
       if (!userTokenAccountInfo) {
         instructions.push(
@@ -238,10 +227,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           ],
           programId,
-          data: Buffer.from([
-            1,
-            ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)
-          ]),
+          data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
       console.log("Please approve the deposit transaction in Phantom within 60 seconds...");
@@ -255,8 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the deposit transaction. Please approve it to continue.");
-      } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert(`Deposit failed: ${error.message}`);
       }
@@ -287,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -299,10 +283,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           ],
           programId,
-          data: Buffer.from([
-            3,
-            ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)
-          ]),
+          data: Buffer.from([2, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
       console.log("Please approve the withdraw transaction in Phantom within 60 seconds...");
@@ -316,8 +297,6 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the withdraw transaction. Please approve it to continue.");
-      } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert(`Withdraw failed: ${error.message}`);
       }
@@ -340,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
         programId
       );
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(1000000)); // 1 lamport priority fee
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -349,7 +328,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { pubkey: userWallet, isSigner: true, isWritable: false },
           ],
           programId,
-          data: Buffer.from([2]),
+          data: Buffer.from([3]),
         })
       );
       console.log("Please approve the spin transaction in Phantom within 60 seconds...");
@@ -364,8 +343,6 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the spin transaction. Please approve it to continue.");
-      } else if (error.message.includes("UNAUTHORIZED")) {
-        alert("RPC access denied. Please check your endpoint or contact support.");
       } else {
         alert("Spin failed: " + error.message);
       }
@@ -397,7 +374,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Event Listeners
   connectWalletButton.addEventListener("click", connectWallet);
   depositButton.addEventListener("click", depositCoins);
   withdrawButton.addEventListener("click", withdrawCoins);
