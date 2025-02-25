@@ -14,6 +14,25 @@
     
     <!-- Solana SPL Token (0.3.7 sürümüne sabitlenmiş, web3.js 1.78.0 ile uyumlu) -->
     <script src="https://unpkg.com/@solana/spl-token@0.3.7/lib/index.iife.min.js"></script>
+    
+    <!-- Kütüphane kontrolü -->
+    <script>
+        window.addEventListener('load', () => {
+            if (typeof Buffer === "undefined" || typeof Buffer.from !== "function") {
+                console.error("Buffer polyfill failed to load. Please check /buffer.js.");
+                alert("Buffer polyfill failed to load or is not functional. Please refresh the page or check the script.");
+            }
+            if (!window.solanaWeb3 || !window.solanaWeb3.Connection) {
+                console.error("Solana Web3.js is not loaded.");
+                alert("Solana Web3.js failed to load. Please refresh the page or check the script.");
+            }
+            if (!window.splToken || !window.splToken.getAssociatedTokenAddress) {
+                console.error("Solana SPL Token is not loaded.");
+                alert("Solana SPL Token failed to load. Please refresh the page or check the script.");
+            }
+            console.log("All libraries loaded successfully!");
+        });
+    </script>
 </head>
 <body>
     <div class="machine">
@@ -70,14 +89,5 @@
     <script src="blockchain.js"></script>
     <script src="script.js"></script>
     <script src="game.js"></script>
-
-    <!-- Buffer kontrolü -->
-    <script>
-        if (typeof Buffer === "undefined" || typeof Buffer.from !== "function") {
-            alert("Buffer polyfill failed to load or is not functional. Please refresh the page.");
-        } else {
-            console.log("Buffer polyfill loaded successfully!");
-        }
-    </script>
 </body>
 </html>
