@@ -4,15 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const depositButton = document.getElementById("deposit-button");
   const spinButton = document.getElementById("spin-button");
 
-  // Mainnet’teki programId
   const programId = new window.solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
   const houseWalletAddress = new window.solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
   let userWallet = null;
 
-  // QuickNode Solana Mainnet Endpoint
   const connection = new window.solanaWeb3.Connection(
-    "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
+    "https://api.devnet.solana.com",
     "confirmed"
   );
 
@@ -45,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const signedTx = await walletInterface.signTransaction(tx);
       const serializedTx = signedTx.serialize();
 
-      console.log("Sending transaction to Mainnet...");
+      console.log("Sending transaction to Devnet...");
       const signature = await connection.sendRawTransaction(serializedTx, {
         skipPreflight: false,
         maxRetries: 5,
@@ -78,7 +76,20 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const response = await window.solana.connect();
       userWallet = response.publicKey;
+      console.log("Connected wallet:", userWallet.toBase58());
       document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
+
+      // SOL ve token kontrolü
+      const balance = await connection.getBalance(userWallet);
+      console.log("Wallet SOL balance:", balance / 1e9, "SOL");
+      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      try {
+        const tokenBalance = await connection.getTokenAccountBalance(userTokenAccount);
+        console.log("Wallet 2JZ Coin balance:", tokenBalance.value.uiAmount, "2JZ Coins");
+      } catch (e) {
+        console.warn("No 2JZ Coin account found, creating or checking later...");
+      }
+
       await initializeUserAccount();
       await updateBalance();
       await updateRewardPool();
@@ -103,6 +114,9 @@ document.addEventListener("DOMContentLoaded", function () {
         programId
       );
 
+      console.log("User PDA:", userAccountPDA.toBase58());
+      console.log("Game State PDA:", gameStatePDA.toBase58());
+
       let accountInfo;
       try {
         accountInfo = await connection.getAccountInfo(userAccountPDA);
@@ -110,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.warn("Failed to check account info:", e.message);
       }
       if (accountInfo) {
-        console.log("✅ User account already initialized:", userAccountPDA.toString());
+        console.log("✅ User account already initialized:", userAccountPDA.toBase58());
         return;
       }
 
@@ -129,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
       );
 
+      console.log("Instruction data for initialize:", Buffer.from([0]).toString('hex'));
       console.log("Please approve the transaction in Phantom within 60 seconds to initialize your account...");
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       console.log("Transaction signature:", signature);
@@ -139,8 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
       } else if (error.message.includes("User rejected")) {
         alert("You rejected the transaction. Please approve it to initialize your account.");
-      } else if (error.message.includes("invalid instruction data")) {
-        alert("Invalid instruction data! Check your smart contract’s initialize function and programId.");
       } else {
         alert("Failed to initialize account: " + error.message);
       }
