@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const programId = new window.solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
   const houseWalletAddress = new window.solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
-  const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump"); // 2JZ Coin mint adresi
+  const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
   const connection = new window.solanaWeb3.Connection(
@@ -79,11 +79,9 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Connected wallet:", userWallet.toBase58());
       document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
 
-      // SOL kontrolü
       const balance = await connection.getBalance(userWallet);
       console.log("Wallet SOL balance:", balance / 1e9, "SOL");
 
-      // Token kontrolü (eğer spl-token yüklüyse)
       try {
         if (window.splToken && window.splToken.getAssociatedTokenAddress) {
           const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
@@ -94,7 +92,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn("No 2JZ Coin account found or token not deployed on Mainnet.");
           }
         } else {
-          console.error("spl-token library is not loaded. Please include <script src='https://unpkg.com/@solana/spl-token@0.3.7/lib/index.iife.min.js'></script> in your HTML.");
+          console.error("Solana SPL Token is not loaded. Please check the script in HTML.");
+          alert("Solana SPL Token failed to load. Please check the script in HTML or refresh the page.");
         }
       } catch (error) {
         console.warn("Token check failed, skipping:", error.message);
@@ -139,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const instructions = [];
-      instructions.push(createSetComputeUnitPriceInstruction(2000000)); // 2 lamport
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -149,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
             { pubkey: window.solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
           ],
           programId,
-          data: Buffer.from([0]), // initialize: index 0
+          data: Buffer.from([0]),
         })
       );
 
@@ -374,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       console.log("Spin transaction signature:", signature);
       await updateBalance();
-      spinGame(); // Frontend spin animasyonu
+      spinGame();
       window.dispatchEvent(new Event("spinComplete"));
     } catch (error) {
       console.error("❌ Spin failed:", error.message, error.stack);
