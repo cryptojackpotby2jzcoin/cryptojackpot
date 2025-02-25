@@ -79,15 +79,25 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("Connected wallet:", userWallet.toBase58());
       document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
 
-      // SOL ve token kontrolü
+      // SOL kontrolü
       const balance = await connection.getBalance(userWallet);
       console.log("Wallet SOL balance:", balance / 1e9, "SOL");
-      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+
+      // Token kontrolü (eğer spl-token yüklüyse)
       try {
-        const tokenBalance = await connection.getTokenAccountBalance(userTokenAccount);
-        console.log("Wallet 2JZ Coin balance:", tokenBalance.value.uiAmount, "2JZ Coins");
-      } catch (e) {
-        console.warn("No 2JZ Coin account found, creating or checking later...");
+        if (window.splToken && window.splToken.getAssociatedTokenAddress) {
+          const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+          try {
+            const tokenBalance = await connection.getTokenAccountBalance(userTokenAccount);
+            console.log("Wallet 2JZ Coin balance:", tokenBalance.value.uiAmount, "2JZ Coins");
+          } catch (e) {
+            console.warn("No 2JZ Coin account found or token not deployed on Devnet.");
+          }
+        } else {
+          console.error("spl-token library is not loaded. Please include <script src='https://unpkg.com/@solana/spl-token@0.3.7/lib/index.iife.min.js'></script> in your HTML.");
+        }
+      } catch (error) {
+        console.warn("Token check failed, skipping:", error.message);
       }
 
       await initializeUserAccount();
@@ -202,7 +212,14 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_state")],
         programId
       );
-      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      let userTokenAccount;
+      try {
+        userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      } catch (e) {
+        console.error("Failed to get token account, token may not be deployed on Devnet:", e.message);
+        alert("2JZ Coin is not available on Devnet. Please deploy it or switch to Mainnet.");
+        return;
+      }
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
@@ -280,7 +297,14 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_state")],
         programId
       );
-      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      let userTokenAccount;
+      try {
+        userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      } catch (e) {
+        console.error("Failed to get token account, token may not be deployed on Devnet:", e.message);
+        alert("2JZ Coin is not available on Devnet. Please deploy it or switch to Mainnet.");
+        return;
+      }
       const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
       const instructions = [];
