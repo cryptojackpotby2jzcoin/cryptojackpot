@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let userWallet = null;
 
   const connection = new window.solanaWeb3.Connection(
-    "https://indulgent-empty-crater.solana-mainnet.quiknode.pro/34892d10273f2bbafc5c4d29e7114a530226dd29/QN_a412f1b56b2641028b059eabc49832fc",
+    "https://mainnet.helius-rpc.com/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0",
     "confirmed"
   );
 
