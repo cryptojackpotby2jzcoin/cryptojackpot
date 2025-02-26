@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const depositButton = document.getElementById("deposit-button");
   const spinButton = document.getElementById("spin-button");
 
-  const programId = new window.solanaWeb3.PublicKey("EaQ7bsbPp8ffC1j96RjWkuiWr5YnpfcuPJo6ZNJaggXH");
+  const programId = new window.solanaWeb3.PublicKey("6SJFJcQpLKoM5k4YtSM7NyycrBoSnuYUp636m3k55x2W");
   const houseWalletAddress = new window.solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
