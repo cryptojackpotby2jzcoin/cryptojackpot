@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let userWallet = null;
 
   const connection = new window.solanaWeb3.Connection(
-    "https://mainnet.helius-rpc.com/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0",
+    "https://mainnet.helius-rpc.com/?api-key=fd23abc7-99fa-4fde-a594-4b07be7d4972",
     "confirmed"
   );
 
