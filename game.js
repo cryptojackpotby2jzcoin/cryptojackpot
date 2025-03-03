@@ -1,7 +1,7 @@
-let isSpinning = false; // Tanımlama eklendi
+let isSpinning = false;
 
 function spinGame() {
-    if (isSpinning) return; // Spin sırasında tekrar çalışmaz
+    if (isSpinning) return;
     isSpinning = true;
 
     const spinButton = document.getElementById("spin-button");
@@ -28,7 +28,7 @@ function spinGame() {
     slots.forEach(slot => slot.classList.remove("winning-slot"));
 
     slots.forEach((slot) => {
-        let totalSpins = slotImages.length * 8;
+        let totalSpins = slotImages.length * 12; // Süreyi uzattık (600ms)
         let currentSpin = 0;
 
         function animateSpin() {
@@ -36,7 +36,7 @@ function spinGame() {
                 const randomIcon = slotImages[Math.floor(Math.random() * slotImages.length)];
                 slot.style.backgroundImage = `url(${randomIcon})`;
                 currentSpin++;
-                setTimeout(animateSpin, 50);
+                setTimeout(animateSpin, 50); // 50ms aralık
             } else {
                 const finalIcon = slotImages[Math.floor(Math.random() * slotImages.length)];
                 slot.style.backgroundImage = `url(${finalIcon})`;
@@ -47,6 +47,7 @@ function spinGame() {
                     evaluateSpin(spinResults);
                     isSpinning = false;
                     spinButton.disabled = false;
+                    window.dispatchEvent(new Event("spinComplete")); // Event tetikle
                 }
             }
         }
