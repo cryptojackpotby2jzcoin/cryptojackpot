@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const spinButton = document.getElementById("spin-button");
 
   const programId = new window.solanaWeb3.PublicKey("CfEG3nzNc1w8diHfPE7Saj4Cxdijbxvj8gcxffjBgVVQ");
-  const houseWalletAddress = new window.solanaWeb3.PublicKey("6iRYHMLHpUBrcnfdDpLGvCwRutgz4ZAjJMSvPJsYZDmF");
+  const houseWalletAddress = new window.solanaWeb3.PublicKey("5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
