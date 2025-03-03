@@ -1,218 +1,439 @@
-/* Genel Ayarlar */
-body, html {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Press Start 2P', monospace;
-    color: white;
-    text-align: center;
-    overflow: hidden;
-}
+document.addEventListener("DOMContentLoaded", function () {
+  const connectWalletButton = document.getElementById("connect-wallet-button");
+  const withdrawButton = document.getElementById("withdraw-button");
+  const depositButton = document.getElementById("deposit-button");
+  const spinButton = document.getElementById("spin-button");
 
-/* Slot Makinesi */
-.machine {
-    width: 100%; /* Mobil için genişlik */
-    max-width: 480px; /* Masaüstü için maksimum genişlik */
-    background: black;
-    border-radius: 20px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column; /* Elemanları dikey hizala */
-    align-items: center; /* Ortalanmış */
-    padding: 10px;
-    box-sizing: border-box;
-}
+  const programId = new window.solanaWeb3.PublicKey("CfEG3nzNc1w8diHfPE7Saj4Cxdijbxvj8gcxffjBgVVQ");
+  const houseWalletAddress = new window.solanaWeb3.PublicKey("5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn"); // Yeni house wallet
+  const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
+  let userWallet = null;
+  let activePlayers = 0;
 
-/* Başlık */
-h2 {
-    font-size: 22px;
-    color: #00FF00;
-    text-shadow: 0 0 8px #00FF00;
-    margin-bottom: 5px;
-}
+  const connection = new window.solanaWeb3.Connection(
+    "https://mainnet.helius-rpc.com/?api-key=fd23abc7-99fa-4fde-a594-4b07be7d4972", // Yeni API key eklenirse güncellenecek
+    "confirmed"
+  );
 
-/* Weekly Reward Pool */
-#weekly-reward {
-    font-size: 13px;
-    color: #00FF00;
-    text-shadow: 0 0 8px #00FF00;
-    margin-bottom: 10px;
-}
-
-/* Slot Makinesi Konteyneri */
-.container {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    margin-bottom: 5px;
-}
-
-/* Slotlar */
-.slot {
-    width: 100px;
-    height: 150px;
-    background-color: #d6d6d6;
-    border: 3px solid #fff;
-    border-radius: 10px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-/* Kazanan Slot Efekti */
-.winning-slot {
-    animation: slot-flash 0.5s infinite alternate;
-    border-color: #00FF00;
-    box-shadow: 0 0 20px #00FF00, 0 0 40px #00FF00;
-}
-
-@keyframes slot-flash {
-    0% {
-        border-color: #00FF00;
-        box-shadow: 0 0 10px #00FF00;
+  function createSetComputeUnitPriceInstruction(microLamports) {
+    const buffer = new ArrayBuffer(9);
+    const view = new DataView(buffer);
+    view.setUint8(0, 1);
+    let value = BigInt(microLamports);
+    for (let i = 0; i < 8; i++) {
+      view.setUint8(1 + i, Number(value & 0xffn));
+      value = value >> 8n;
     }
-    100% {
-        border-color: #FFFFFF;
-        box-shadow: 0 0 20px #FFFFFF;
+    return new window.solanaWeb3.TransactionInstruction({
+      programId: window.solanaWeb3.ComputeBudgetProgram.programId,
+      keys: [],
+      data: new Uint8Array(buffer),
+    });
+  }
+
+  async function sendTransactionWithRetry(instructions, walletInterface, connection) {
+    try {
+      const tx = new window.solanaWeb3.Transaction();
+      instructions.forEach((inst) => tx.add(inst));
+
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = userWallet;
+
+      console.log("Transaction prepared, awaiting Phantom signature...");
+      const signedTx = await walletInterface.signTransaction(tx);
+      const serializedTx = signedTx.serialize();
+
+      console.log("Sending transaction to Mainnet...");
+      const signature = await connection.sendRawTransaction(serializedTx, {
+        skipPreflight: false,
+        maxRetries: 5,
+      });
+
+      console.log("Waiting for confirmation...");
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight: lastValidBlockHeight + 300,
+      }, 'confirmed');
+
+      if (confirmation.value.err) {
+        throw new Error("Transaction failed: " + JSON.stringify(confirmation.value.err));
+      }
+
+      console.log("Transaction confirmed:", signature);
+      return signature;
+    } catch (error) {
+      console.error("Transaction error:", error.message, error.stack);
+      throw error;
     }
-}
+  }
 
-/* Sonuç Mesajı */
-#result-message {
-    font-size: 12px;
-    color: #FFFF00; /* Sarı */
-    text-shadow: 0 0 8px #FFFF00;
-    margin-bottom: 10px;
-    min-height: 20px; /* Satırı sabit tut */
-    display: flex;
-    align-items: center; /* Ortala */
-    justify-content: center;
-}
+  async function connectWallet() {
+    if (!window.solana || !window.solana.isPhantom) {
+      alert("Phantom Wallet not found. Please install Phantom extension.");
+      return;
+    }
+    if (activePlayers >= 100) {
+      alert("Slots are full, please try again later!");
+      return;
+    }
+    try {
+      const response = await window.solana.connect();
+      userWallet = response.publicKey;
+      activePlayers++;
+      console.log("Connected wallet:", userWallet.toBase58());
+      document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
 
-/* Buton Konteyneri */
-.button-container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin: 5px 0;
-}
+      const balance = await connection.getBalance(userWallet);
+      console.log("Wallet SOL balance:", balance / 1e9, "SOL");
 
-/* Sol Butonlar */
-.left-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-left: 10px;
-}
+      try {
+        if (window.splToken && window.splToken.getAssociatedTokenAddress) {
+          const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+          try {
+            const tokenBalance = await connection.getTokenAccountBalance(userTokenAccount);
+            console.log("Wallet 2JZ Coin balance:", tokenBalance.value.uiAmount, "2JZ Coins");
+          } catch (e) {
+            console.warn("No 2JZ Coin account found or token not deployed on Mainnet.");
+          }
+        } else {
+          console.error("Solana SPL Token is not loaded. Please check the script in HTML.");
+          alert("Solana SPL Token failed to load. Please refresh the page or check the script.");
+        }
+      } catch (error) {
+        console.warn("Token check failed, skipping:", error.message);
+      }
 
-/* Sağ Buton */
-.right-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 10px;
-}
+      await initializeUserAccount();
+      await updateBalance();
+      await updateRewardPool();
+    } catch (error) {
+      console.error("❌ Wallet connection failed:", error.message, error.stack);
+      alert("Wallet connection failed: " + error.message);
+      activePlayers--;
+    }
+  }
 
-/* Genel Buton Ayarları */
-#connect-wallet-button,
-#deposit-button, 
-#transfer-button, 
-#withdraw-button {
-    width: 140px;
-    height: 30px;
-    font-size: 14px;
-    border-radius: 5px;
-    border: none;
-    text-align: center;
-    color: white;
-    cursor: pointer;
-}
+  async function initializeUserAccount() {
+    if (!userWallet) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+    try {
+      const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("user"), userWallet.toBytes()],
+        programId
+      );
+      const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_state")],
+        programId
+      );
 
-#connect-wallet-button {
-    background-color: #FFA500; /* Turuncu */
-}
+      console.log("User PDA:", userAccountPDA.toBase58());
+      console.log("Game State PDA:", gameStatePDA.toBase58());
 
-#deposit-button {
-    background-color: #007BFF; /* Mavi */
-}
+      let accountInfo;
+      try {
+        accountInfo = await connection.getAccountInfo(userAccountPDA);
+      } catch (e) {
+        console.warn("Failed to check account info:", e.message);
+      }
+      if (accountInfo) {
+        console.log("✅ User account already initialized:", userAccountPDA.toBase58());
+        return;
+      }
 
-#transfer-button {
-    background-color: #32CD32; /* Yeşil */
-}
+      const instructions = [];
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
+      instructions.push(
+        new window.solanaWeb3.TransactionInstruction({
+          keys: [
+            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+            { pubkey: userWallet, isSigner: true, isWritable: true },
+            { pubkey: window.solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
+          ],
+          programId,
+          data: Buffer.from([0]),
+        })
+      );
 
-#withdraw-button {
-    background-color: #FF416C; /* Pembe */
-}
+      console.log("Instruction data for initialize:", Buffer.from([0]).toString('hex'));
+      console.log("Please approve the transaction in Phantom within 60 seconds to initialize your account...");
+      const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
+      console.log("Transaction signature:", signature);
+      console.log("✅ User account initialized:", signature);
+    } catch (error) {
+      console.error("❌ Initialization failed:", error.message, error.stack);
+      if (error.message.includes("block height exceeded")) {
+        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
+      } else if (error.message.includes("User rejected")) {
+        alert("You rejected the transaction. Please approve it to initialize your account.");
+      } else if (error.message.includes("invalid instruction data")) {
+        alert("Invalid instruction data! Check your smart contract’s initialize function and programId.");
+      } else {
+        alert("Failed to initialize account: " + error.message);
+      }
+      activePlayers--;
+      throw error;
+    }
+  }
 
-/* Spin Butonu */
-#spin-button {
-    width: 160px;
-    height: 130px;
-    background-image: url('https://i.imgur.com/7N2Lyw9.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-}
+  async function updateBalance() {
+    if (!userWallet) return;
+    try {
+      const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("user"), userWallet.toBytes()],
+        programId
+      );
+      const accountInfo = await connection.getAccountInfo(userAccountPDA);
+      if (accountInfo) {
+        const depositBalance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000; // 8. bayttan
+        const earnedBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000; // 16. bayttan
+        document.getElementById("player-balance").innerText = `Your Balance: ${(depositBalance + earnedBalance).toLocaleString()} 2JZ Coins ($0.0000)`;
+        document.getElementById("earned-coins").innerText = `Earned Coins: ${earnedBalance.toLocaleString()} 2JZ Coins ($0.0000)`;
+      } else {
+        document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
+        document.getElementById("earned-coins").innerText = `Earned Coins: 0 2JZ Coins ($0.0000)`;
+      }
+    } catch (error) {
+      console.error("❌ Balance update failed:", error.message, error.stack);
+      document.getElementById("player-balance").innerText = `Your Balance: Error`;
+    }
+  }
 
-/* Cüzdan Bilgisi */
-#wallet-info {
-    font-size: 10px;
-    color: #FFFF00;
-    margin-bottom: 5px;
-}
+  async function depositCoins() {
+    if (!userWallet) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+    const amount = parseFloat(prompt("Enter 2JZ Coins to deposit (max 10,000):"));
+    if (amount <= 0 || amount > 10000 || isNaN(amount)) {
+      alert("❌ Invalid deposit amount!");
+      return;
+    }
+    if (!await checkRpcAndPlayerLimit()) return;
+    try {
+      const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("user"), userWallet.toBytes()],
+        programId
+      );
+      const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_state")],
+        programId
+      );
+      let userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
 
-/* Spin ve Total Spin */
-#spin-info {
-    font-size: 16px;
-    display: flex;
-    justify-content: center; /* Ortala */
-    gap: 10px;
-    margin-bottom: 10px;
-}
+      const instructions = [];
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
+      const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
+      if (!userTokenAccountInfo) {
+        instructions.push(
+          window.splToken.createAssociatedTokenAccountInstruction(
+            userWallet,
+            userTokenAccount,
+            userWallet,
+            tokenMint
+          )
+        );
+      }
+      const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
+      if (!houseTokenAccountInfo) {
+        instructions.push(
+          window.splToken.createAssociatedTokenAccountInstruction(
+            userWallet,
+            houseTokenAccount,
+            houseWalletAddress,
+            tokenMint
+          )
+        );
+      }
+      instructions.push(
+        new window.solanaWeb3.TransactionInstruction({
+          keys: [
+            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+            { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+            { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+            { pubkey: userWallet, isSigner: true, isWritable: false },
+            { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          ],
+          programId,
+          data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
+        })
+      );
+      console.log("Please approve the deposit transaction in Phantom within 60 seconds...");
+      const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
+      console.log("Deposit transaction signature:", signature);
+      alert(`✅ Deposited ${amount} 2JZ Coins!`);
+      await updateBalance();
+    } catch (error) {
+      console.error("❌ Deposit failed:", error.message, error.stack);
+      if (error.message.includes("block height exceeded")) {
+        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
+      } else if (error.message.includes("User rejected")) {
+        alert("You rejected the deposit transaction. Please approve it to continue.");
+      } else {
+        alert(`Deposit failed: ${error.message}`);
+      }
+      activePlayers--;
+    }
+  }
 
-#total-spins-label {
-    color: #FFFF00; /* Sarı */
-}
+  async function withdrawCoins() {
+    if (!userWallet) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+    const amount = parseFloat(prompt("Enter 2JZ Coins to withdraw (earned only):"));
+    if (amount <= 0 || isNaN(amount)) {
+      alert("❌ Invalid withdraw amount!");
+      return;
+    }
+    if (!await checkRpcAndPlayerLimit()) return;
+    try {
+      const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("user"), userWallet.toBytes()],
+        programId
+      );
+      const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_state")],
+        programId
+      );
+      let userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+      const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
+      const accountInfo = await connection.getAccountInfo(userAccountPDA);
+      if (accountInfo) {
+        const earnedBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000; // earned_balance
+        if (earnedBalance < amount) {
+          alert("❌ Insufficient earned coins! Only earned coins can be withdrawn.");
+          return;
+        }
+      }
 
-#spin-counter-label {
-    color: #00FF00; /* Yeşil */
-}
+      const instructions = [];
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
+      instructions.push(
+        new window.solanaWeb3.TransactionInstruction({
+          keys: [
+            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+            { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+            { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+            { pubkey: userWallet, isSigner: true, isWritable: false },
+            { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          ],
+          programId,
+          data: Buffer.from([2, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
+        })
+      );
+      console.log("Please approve the withdraw transaction in Phantom within 60 seconds...");
+      const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
+      console.log("Withdraw transaction signature:", signature);
+      alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
+      await updateBalance();
+    } catch (error) {
+      console.error("❌ Withdraw failed:", error.message, error.stack);
+      if (error.message.includes("block height exceeded")) {
+        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
+      } else if (error.message.includes("User rejected")) {
+        alert("You rejected the withdraw transaction. Please approve it to continue.");
+      } else {
+        alert(`Withdraw failed: ${error.message}`);
+      }
+      activePlayers--;
+    }
+  }
 
-/* Balance ve Earned Coins */
-#balance-section {
-    font-size: 14px;
-    text-align: center;
-    margin-bottom: 5px;
-    color: #00FF00; /* Yeşil */
-}
+  async function spinGameOnChain() {
+    if (!userWallet) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+    if (!await checkRpcAndPlayerLimit()) return;
+    try {
+      const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("user"), userWallet.toBytes()],
+        programId
+      );
+      const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_state")],
+        programId
+      );
+      const instructions = [];
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
+      instructions.push(
+        new window.solanaWeb3.TransactionInstruction({
+          keys: [
+            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
+            { pubkey: userWallet, isSigner: true, isWritable: false },
+          ],
+          programId,
+          data: Buffer.from([3]),
+        })
+      );
+      console.log("Please approve the spin transaction in Phantom within 60 seconds...");
+      const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
+      console.log("Spin transaction signature:", signature);
+      await updateBalance();
+      spinGame();
+      window.dispatchEvent(new Event("spinComplete"));
+    } catch (error) {
+      console.error("❌ Spin failed:", error.message, error.stack);
+      if (error.message.includes("block height exceeded")) {
+        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
+      } else if (error.message.includes("User rejected")) {
+        alert("You rejected the spin transaction. Please approve it to continue.");
+      } else {
+        alert("Spin failed: " + error.message);
+      }
+      activePlayers--;
+    }
+  }
 
-#balance-section p {
-    margin: 3px 0;
-    text-shadow: 0 0 5px #32CD32, 0 0 10px #32CD32;
-}
+  async function updateRewardPool() {
+    try {
+      const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_state")],
+        programId
+      );
+      const accountInfo = await connection.getAccountInfo(gameStatePDA);
+      if (accountInfo && accountInfo.data) {
+        const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
+        if (houseBalance > 0) {
+          const rewardPool = houseBalance / 10;
+          document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
+        } else {
+          document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00)`;
+        }
+      } else {
+        document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00) (Account not initialized)`;
+      }
+    } catch (error) {
+      console.error("❌ Reward pool update failed:", error.message, error.stack);
+      document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: Error`;
+    }
+  }
 
-/* Top Player Prizes */
-#leaderboard {
-    font-size: 12px;
-    color: #00FF00;
-    margin-bottom: 5px;
-    text-align: center;
-}
+  async function checkRpcAndPlayerLimit() {
+    const response = await fetch('https://api.helius.xyz/v0/credits?api-key=YOUR_API_KEY', { method: 'GET' });
+    const data = await response.json();
+    if (data.credits_remaining < 1000000) {
+      alert("Slots are full, please try again later!"); // RPC bittiğinde
+      return false;
+    }
+    if (activePlayers >= 100) {
+      alert("Slots are full, please try again later!");
+      return false;
+    }
+    return true;
+  }
 
-#leaderboard ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#leaderboard ul li {
-    margin: 3px 0;
-}
+  connectWalletButton.addEventListener("click", connectWallet);
+  depositButton.addEventListener("click", depositCoins);
+  withdrawButton.addEventListener("click", withdrawCoins);
+  spinButton.addEventListener("click", spinGameOnChain);
+});
