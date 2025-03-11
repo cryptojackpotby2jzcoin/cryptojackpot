@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const withdrawButton = document.getElementById("withdraw-button");
   const depositButton = document.getElementById("deposit-button");
   const spinButton = document.getElementById("spin-button");
+  const transferButton = document.getElementById("transfer-button");
 
   const programId = new window.solanaWeb3.PublicKey("4xfJPij1Tgg6fkG8Wur4Kzaghv5cywLd8s6kpN2o4GeB");
-  const houseWalletAddress = new window.solanaWeb3.PublicKey("5dA8kKepycbZ43Zm3MuzRGro5KkkzoYusuqjz8MfTBwn");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
@@ -39,17 +39,14 @@ document.addEventListener("DOMContentLoaded", function () {
       tx.recentBlockhash = blockhash;
       tx.feePayer = userWallet;
 
-      console.log("Transaction prepared, awaiting Phantom signature...");
       const signedTx = await walletInterface.signTransaction(tx);
       const serializedTx = signedTx.serialize();
 
-      console.log("Sending transaction to Mainnet...");
       const signature = await connection.sendRawTransaction(serializedTx, {
         skipPreflight: false,
         maxRetries: 5,
       });
 
-      console.log("Waiting for confirmation...");
       const confirmation = await connection.confirmTransaction({
         signature,
         blockhash,
@@ -60,7 +57,6 @@ document.addEventListener("DOMContentLoaded", function () {
         throw new Error("Transaction failed: " + JSON.stringify(confirmation.value.err));
       }
 
-      console.log("Transaction confirmed:", signature);
       return signature;
     } catch (error) {
       console.error("Transaction error:", error.message, error.stack);
@@ -76,29 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const response = await window.solana.connect();
       userWallet = response.publicKey;
-      console.log("Connected wallet:", userWallet.toBase58());
       document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
-
-      const balance = await connection.getBalance(userWallet);
-      console.log("Wallet SOL balance:", balance / 1e9, "SOL");
-
-      try {
-        if (window.splToken && window.splToken.getAssociatedTokenAddress) {
-          const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
-          try {
-            const tokenBalance = await connection.getTokenAccountBalance(userTokenAccount);
-            console.log("Wallet 2JZ Coin balance:", tokenBalance.value.uiAmount, "2JZ Coins");
-          } catch (e) {
-            console.warn("No 2JZ Coin account found or token not deployed on Mainnet.");
-          }
-        } else {
-          console.error("Solana SPL Token is not loaded. Please check the script in HTML.");
-          alert("Solana SPL Token failed to load. Please check the script in HTML or refresh the page.");
-        }
-      } catch (error) {
-        console.warn("Token check failed, skipping:", error.message);
-      }
-
       await initializeUserAccount();
       await updateBalance();
       await updateRewardPool();
@@ -123,15 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
         programId
       );
 
-      console.log("User PDA:", userAccountPDA.toBase58());
-      console.log("Game State PDA:", gameStatePDA.toBase58());
-
-      let accountInfo;
-      try {
-        accountInfo = await connection.getAccountInfo(userAccountPDA);
-      } catch (e) {
-        console.warn("Failed to check account info:", e.message);
-      }
+      let accountInfo = await connection.getAccountInfo(userAccountPDA);
       if (accountInfo) {
         console.log("✅ User account already initialized:", userAccountPDA.toBase58());
         return;
@@ -152,22 +118,11 @@ document.addEventListener("DOMContentLoaded", function () {
         })
       );
 
-      console.log("Instruction data for initialize:", Buffer.from([0]).toString('hex'));
-      console.log("Please approve the transaction in Phantom within 60 seconds to initialize your account...");
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
-      console.log("Transaction signature:", signature);
       console.log("✅ User account initialized:", signature);
     } catch (error) {
       console.error("❌ Initialization failed:", error.message, error.stack);
-      if (error.message.includes("block height exceeded")) {
-        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
-      } else if (error.message.includes("User rejected")) {
-        alert("You rejected the transaction. Please approve it to initialize your account.");
-      } else if (error.message.includes("invalid instruction data")) {
-        alert("Invalid instruction data! Check your smart contract’s initialize function and programId.");
-      } else {
-        alert("Failed to initialize account: " + error.message);
-      }
+      alert("Failed to initialize account: " + error.message);
       throw error;
     }
   }
@@ -182,11 +137,12 @@ document.addEventListener("DOMContentLoaded", function () {
       const accountInfo = await connection.getAccountInfo(userAccountPDA);
       if (accountInfo) {
         const balance = Number(accountInfo.data.readBigUInt64LE(8)) / 1_000_000;
-        document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
-        document.getElementById("earned-coins").innerText = `Earned Coins: ${balance.toLocaleString()} 2JZ Coins ($0.0000)`;
+        const earnedBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
+        document.getElementById("player-balance").innerText = `Your Balance: ${balance.toLocaleString()} 2JZ Coins`;
+        document.getElementById("earned-coins").innerText = `Earned Coins: ${earnedBalance.toLocaleString()} 2JZ Coins`;
       } else {
-        document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins ($0.0000)`;
-        document.getElementById("earned-coins").innerText = `Earned Coins: 0 2JZ Coins ($0.0000)`;
+        document.getElementById("player-balance").innerText = `Your Balance: 0 2JZ Coins`;
+        document.getElementById("earned-coins").innerText = `Earned Coins: 0 2JZ Coins`;
       }
     } catch (error) {
       console.error("❌ Balance update failed:", error.message, error.stack);
@@ -199,9 +155,9 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Please connect your wallet first!");
       return;
     }
-    const amount = parseFloat(prompt("Enter 2JZ Coins to deposit (max 10,000,000):"));
-    if (amount <= 0 || amount > 10000000 || isNaN(amount)) {
-      alert("❌ Invalid deposit amount!");
+    const amount = parseFloat(prompt("Enter 2JZ Coins to deposit (max 10,000):"));
+    if (amount <= 0 || amount > 10000 || isNaN(amount)) {
+      alert("❌ Invalid deposit amount! Max 10,000 coins.");
       return;
     }
     try {
@@ -213,15 +169,11 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_state")],
         programId
       );
-      let userTokenAccount;
-      try {
-        userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
-      } catch (e) {
-        console.error("Failed to get token account, token may not be deployed on Mainnet:", e.message);
-        alert("2JZ Coin issue on Mainnet. Check token deployment or balance.");
-        return;
-      }
-      const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
+      const [gameVaultPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_vault")],
+        programId
+      );
+      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
@@ -236,24 +188,13 @@ document.addEventListener("DOMContentLoaded", function () {
           )
         );
       }
-      const houseTokenAccountInfo = await connection.getAccountInfo(houseTokenAccount);
-      if (!houseTokenAccountInfo) {
-        instructions.push(
-          window.splToken.createAssociatedTokenAccountInstruction(
-            userWallet,
-            houseTokenAccount,
-            houseWalletAddress,
-            tokenMint
-          )
-        );
-      }
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
             { pubkey: userAccountPDA, isSigner: false, isWritable: true },
             { pubkey: gameStatePDA, isSigner: false, isWritable: true },
             { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-            { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
+            { pubkey: gameVaultPDA, isSigner: false, isWritable: true },
             { pubkey: userWallet, isSigner: true, isWritable: false },
             { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           ],
@@ -261,20 +202,12 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
-      console.log("Please approve the deposit transaction in Phantom within 60 seconds...");
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
-      console.log("Deposit transaction signature:", signature);
       alert(`✅ Deposited ${amount} 2JZ Coins!`);
       await updateBalance();
     } catch (error) {
       console.error("❌ Deposit failed:", error.message, error.stack);
-      if (error.message.includes("block height exceeded")) {
-        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
-      } else if (error.message.includes("User rejected")) {
-        alert("You rejected the deposit transaction. Please approve it to continue.");
-      } else {
-        alert(`Deposit failed: ${error.message}`);
-      }
+      alert(`Deposit failed: ${error.message}`);
       throw error;
     }
   }
@@ -284,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Please connect your wallet first!");
       return;
     }
-    const amount = parseFloat(prompt("Enter 2JZ Coins to withdraw:"));
+    const amount = parseFloat(prompt("Enter earned 2JZ Coins to withdraw:"));
     if (amount <= 0 || isNaN(amount)) {
       alert("❌ Invalid withdraw amount!");
       return;
@@ -298,15 +231,11 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_state")],
         programId
       );
-      let userTokenAccount;
-      try {
-        userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
-      } catch (e) {
-        console.error("Failed to get token account, token may not be deployed on Mainnet:", e.message);
-        alert("2JZ Coin issue on Mainnet. Check token deployment or balance.");
-        return;
-      }
-      const houseTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, houseWalletAddress);
+      const [gameVaultPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("game_vault")],
+        programId
+      );
+      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
@@ -315,8 +244,8 @@ document.addEventListener("DOMContentLoaded", function () {
           keys: [
             { pubkey: userAccountPDA, isSigner: false, isWritable: true },
             { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-            { pubkey: houseTokenAccount, isSigner: false, isWritable: true },
             { pubkey: userTokenAccount, isSigner: false, isWritable: true },
+            { pubkey: gameVaultPDA, isSigner: false, isWritable: true },
             { pubkey: userWallet, isSigner: true, isWritable: false },
             { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           ],
@@ -324,20 +253,12 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([2, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
-      console.log("Please approve the withdraw transaction in Phantom within 60 seconds...");
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
-      console.log("Withdraw transaction signature:", signature);
-      alert(`✅ Withdrawn ${amount} 2JZ Coins!`);
+      alert(`✅ Withdrawn ${amount} earned 2JZ Coins!`);
       await updateBalance();
     } catch (error) {
       console.error("❌ Withdraw failed:", error.message, error.stack);
-      if (error.message.includes("block height exceeded")) {
-        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
-      } else if (error.message.includes("User rejected")) {
-        alert("You rejected the withdraw transaction. Please approve it to continue.");
-      } else {
-        alert(`Withdraw failed: ${error.message}`);
-      }
+      alert(`Withdraw failed: ${error.message}`);
       throw error;
     }
   }
@@ -369,21 +290,50 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([3]),
         })
       );
-      console.log("Please approve the spin transaction in Phantom within 60 seconds...");
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
-      console.log("Spin transaction signature:", signature);
       await updateBalance();
-      spinGame();
+      spinGame(); // Frontend animasyonu
       window.dispatchEvent(new Event("spinComplete"));
     } catch (error) {
       console.error("❌ Spin failed:", error.message, error.stack);
-      if (error.message.includes("block height exceeded")) {
-        alert("Transaction expired! Please try again and approve within 60 seconds in Phantom.");
-      } else if (error.message.includes("User rejected")) {
-        alert("You rejected the spin transaction. Please approve it to continue.");
-      } else {
-        alert("Spin failed: " + error.message);
-      }
+      alert("Spin failed: " + error.message);
+      throw error;
+    }
+  }
+
+  async function transferCoins() {
+    if (!userWallet) {
+      alert("Please connect your wallet first!");
+      return;
+    }
+    const amount = parseFloat(prompt("Enter earned 2JZ Coins to transfer to game balance:"));
+    if (amount <= 0 || isNaN(amount)) {
+      alert("❌ Invalid transfer amount!");
+      return;
+    }
+    try {
+      const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
+        [Buffer.from("user"), userWallet.toBytes()],
+        programId
+      );
+      const instructions = [];
+      instructions.push(createSetComputeUnitPriceInstruction(2000000));
+      instructions.push(
+        new window.solanaWeb3.TransactionInstruction({
+          keys: [
+            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
+            { pubkey: userWallet, isSigner: true, isWritable: false },
+          ],
+          programId,
+          data: Buffer.from([4, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
+        })
+      );
+      const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
+      alert(`✅ Transferred ${amount} earned coins to game balance!`);
+      await updateBalance();
+    } catch (error) {
+      console.error("❌ Transfer failed:", error.message, error.stack);
+      alert(`Transfer failed: ${error.message}`);
       throw error;
     }
   }
@@ -396,15 +346,16 @@ document.addEventListener("DOMContentLoaded", function () {
       );
       const accountInfo = await connection.getAccountInfo(gameStatePDA);
       if (accountInfo && accountInfo.data) {
-        const houseBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
-        if (houseBalance > 0) {
-          const rewardPool = houseBalance / 10;
-          document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins ($74.99)`;
-        } else {
-          document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00)`;
-        }
+        const vaultBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
+        const rewardPool = vaultBalance / 10;
+        document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins`;
+        
+        // Liderlik tablosunu güncelle
+        document.getElementById("first-spin-count").innerText = `${(rewardPool * 0.5).toLocaleString()} coins`;
+        document.getElementById("second-spin-count").innerText = `${(rewardPool * 0.3).toLocaleString()} coins`;
+        document.getElementById("third-spin-count").innerText = `${(rewardPool * 0.2).toLocaleString()} coins`;
       } else {
-        document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins ($0.00) (Account not initialized)`;
+        document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: 0 2JZ Coins`;
       }
     } catch (error) {
       console.error("❌ Reward pool update failed:", error.message, error.stack);
@@ -416,4 +367,5 @@ document.addEventListener("DOMContentLoaded", function () {
   depositButton.addEventListener("click", depositCoins);
   withdrawButton.addEventListener("click", withdrawCoins);
   spinButton.addEventListener("click", spinGameOnChain);
+  transferButton.addEventListener("click", transferCoins);
 });
