@@ -1,6 +1,6 @@
 let isSpinning = false;
 
-function spinGame() {
+function spinGame(winnings) {
   if (isSpinning) return;
   isSpinning = true;
 
@@ -27,7 +27,9 @@ function spinGame() {
 
   slots.forEach(slot => slot.classList.remove("winning-slot"));
 
-  slots.forEach((slot) => {
+  const winCount = winnings === 100 ? 3 : winnings === 5 ? 2 : winnings === 1 ? 1 : 0;
+
+  slots.forEach((slot, index) => {
     let totalSpins = slotImages.length * 12;
     let currentSpin = 0;
 
@@ -38,13 +40,13 @@ function spinGame() {
         currentSpin++;
         setTimeout(animateSpin, 50);
       } else {
-        const finalIcon = slotImages[Math.floor(Math.random() * slotImages.length)]; // Backend sonucu buraya gelecek
+        const finalIcon = (index < winCount) ? slotImages[4] : slotImages[Math.floor(Math.random() * (slotImages.length - 1))];
         slot.style.backgroundImage = `url(${finalIcon})`;
         spinResults.push(finalIcon);
         animationCompleteCount++;
 
         if (animationCompleteCount === slots.length) {
-          evaluateSpin(spinResults);
+          evaluateSpin(winnings);
           isSpinning = false;
           spinButton.disabled = false;
           window.dispatchEvent(new Event("spinComplete"));
@@ -55,25 +57,13 @@ function spinGame() {
   });
 }
 
-function evaluateSpin(spinResults) {
-  const winIcon = "https://i.imgur.com/7N2Lyw9.png";
-  const winCount = spinResults.filter(icon => icon === winIcon).length;
-
-  if (winCount > 0) {
-    const slots = document.querySelectorAll(".slot");
-    slots.forEach((slot, index) => {
-      if (spinResults[index] === winIcon) {
-        slot.classList.add("winning-slot");
-      }
-    });
-  }
-
+function evaluateSpin(winnings) {
   const resultMessage = document.getElementById("result-message");
-  if (winCount === 3) {
+  if (winnings === 100) {
     resultMessage.textContent = "🎉 Jackpot! You won 100 coins!";
-  } else if (winCount === 2) {
+  } else if (winnings === 5) {
     resultMessage.textContent = "🎉 You matched 2 symbols and won 5 coins!";
-  } else if (winCount === 1) {
+  } else if (winnings === 1) {
     resultMessage.textContent = "🎉 You matched 1 symbol and won 1 coin!";
   } else {
     resultMessage.textContent = "❌ No match, better luck next time!";
