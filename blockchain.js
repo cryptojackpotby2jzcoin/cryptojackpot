@@ -9,10 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
-  const connection = new window.solanaWeb3.Connection(
-    "https://mainnet.helius-rpc.com/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0",
-    "confirmed"
-  );
+  const connection = new window.solanaWeb3.Connection(process.env.RPC_URL || "https://mainnet.helius-rpc.com/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
 
   function createSetComputeUnitPriceInstruction(microLamports) {
     const buffer = new ArrayBuffer(9);
@@ -291,8 +288,13 @@ document.addEventListener("DOMContentLoaded", function () {
         })
       );
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
+      const accountInfo = await connection.getAccountInfo(userAccountPDA);
+      const previousEarned = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const updatedAccountInfo = await connection.getAccountInfo(userAccountPDA);
+      const winnings = (Number(updatedAccountInfo.data.readBigUInt64LE(16)) / 1_000_000) - previousEarned;
       await updateBalance();
-      spinGame(); // Frontend animasyonu
+      spinGame(winnings);
       window.dispatchEvent(new Event("spinComplete"));
     } catch (error) {
       console.error("❌ Spin failed:", error.message, error.stack);
@@ -350,7 +352,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const rewardPool = vaultBalance / 10;
         document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins`;
         
-        // Liderlik tablosunu güncelle
         document.getElementById("first-spin-count").innerText = `${(rewardPool * 0.5).toLocaleString()} coins`;
         document.getElementById("second-spin-count").innerText = `${(rewardPool * 0.3).toLocaleString()} coins`;
         document.getElementById("third-spin-count").innerText = `${(rewardPool * 0.2).toLocaleString()} coins`;
