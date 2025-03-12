@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
-  const connection = new window.solanaWeb3.Connection("https://rpc-mainnet.genesysgo.net", "confirmed");
+  const connection = new window.solanaWeb3.Connection("https://api.helius.xyz/v0/transactions/?api-key=d1c5af3f-7119-494d-8987-cd72bc00bfd0", "confirmed");
 
   function createSetComputeUnitPriceInstruction(microLamports) {
     const buffer = new ArrayBuffer(9);
