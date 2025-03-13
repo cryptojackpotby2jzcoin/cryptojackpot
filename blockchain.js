@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const spinButton = document.getElementById("spin-button");
   const transferButton = document.getElementById("transfer-button");
 
-  const programId = new window.solanaWeb3.PublicKey("4xfJPij1Tgg6fkG8Wur4Kzaghv5cywLd8s6kpN2o4GeB");
+  const programId = new window.solanaWeb3.PublicKey("");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
