@@ -61,6 +61,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  async function ensureTokenAccountExists(userWallet, tokenMint, connection) {
+    const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
+    const accountInfo = await connection.getAccountInfo(userTokenAccount);
+
+    if (!accountInfo) {
+      const instructions = [
+        window.splToken.createAssociatedTokenAccountInstruction(
+          userWallet,
+          userTokenAccount,
+          userWallet,
+          tokenMint
+        ),
+      ];
+      await sendTransactionWithRetry(instructions, window.solana, connection);
+    }
+
+    return userTokenAccount;
+  }
+
   async function connectWallet() {
     if (!window.solana || !window.solana.isPhantom) {
       alert("Phantom Wallet not found. Please install Phantom extension.");
@@ -158,6 +177,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     try {
+      const userTokenAccount = await ensureTokenAccountExists(userWallet, tokenMint, connection);
+
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
         [Buffer.from("user"), userWallet.toBytes()],
         programId
@@ -170,21 +191,9 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_vault")],
         programId
       );
-      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
-      const userTokenAccountInfo = await connection.getAccountInfo(userTokenAccount);
-      if (!userTokenAccountInfo) {
-        instructions.push(
-          window.splToken.createAssociatedTokenAccountInstruction(
-            userWallet,
-            userTokenAccount,
-            userWallet,
-            tokenMint
-          )
-        );
-      }
       instructions.push(
         new window.solanaWeb3.TransactionInstruction({
           keys: [
@@ -199,13 +208,13 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
+
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       alert(`✅ Deposited ${amount} 2JZ Coins!`);
       await updateBalance();
     } catch (error) {
       console.error("❌ Deposit failed:", error.message, error.stack);
       alert(`Deposit failed: ${error.message}`);
-      throw error;
     }
   }
 
@@ -220,6 +229,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     try {
+      const userTokenAccount = await ensureTokenAccountExists(userWallet, tokenMint, connection);
+
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
         [Buffer.from("user"), userWallet.toBytes()],
         programId
@@ -232,7 +243,6 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_vault")],
         programId
       );
-      const userTokenAccount = await window.splToken.getAssociatedTokenAddress(tokenMint, userWallet);
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
@@ -250,13 +260,13 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([2, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
+
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       alert(`✅ Withdrawn ${amount} earned 2JZ Coins!`);
       await updateBalance();
     } catch (error) {
       console.error("❌ Withdraw failed:", error.message, error.stack);
       alert(`Withdraw failed: ${error.message}`);
-      throw error;
     }
   }
 
@@ -274,6 +284,7 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("game_state")],
         programId
       );
+
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
       instructions.push(
@@ -287,19 +298,22 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([3]),
         })
       );
+
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       const accountInfo = await connection.getAccountInfo(userAccountPDA);
       const previousEarned = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      await new Promise(resolve => setTimeout(resolve, 1000)); // İşlemin tamamlanmasını bekleyin
+
       const updatedAccountInfo = await connection.getAccountInfo(userAccountPDA);
       const winnings = (Number(updatedAccountInfo.data.readBigUInt64LE(16)) / 1_000_000) - previousEarned;
+
       await updateBalance();
       spinGame(winnings);
       window.dispatchEvent(new Event("spinComplete"));
     } catch (error) {
       console.error("❌ Spin failed:", error.message, error.stack);
       alert("Spin failed: " + error.message);
-      throw error;
     }
   }
 
@@ -318,6 +332,7 @@ document.addEventListener("DOMContentLoaded", function () {
         [Buffer.from("user"), userWallet.toBytes()],
         programId
       );
+
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
       instructions.push(
@@ -330,13 +345,13 @@ document.addEventListener("DOMContentLoaded", function () {
           data: Buffer.from([4, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
         })
       );
+
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       alert(`✅ Transferred ${amount} earned coins to game balance!`);
       await updateBalance();
     } catch (error) {
       console.error("❌ Transfer failed:", error.message, error.stack);
       alert(`Transfer failed: ${error.message}`);
-      throw error;
     }
   }
 
