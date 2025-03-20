@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
 
-  const connection = new window.solanaWeb3.Connection("solana config set --url https://api.devnet.solana.com", "confirmed");
+  const connection = new window.solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
 
   function createSetComputeUnitPriceInstruction(microLamports) {
     const buffer = new ArrayBuffer(9);
