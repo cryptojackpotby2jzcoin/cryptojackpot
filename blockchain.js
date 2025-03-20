@@ -5,9 +5,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const spinButton = document.getElementById("spin-button");
   const transferButton = document.getElementById("transfer-button");
 
-  const anchor = require("@coral-xyz/anchor");
-  const IDL = require("./crypto_jackpot.json"); // IDL dosyasını projene ekle
-
   const programId = new window.solanaWeb3.PublicKey("8GeDy4btKEUvqyLAoqUzTHBfdAV3sn1dE7MDYPvjuhVn");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
@@ -15,10 +12,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const connection = new window.solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
 
-  // Anchor provider ve program’ı başlat
-  const provider = new anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
-  anchor.setProvider(provider);
-  program = new anchor.Program(IDL, programId, provider);
+  // Anchor ve IDL’yi yükle
+  async function loadDependencies() {
+    // Anchor kütüphanesini CDN üzerinden yükle
+    const anchorScript = document.createElement("script");
+    anchorScript.src = "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
+    document.head.appendChild(anchorScript);
+
+    // Anchor’un yüklendiğinden emin ol
+    await new Promise((resolve) => {
+      anchorScript.onload = resolve;
+    });
+
+    // IDL’yi yükle
+    const response = await fetch("/crypto_jackpot.json"); // Netlify’de public klasöründe olmalı
+    const IDL = await response.json();
+
+    // Anchor provider ve program’ı başlat
+    const provider = new window.anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
+    window.anchor.setProvider(provider);
+    program = new window.anchor.Program(IDL, programId, provider);
+  }
 
   function createSetComputeUnitPriceInstruction(microLamports) {
     const buffer = new ArrayBuffer(9);
@@ -98,6 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     try {
+      await loadDependencies(); // Anchor ve IDL’yi yükle
       const response = await window.solana.connect();
       userWallet = response.publicKey;
       document.getElementById("wallet-address").innerText = `Wallet: ${userWallet.toString()}`;
@@ -208,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function () {
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
       const tx = await program.methods
-        .deposit(new anchor.BN(Math.floor(amount * 1_000_000)))
+        .deposit(new window.anchor.BN(Math.floor(amount * 1_000_000)))
         .accounts({
           userAccount: userAccountPDA,
           gameState: gameStatePDA,
@@ -260,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
       const tx = await program.methods
-        .withdraw(new anchor.BN(Math.floor(amount * 1_000_000)))
+        .withdraw(new window.anchor.BN(Math.floor(amount * 1_000_000)))
         .accounts({
           userAccount: userAccountPDA,
           gameState: gameStatePDA,
@@ -349,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function () {
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
       const tx = await program.methods
-        .transfer(new anchor.BN(Math.floor(amount * 1_000_000)))
+        .transfer(new window.anchor.BN(Math.floor(amount * 1_000_000)))
         .accounts({
           userAccount: userAccountPDA,
           user: userWallet,
