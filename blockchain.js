@@ -5,11 +5,20 @@ document.addEventListener("DOMContentLoaded", function () {
   const spinButton = document.getElementById("spin-button");
   const transferButton = document.getElementById("transfer-button");
 
+  const anchor = require("@coral-xyz/anchor");
+  const IDL = require("./crypto_jackpot.json"); // IDL dosyasını projene ekle
+
   const programId = new window.solanaWeb3.PublicKey("8GeDy4btKEUvqyLAoqUzTHBfdAV3sn1dE7MDYPvjuhVn");
   const tokenMint = new window.solanaWeb3.PublicKey("GRjLQ8KXegtxjo5P2C2Gq71kEdEk3mLVCMx4AARUpump");
   let userWallet = null;
+  let program = null;
 
   const connection = new window.solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
+
+  // Anchor provider ve program’ı başlat
+  const provider = new anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
+  anchor.setProvider(provider);
+  program = new anchor.Program(IDL, programId, provider);
 
   function createSetComputeUnitPriceInstruction(microLamports) {
     const buffer = new ArrayBuffer(9);
@@ -32,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const tx = new window.solanaWeb3.Transaction();
       instructions.forEach((inst) => tx.add(inst));
 
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash("confirmed");
       tx.recentBlockhash = blockhash;
       tx.feePayer = userWallet;
 
@@ -44,11 +53,14 @@ document.addEventListener("DOMContentLoaded", function () {
         maxRetries: 5,
       });
 
-      const confirmation = await connection.confirmTransaction({
-        signature,
-        blockhash,
-        lastValidBlockHeight: lastValidBlockHeight + 300,
-      }, 'confirmed');
+      const confirmation = await connection.confirmTransaction(
+        {
+          signature,
+          blockhash,
+          lastValidBlockHeight: lastValidBlockHeight + 300,
+        },
+        "confirmed"
+      );
 
       if (confirmation.value.err) {
         throw new Error("Transaction failed: " + JSON.stringify(confirmation.value.err));
@@ -105,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     try {
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user"), userWallet.toBytes()],
+        [Buffer.from("user_account"), userWallet.toBuffer()],
         programId
       );
       const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
@@ -121,18 +133,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
-      instructions.push(
-        new window.solanaWeb3.TransactionInstruction({
-          keys: [
-            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-            { pubkey: userWallet, isSigner: true, isWritable: true },
-            { pubkey: window.solanaWeb3.SystemProgram.programId, isSigner: false, isWritable: false },
-          ],
-          programId,
-          data: Buffer.from([0]),
+
+      const tx = await program.methods
+        .initialize()
+        .accounts({
+          userAccount: userAccountPDA,
+          gameState: gameStatePDA,
+          user: userWallet,
+          systemProgram: window.solanaWeb3.SystemProgram.programId,
         })
-      );
+        .instruction();
+
+      instructions.push(tx);
 
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       console.log("✅ User account initialized:", signature);
@@ -147,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!userWallet) return;
     try {
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user"), userWallet.toBytes()],
+        [Buffer.from("user_account"), userWallet.toBuffer()],
         programId
       );
       const accountInfo = await connection.getAccountInfo(userAccountPDA);
@@ -180,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const userTokenAccount = await ensureTokenAccountExists(userWallet, tokenMint, connection);
 
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user"), userWallet.toBytes()],
+        [Buffer.from("user_account"), userWallet.toBuffer()],
         programId
       );
       const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
@@ -194,20 +206,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
-      instructions.push(
-        new window.solanaWeb3.TransactionInstruction({
-          keys: [
-            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-            { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-            { pubkey: gameVaultPDA, isSigner: false, isWritable: true },
-            { pubkey: userWallet, isSigner: true, isWritable: false },
-            { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-          ],
-          programId,
-          data: Buffer.from([1, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
+
+      const tx = await program.methods
+        .deposit(new anchor.BN(Math.floor(amount * 1_000_000)))
+        .accounts({
+          userAccount: userAccountPDA,
+          gameState: gameStatePDA,
+          userTokenAccount: userTokenAccount,
+          gameVault: gameVaultPDA,
+          user: userWallet,
+          tokenProgram: window.splToken.TOKEN_PROGRAM_ID,
         })
-      );
+        .instruction();
+
+      instructions.push(tx);
 
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       alert(`✅ Deposited ${amount} 2JZ Coins!`);
@@ -232,7 +244,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const userTokenAccount = await ensureTokenAccountExists(userWallet, tokenMint, connection);
 
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user"), userWallet.toBytes()],
+        [Buffer.from("user_account"), userWallet.toBuffer()],
         programId
       );
       const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
@@ -246,20 +258,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
-      instructions.push(
-        new window.solanaWeb3.TransactionInstruction({
-          keys: [
-            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-            { pubkey: userTokenAccount, isSigner: false, isWritable: true },
-            { pubkey: gameVaultPDA, isSigner: false, isWritable: true },
-            { pubkey: userWallet, isSigner: true, isWritable: false },
-            { pubkey: window.splToken.TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-          ],
-          programId,
-          data: Buffer.from([2, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
+
+      const tx = await program.methods
+        .withdraw(new anchor.BN(Math.floor(amount * 1_000_000)))
+        .accounts({
+          userAccount: userAccountPDA,
+          gameState: gameStatePDA,
+          userTokenAccount: userTokenAccount,
+          gameVault: gameVaultPDA,
+          user: userWallet,
+          tokenProgram: window.splToken.TOKEN_PROGRAM_ID,
         })
-      );
+        .instruction();
+
+      instructions.push(tx);
 
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       alert(`✅ Withdrawn ${amount} earned 2JZ Coins!`);
@@ -277,7 +289,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     try {
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user"), userWallet.toBytes()],
+        [Buffer.from("user_account"), userWallet.toBuffer()],
         programId
       );
       const [gameStatePDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
@@ -287,23 +299,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
-      instructions.push(
-        new window.solanaWeb3.TransactionInstruction({
-          keys: [
-            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-            { pubkey: gameStatePDA, isSigner: false, isWritable: true },
-            { pubkey: userWallet, isSigner: true, isWritable: false },
-          ],
-          programId,
-          data: Buffer.from([3]),
+
+      const tx = await program.methods
+        .spin()
+        .accounts({
+          userAccount: userAccountPDA,
+          gameState: gameStatePDA,
+          user: userWallet,
         })
-      );
+        .instruction();
+
+      instructions.push(tx);
 
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       const accountInfo = await connection.getAccountInfo(userAccountPDA);
       const previousEarned = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
 
-      await new Promise(resolve => setTimeout(resolve, 1000)); // İşlemin tamamlanmasını bekleyin
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // İşlemin tamamlanmasını bekleyin
 
       const updatedAccountInfo = await connection.getAccountInfo(userAccountPDA);
       const winnings = (Number(updatedAccountInfo.data.readBigUInt64LE(16)) / 1_000_000) - previousEarned;
@@ -329,22 +341,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     try {
       const [userAccountPDA] = await window.solanaWeb3.PublicKey.findProgramAddress(
-        [Buffer.from("user"), userWallet.toBytes()],
+        [Buffer.from("user_account"), userWallet.toBuffer()],
         programId
       );
 
       const instructions = [];
       instructions.push(createSetComputeUnitPriceInstruction(2000000));
-      instructions.push(
-        new window.solanaWeb3.TransactionInstruction({
-          keys: [
-            { pubkey: userAccountPDA, isSigner: false, isWritable: true },
-            { pubkey: userWallet, isSigner: true, isWritable: false },
-          ],
-          programId,
-          data: Buffer.from([4, ...new Uint8Array(new BigUint64Array([BigInt(Math.floor(amount * 1_000_000))]).buffer)]),
+
+      const tx = await program.methods
+        .transfer(new anchor.BN(Math.floor(amount * 1_000_000)))
+        .accounts({
+          userAccount: userAccountPDA,
+          user: userWallet,
         })
-      );
+        .instruction();
+
+      instructions.push(tx);
 
       const signature = await sendTransactionWithRetry(instructions, window.solana, connection);
       alert(`✅ Transferred ${amount} earned coins to game balance!`);
@@ -366,7 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const vaultBalance = Number(accountInfo.data.readBigUInt64LE(16)) / 1_000_000;
         const rewardPool = vaultBalance / 10;
         document.getElementById("weekly-reward").innerText = `Weekly Reward Pool: ${rewardPool.toLocaleString()} 2JZ Coins`;
-        
+
         document.getElementById("first-spin-count").innerText = `${(rewardPool * 0.5).toLocaleString()} coins`;
         document.getElementById("second-spin-count").innerText = `${(rewardPool * 0.3).toLocaleString()} coins`;
         document.getElementById("third-spin-count").innerText = `${(rewardPool * 0.2).toLocaleString()} coins`;
