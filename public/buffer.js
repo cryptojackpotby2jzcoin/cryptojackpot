@@ -1,11 +1,7 @@
-(function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global = global || self, global.Buffer = factory());
-}(this, function () {
+const Buffer = (function () {
     'use strict';
 
-    var Buffer = function Buffer(arg, encodingOrOffset, length) {
+    function Buffer(arg, encodingOrOffset, length) {
         if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
             return new Buffer(arg, encodingOrOffset, length);
         }
@@ -17,7 +13,7 @@
             return allocUnsafe(this, arg);
         }
         return from(this, arg, encodingOrOffset, length);
-    };
+    }
 
     Buffer.poolSize = 8192;
 
@@ -201,7 +197,6 @@
     }
 
     return Buffer;
-}));
+})();
 
-// ES Module olarak dışa aktar
 export { Buffer };
