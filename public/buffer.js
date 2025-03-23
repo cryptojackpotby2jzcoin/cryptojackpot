@@ -202,3 +202,6 @@
 
     return Buffer;
 }));
+
+// ES Module olarak dışa aktar
+export { Buffer };
