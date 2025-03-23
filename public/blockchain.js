@@ -14,12 +14,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Anchor ve IDL’yi yükle
   async function loadDependencies() {
-    // Anchor kütüphanesini CDN üzerinden yükle
     const anchorScript = document.createElement("script");
     anchorScript.src = "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
+    anchorScript.type = "module"; // type="module" ekle
     document.head.appendChild(anchorScript);
 
-    // Anchor’un yüklendiğinden emin ol
     await new Promise((resolve) => {
       anchorScript.onload = resolve;
     });
