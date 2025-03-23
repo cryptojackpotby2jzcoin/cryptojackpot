@@ -1,4 +1,5 @@
 import * as anchor from "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
+import { Buffer } from "./buffer.js";
 
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
