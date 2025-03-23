@@ -1,3 +1,5 @@
+import * as anchor from "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
+
 document.addEventListener("DOMContentLoaded", function () {
     const connectWalletButton = document.getElementById("connect-wallet-button");
     const withdrawButton = document.getElementById("withdraw-button");
@@ -19,9 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const IDL = await response.json();
 
         // Anchor provider ve program’ı başlat
-        const provider = new window.anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
-        window.anchor.setProvider(provider);
-        program = new window.anchor.Program(IDL, programId, provider);
+        const provider = new anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
+        anchor.setProvider(provider);
+        program = new anchor.Program(IDL, programId, provider);
     }
 
     function createSetComputeUnitPriceInstruction(microLamports) {
@@ -213,7 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
             instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
             const tx = await program.methods
-                .deposit(new window.anchor.BN(Math.floor(amount * 1_000_000)))
+                .deposit(new anchor.BN(Math.floor(amount * 1_000_000)))
                 .accounts({
                     userAccount: userAccountPDA,
                     gameState: gameStatePDA,
@@ -265,7 +267,7 @@ document.addEventListener("DOMContentLoaded", function () {
             instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
             const tx = await program.methods
-                .withdraw(new window.anchor.BN(Math.floor(amount * 1_000_000)))
+                .withdraw(new anchor.BN(Math.floor(amount * 1_000_000)))
                 .accounts({
                     userAccount: userAccountPDA,
                     gameState: gameStatePDA,
@@ -354,7 +356,7 @@ document.addEventListener("DOMContentLoaded", function () {
             instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
             const tx = await program.methods
-                .transfer(new window.anchor.BN(Math.floor(amount * 1_000_000)))
+                .transfer(new anchor.BN(Math.floor(amount * 1_000_000)))
                 .accounts({
                     userAccount: userAccountPDA,
                     user: userWallet,
