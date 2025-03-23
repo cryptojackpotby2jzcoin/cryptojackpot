@@ -14,14 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Anchor ve IDL’yi yükle
     async function loadDependencies() {
-        const anchorScript = document.createElement("script");
-        anchorScript.src = "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
-        document.head.appendChild(anchorScript);
-
-        await new Promise((resolve) => {
-            anchorScript.onload = resolve;
-        });
-
         // IDL’yi yükle
         const response = await fetch("/crypto_jackpot.json");
         const IDL = await response.json();
