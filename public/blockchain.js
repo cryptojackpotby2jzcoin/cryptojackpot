@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     async function loadDependencies() {
         const anchorScript = document.createElement("script");
         anchorScript.src = "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
-        anchorScript.type = "module";
         document.head.appendChild(anchorScript);
 
         await new Promise((resolve) => {
