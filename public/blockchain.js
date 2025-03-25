@@ -202,12 +202,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const connection = new window.solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
 
     async function loadDependencies() {
+        if (!window.anchor || !window.anchor.AnchorProvider) {
+            throw new Error("Anchor library not loaded. Ensure the script is included in index.html.");
+        }
+
         const response = await fetch("/crypto_jackpot.json");
         const IDL = await response.json();
 
-        const provider = new anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
-        anchor.setProvider(provider);
-        program = new anchor.Program(IDL, programId, provider);
+        const provider = new window.anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
+        window.anchor.setProvider(provider);
+        program = new window.anchor.Program(IDL, programId, provider);
     }
 
     function createSetComputeUnitPriceInstruction(microLamports) {
@@ -403,7 +407,7 @@ document.addEventListener("DOMContentLoaded", function () {
             instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
             const tx = await program.methods
-                .deposit(new anchor.BN(Math.floor(amount * 1_000_000)))
+                .deposit(new window.anchor.BN(Math.floor(amount * 1_000_000)))
                 .accounts({
                     userAccount: userAccountPDA,
                     gameState: gameStatePDA,
@@ -455,7 +459,7 @@ document.addEventListener("DOMContentLoaded", function () {
             instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
             const tx = await program.methods
-                .withdraw(new anchor.BN(Math.floor(amount * 1_000_000)))
+                .withdraw(new window.anchor.BN(Math.floor(amount * 1_000_000)))
                 .accounts({
                     userAccount: userAccountPDA,
                     gameState: gameStatePDA,
@@ -544,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
             instructions.push(createSetComputeUnitPriceInstruction(2000000));
 
             const tx = await program.methods
-                .transfer(new anchor.BN(Math.floor(amount * 1_000_000)))
+                .transfer(new window.anchor.BN(Math.floor(amount * 1_000_000)))
                 .accounts({
                     userAccount: userAccountPDA,
                     user: userWallet,
