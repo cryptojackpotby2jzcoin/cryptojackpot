@@ -1,6 +1,5 @@
-import * as anchor from "https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js";
+const anchor = window.anchor;
 
-// Buffer kodunu doğrudan buraya gömüyoruz
 const Buffer = (function () {
     function Buffer(arg, encodingOrOffset, length) {
         if (typeof arg === 'number') {
@@ -202,13 +201,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const connection = new window.solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
 
-    // Anchor ve IDL’yi yükle
     async function loadDependencies() {
-        // IDL’yi yükle
         const response = await fetch("/crypto_jackpot.json");
         const IDL = await response.json();
 
-        // Anchor provider ve program’ı başlat
         const provider = new anchor.AnchorProvider(connection, window.solana, { commitment: "confirmed" });
         anchor.setProvider(provider);
         program = new anchor.Program(IDL, programId, provider);
@@ -299,6 +295,10 @@ document.addEventListener("DOMContentLoaded", function () {
             await initializeUserAccount();
             await updateBalance();
             await updateRewardPool();
+            depositButton.disabled = false;
+            withdrawButton.disabled = false;
+            spinButton.disabled = false;
+            transferButton.disabled = false;
         } catch (error) {
             console.error("❌ Wallet connection failed:", error.message, error.stack);
             alert("Wallet connection failed: " + error.message);
