@@ -1,4 +1,3 @@
-Set-Content -Path "blockchain.js" -Value @"
 function waitForAnchor() {
     return new Promise((resolve, reject) => {
         if (window.anchor && window.anchor.AnchorProvider) {
@@ -23,16 +22,16 @@ function waitForAnchor() {
 
 const Buffer = (function () {
     function Buffer(arg, encodingOrOffset, length) {
-        if (typeof arg === 'number') {
-            if (typeof encodingOrOffset === 'string') {
-                throw new Error('If encoding is specified then the first argument must be a string');
+        if (typeof arg === "number") {
+            if (typeof encodingOrOffset === "string") {
+                throw new Error("If encoding is specified then the first argument must be a string");
             }
             return allocUnsafe(arg);
         }
         return from(arg, encodingOrOffset, length);
     }
 
-    Buffer.TYPED_ARRAY_SUPPORT = typeof Uint8Array !== 'undefined' && typeof Uint8Array.prototype.subarray === 'function';
+    Buffer.TYPED_ARRAY_SUPPORT = typeof Uint8Array !== "undefined" && typeof Uint8Array.prototype.subarray === "function";
     Buffer.poolSize = 8192;
 
     Buffer.from = function (value, encodingOrOffset, length) {
@@ -48,33 +47,33 @@ const Buffer = (function () {
     };
 
     function from(value, encodingOrOffset, length) {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
             return fromString(value, encodingOrOffset);
         }
         if (ArrayBuffer.isView(value)) {
             return fromArrayLike(value);
         }
         if (value == null) {
-            throw TypeError('The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object.');
+            throw TypeError("The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object.");
         }
-        if (typeof value === 'number') {
-            throw new TypeError('Value must not be a number');
+        if (typeof value === "number") {
+            throw new TypeError("Value must not be a number");
         }
         return fromObject(value);
     }
 
     function alloc(size, fill, encoding) {
-        if (typeof size !== 'number') {
-            throw new TypeError('size must be a number');
+        if (typeof size !== "number") {
+            throw new TypeError("size must be a number");
         }
         if (size < 0) {
-            throw new RangeError('size must not be negative');
+            throw new RangeError("size must not be negative");
         }
         const buf = Buffer.TYPED_ARRAY_SUPPORT ? new Uint8Array(size) : new Array(size);
         if (fill !== undefined) {
-            if (typeof fill === 'string') {
+            if (typeof fill === "string") {
                 fillBuffer(buf, fill, encoding);
-            } else if (typeof fill === 'number') {
+            } else if (typeof fill === "number") {
                 buf.fill(fill);
             }
         }
@@ -82,11 +81,11 @@ const Buffer = (function () {
     }
 
     function allocUnsafe(size) {
-        if (typeof size !== 'number') {
-            throw new TypeError('size must be a number');
+        if (typeof size !== "number") {
+            throw new TypeError("size must be a number");
         }
         if (size < 0) {
-            throw new RangeError('size must not be negative');
+            throw new RangeError("size must not be negative");
         }
         return Buffer.TYPED_ARRAY_SUPPORT ? new Uint8Array(size) : new Array(size);
     }
@@ -116,20 +115,20 @@ const Buffer = (function () {
             }
             return buf;
         }
-        if (ArrayBuffer.isView(obj) || (obj && typeof obj.length === 'number')) {
+        if (ArrayBuffer.isView(obj) || (obj && typeof obj.length === "number")) {
             return fromArrayLike(obj);
         }
-        throw new TypeError('Unsupported type: ' + typeof obj);
+        throw new TypeError("Unsupported type: " + typeof obj);
     }
 
     function byteLength(string, encoding) {
-        if (typeof string !== 'string') string = '' + string;
+        if (typeof string !== "string") string = "" + string;
         return string.length;
     }
 
     function write(buf, string, offset, length, encoding) {
         if (offset < 0 || buf.length < offset) {
-            throw new RangeError('Offset out of bounds');
+            throw new RangeError("Offset out of bounds");
         }
         if (length === undefined) {
             length = buf.length - offset;
@@ -142,15 +141,15 @@ const Buffer = (function () {
     }
 
     function fillBuffer(buf, value, encoding) {
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
             write(buf, value, 0, buf.length, encoding);
-        } else if (typeof value === 'number') {
+        } else if (typeof value === "number") {
             buf.fill(value);
         }
     }
 
     Buffer.isBuffer = function (b) {
-        return b != null && typeof b === 'object' && b._isBuffer === true;
+        return b != null && typeof b === "object" && b._isBuffer === true;
     };
 
     Buffer.prototype = {
@@ -161,10 +160,10 @@ const Buffer = (function () {
         toString: function (encoding, start, end) {
             start = start | 0;
             end = end === undefined || end === Infinity ? this.length : end | 0;
-            if (!encoding) encoding = 'utf8';
+            if (!encoding) encoding = "utf8";
             if (start < 0) start = 0;
             if (end > this.length) end = this.length;
-            if (end <= start) return '';
+            if (end <= start) return "";
             const slice = this.subarray ? this.subarray(start, end) : this.slice(start, end);
             return String.fromCharCode.apply(null, slice);
         },
@@ -181,7 +180,7 @@ const Buffer = (function () {
             return Object.assign(Object.create(Buffer.prototype), newBuf);
         },
         copy: function (target, targetStart, start, end) {
-            if (!Buffer.isBuffer(target)) throw new TypeError('argument should be a Buffer');
+            if (!Buffer.isBuffer(target)) throw new TypeError("argument should be a Buffer");
             if (!start) start = 0;
             if (!end && end !== 0) end = this.length;
             if (targetStart >= target.length) targetStart = target.length;
@@ -189,9 +188,9 @@ const Buffer = (function () {
             if (end > 0 && end < start) end = start;
             if (end === start) return 0;
             if (target.length === 0 || this.length === 0) return 0;
-            if (targetStart < 0) throw new RangeError('targetStart out of bounds');
-            if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds');
-            if (end < 0) throw new RangeError('sourceEnd out of bounds');
+            if (targetStart < 0) throw new RangeError("targetStart out of bounds");
+            if (start < 0 || start >= this.length) throw new RangeError("sourceStart out of bounds");
+            if (end < 0) throw new RangeError("sourceEnd out of bounds");
             const len = Math.min(end - start, target.length - targetStart);
             for (let i = 0; i < len; i++) {
                 target[i + targetStart] = this[i + start];
@@ -201,7 +200,7 @@ const Buffer = (function () {
     };
 
     function checked(length) {
-        if (length >= 0x4000000) throw new RangeError('Attempt to allocate Buffer larger than maximum size');
+        if (length >= 0x4000000) throw new RangeError("Attempt to allocate Buffer larger than maximum size");
         return length | 0;
     }
 
@@ -623,4 +622,3 @@ document.addEventListener("DOMContentLoaded", async function () {
     spinButton.addEventListener("click", spinGameOnChain);
     transferButton.addEventListener("click", transferCoins);
 });
-"@
