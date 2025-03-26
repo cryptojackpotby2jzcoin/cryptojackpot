@@ -1,18 +1,23 @@
+Set-Content -Path "blockchain.js" -Value @"
 function waitForAnchor() {
     return new Promise((resolve, reject) => {
-        const maxAttempts = 50; // 5 saniye bekle
-        let attempts = 0;
-        const checkAnchor = () => {
-            if (window.anchor && window.anchor.AnchorProvider) {
-                resolve(window.anchor);
-            } else if (attempts >= maxAttempts) {
-                reject(new Error("Anchor library failed to load after 5 seconds."));
-            } else {
-                attempts++;
-                setTimeout(checkAnchor, 100);
-            }
-        };
-        checkAnchor();
+        if (window.anchor && window.anchor.AnchorProvider) {
+            resolve(window.anchor);
+        } else {
+            const maxAttempts = 50; // 5 saniye
+            let attempts = 0;
+            const checkAnchor = () => {
+                if (window.anchor && window.anchor.AnchorProvider) {
+                    resolve(window.anchor);
+                } else if (attempts >= maxAttempts) {
+                    reject(new Error("Anchor library failed to load after 5 seconds."));
+                } else {
+                    attempts++;
+                    setTimeout(checkAnchor, 100);
+                }
+            };
+            setTimeout(checkAnchor, 100);
+        }
     });
 }
 
@@ -221,6 +226,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         let anchor;
         try {
             anchor = await waitForAnchor();
+            console.log("Anchor loaded successfully:", anchor);
         } catch (error) {
             throw new Error("Anchor library not loaded: " + error.message);
         }
@@ -617,3 +623,4 @@ document.addEventListener("DOMContentLoaded", async function () {
     spinButton.addEventListener("click", spinGameOnChain);
     transferButton.addEventListener("click", transferCoins);
 });
+"@
