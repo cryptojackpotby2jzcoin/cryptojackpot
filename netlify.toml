@@ -1,3 +1,4 @@
+Set-Content -Path "C:\Users\erdem\Desktop\Crypto_Jackpot\cryptojackpot\netlify.toml" -Value @"
 [build]
   publish = "public"
 
@@ -5,3 +6,4 @@
   from = "/*"
   to = "/index.html"
   status = 200
+"@
