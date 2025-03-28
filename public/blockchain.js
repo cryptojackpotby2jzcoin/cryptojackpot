@@ -1,11 +1,12 @@
 // Kütüphaneleri module olarak import ediyoruz
 import * as solanaWeb3 from 'https://unpkg.com/@solana/web3.js@1.78.0/lib/index.iife.min.js';
-import * as splToken from 'https://esm.sh/@solana/spl-token@0.3.8'; // ESM formatı
+import * as splToken from 'https://esm.sh/@solana/spl-token@0.3.8';
 import * as anchor from './anchor.js';
 import { spinGame } from './game.js';
+import { Buffer } from 'https://esm.sh/buffer@6.0.3'; // Buffer polyfill
 
 // Buffer'ı global olarak tanımlıyoruz
-window.Buffer = anchor.Buffer;
+window.Buffer = Buffer;
 
 // Geri kalan kod aynı kalacak...
 const connectWalletButton = document.getElementById("connect-wallet-button");
