@@ -1,6 +1,6 @@
 // Kütüphaneleri module olarak import ediyoruz
 import * as solanaWeb3 from 'https://unpkg.com/@solana/web3.js@1.78.0/lib/index.iife.min.js';
-import * as splToken from 'https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.8/lib/index.iife.min.js';
+import * as splToken from 'https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.8/lib/index.iife.js'; // .min.js yerine .js
 import * as anchor from 'https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js';
 
 // Buffer'ı global olarak tanımlıyoruz (Anchor bunu bekliyor)
