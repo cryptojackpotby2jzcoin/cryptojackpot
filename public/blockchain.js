@@ -1,7 +1,7 @@
 // Kütüphaneleri module olarak import ediyoruz
 import * as solanaWeb3 from 'https://unpkg.com/@solana/web3.js@1.78.0/lib/index.iife.min.js';
-import * as splToken from 'https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.8/lib/index.iife.js';
-import * as anchor from './anchor.js'; // Lokal anchor.js
+import * as splToken from './spl-token.js'; // Lokal spl-token.js
+import * as anchor from './anchor.js';
 import { spinGame } from './game.js';
 
 // Buffer'ı global olarak tanımlıyoruz
