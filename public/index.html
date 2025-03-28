@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Kütüphaneleri module olarak blockchain.js içinde import edeceğiz, burada sadece blockchain.js'yi yüklüyoruz -->
 </head>
 <body>
     <div class="machine">
@@ -58,9 +57,11 @@
         </div>
     </div>
 
-    <!-- blockchain.js'yi module olarak yüklüyoruz -->
-    <script type="module" src="blockchain.js"></script>
-    <script src="game.js"></script>
-    <script src="script.js"></script>
+    <!-- Tüm scriptleri module olarak yüklüyoruz -->
+    <script type="module">
+        import './blockchain.js';
+        import './game.js';
+        import './script.js';
+    </script>
 </body>
 </html>
