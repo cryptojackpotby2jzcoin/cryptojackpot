@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Buffer polyfill’ini global olarak ekliyoruz -->
-    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
+    <!-- Buffer polyfill’ini ESM formatında ekliyoruz -->
+    <script type="module">
+        import { Buffer } from 'https://esm.sh/buffer@6.0.3';
+        window.Buffer = Buffer; // Global olarak tanımlıyoruz
+    </script>
 </head>
 <body>
     <div class="machine">
