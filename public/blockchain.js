@@ -1,13 +1,12 @@
 // Kütüphaneleri module olarak import ediyoruz
 import * as solanaWeb3 from 'https://unpkg.com/@solana/web3.js@1.78.0/lib/index.iife.min.js';
 import * as splToken from 'https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.8/lib/index.iife.js';
-import * as anchor from 'https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/index.js';
-import { spinGame } from './game.js'; // game.js'den spinGame'i import et
+import * as anchor from './anchor.js'; // Lokal anchor.js
+import { spinGame } from './game.js';
 
 // Buffer'ı global olarak tanımlıyoruz
 window.Buffer = anchor.Buffer;
 
-// DOM yüklendiğinde çalışacak kod
 const connectWalletButton = document.getElementById("connect-wallet-button");
 const withdrawButton = document.getElementById("withdraw-button");
 const depositButton = document.getElementById("deposit-button");
@@ -340,7 +339,7 @@ async function spinGameOnChain() {
         const winnings = (Number(updatedAccountInfo.data.readBigUInt64LE(16)) / 1_000_000) - previousEarned;
 
         await updateBalance();
-        spinGame(winnings); // game.js'den import edilen fonksiyon
+        spinGame(winnings);
         window.dispatchEvent(new Event("spinComplete"));
     } catch (error) {
         console.error("❌ Spin failed:", error.message, error.stack);
