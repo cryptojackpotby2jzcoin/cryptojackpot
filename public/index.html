@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crypto Jackpot</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Buffer polyfill’ini global olarak ekliyoruz -->
+    <script src="https://unpkg.com/buffer@6.0.3/index.js"></script>
 </head>
 <body>
     <div class="machine">
@@ -57,7 +59,6 @@
         </div>
     </div>
 
-    <!-- Tüm scriptleri module olarak yüklüyoruz -->
     <script type="module">
         import './blockchain.js';
         import './game.js';
